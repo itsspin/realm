@@ -1,0 +1,129 @@
+{
+  "thaldo_tinkerer": {
+    "name": "Thaldo the Tinkerer",
+    "role": "Quest Giver",
+    "level": 5,
+    "description": "A gnome engineer with grease-smeared goggles always seeking new parts.",
+    "dialogue": [
+      "Welcome to Gearhaven! I've got gadgets aplenty if you've the curiosity."
+    ]
+  },
+  "gilda_crafter": {
+    "name": "Gilda Gearsmith",
+    "role": "Crafting Trainer",
+    "level": 3,
+    "description": "She hammers away at metal plates, teaching apprentices the trade.",
+    "dialogue": [
+      "Need to learn crafting? My workshop is open to all diligent hands."
+    ]
+  },
+  "rogar_trainer": {
+    "name": "Rogar Ironfist",
+    "role": "Warrior Trainer",
+    "level": 8,
+    "description": "A burly veteran who has fought in countless battles.",
+    "dialogue": [
+      "Strength and honor! Show me your stance if you seek training."
+    ]
+  },
+  "belena_trainer": {
+    "name": "Belena Lightbringer",
+    "role": "Cleric Trainer",
+    "level": 7,
+    "description": "Her armor gleams with the blessing of Solara.",
+    "dialogue": [
+      "The light guides those with faith. Join me in service to Solara."
+    ]
+  },
+  "bard_npc": {
+    "name": "Seren the Bard",
+    "role": "Quest Giver",
+    "level": 4,
+    "description": "A traveling musician who knows every tavern song.",
+    "dialogue": [
+      "Have you seen my lute? I swear I left it right here..."
+    ]
+  },
+  "druid_npc": {
+    "name": "Mira Greensong",
+    "role": "Quest Giver",
+    "level": 4,
+    "description": "A calm druid collecting herbs for her rituals.",
+    "dialogue": [
+      "The balance of nature must be preserved, even in a place of gears."
+    ]
+  },
+  "joran_barkeep": {
+    "name": "Joran Barkeep",
+    "role": "Innkeeper",
+    "level": 2,
+    "description": "He polishes mugs while sharing gossip of far lands.",
+    "dialogue": [
+      "Pull up a stool! Nothing chases away road dust like my stout."
+    ]
+  },
+  "bog_hunter": {
+    "name": "Cressa the Bog Hunter",
+    "role": "Quest Giver",
+    "level": 6,
+    "description": "She keeps watch for creatures slinking out of the mists.",
+    "dialogue": [
+      "Those bog creepers are getting bold. Think you could thin them out?"
+    ]
+  },
+  "shadra_shaman": {
+    "name": "Shadra the Shaman",
+    "role": "Shaman Trainer",
+    "level": 8,
+    "description": "Mystic runes glow faintly across her staff.",
+    "dialogue": [
+      "Spirits whisper of power for those who listen."
+    ]
+  },
+  "gruk_trainer": {
+    "name": "Gruk Crusher",
+    "role": "Warrior Trainer",
+    "level": 9,
+    "description": "An imposing orc teaching brutal combat techniques.",
+    "dialogue": [
+      "Show me your swing, little one. Gruk will make you strong!"
+    ]
+  },
+  "morga_shadow": {
+    "name": "Morga Shadowblade",
+    "role": "Rogue Trainer",
+    "level": 7,
+    "description": "Hard to spot even when she's standing in front of you.",
+    "dialogue": [
+      "Silence and speed, that's the art of survival."
+    ]
+  },
+  "drezz_smith": {
+    "name": "Drezz Smith",
+    "role": "Crafting Trainer",
+    "level": 5,
+    "description": "A gruff blacksmith pounding out crude but effective weapons.",
+    "dialogue": [
+      "If you bring the ore, I'll show you how to shape it."
+    ]
+  },
+  "ranger_npc": {
+    "name": "Elora the Ranger",
+    "role": "Quest Giver",
+    "level": 5,
+    "description": "She scouts the wilderness and keeps travelers safe.",
+    "dialogue": [
+      "The goblins are restless. I need fresh eyes on their camp." 
+    ]
+  },
+  "traveling_merchant": {
+    "name": "Lira the Merchant",
+    "role": "Trader",
+    "level": 3,
+    "description": "Her wagon overflows with wares from distant realms.",
+    "dialogue": [
+      "Coins jingle sweetest when they're leaving your purse and entering mine." 
+    ]
+  }
+}
+
