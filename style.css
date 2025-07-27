@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom tweaks */
+body {
+  font-family: ui-monospace, monospace;
+}
+
+/* HUD boxes styling */
+.hud-box {
+  @apply p-2 bg-slate-700 rounded text-sm;
+}
+
+/* Button styling */
+.btn {
+  @apply px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded;
+}
