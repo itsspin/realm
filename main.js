@@ -131,6 +131,7 @@ function renderRoom(loc) {
     <p><strong>Mobs:</strong> ${mobNames}</p>
   `;
   buildNPCList(loc.npcs);
+  buildMobList(loc.spawns);
 }
 
 function enterRoom(id) {
@@ -270,6 +271,28 @@ function buildNPCList(npcs) {
     if (isQuestGiver(id)) btn.classList.add('quest');
     btn.textContent = `${npc.name} (${npc.role})`;
     btn.onclick = () => showNpcMenu(id);
+    list.append(btn);
+  });
+}
+
+function buildMobList(mobs) {
+  const list = document.getElementById('mob-list');
+  list.innerHTML = '';
+  mobs.forEach((id) => {
+    const mob = loader.data.mobs[id];
+    if (!mob) return;
+    const btn = document.createElement('button');
+    btn.className = 'mob-btn text-xs';
+    const diff = mob.level - game.player.level;
+    let color = '';
+    if (diff <= -3) color = 'text-green-400';
+    else if (diff <= -1) color = 'text-blue-400';
+    else if (diff <= 0) color = '';
+    else if (diff <= 2) color = 'text-yellow-400';
+    else color = 'text-red-600';
+    if (color) btn.classList.add(color);
+    btn.textContent = mob.name;
+    btn.onclick = () => startCombat(id);
     list.append(btn);
   });
 }
