@@ -8,6 +8,16 @@ const game = {
   onlinePlayers: []
 };
 
+function saveCharacter(p) {
+  localStorage.setItem('player', JSON.stringify(p));
+}
+
+function loadCharacter() {
+  const data = localStorage.getItem('player');
+  return data ? JSON.parse(data) : null;
+}
+let currentTargetBtn = null;
+
 function isQuestGiver(id) {
   return Object.values(loader.data.quests).some((q) => q.giver === id);
 }
@@ -16,6 +26,19 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function selectTarget(type, id, btn) {
+  if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
+  currentTargetBtn = btn || null;
+  if (currentTargetBtn) currentTargetBtn.classList.add('targeted');
+  if (type === 'npc') {
+    game.target = { ...loader.get('npcs', id), id, type };
+  } else if (type === 'node') {
+    game.target = { ...loader.get('nodes', id), id, type };
+  } else {
+    game.target = null;
+  }
+  document.getElementById('dialogue').classList.add('hidden');
+  updateHUD();
 function randomRarity(level) {
   const roll = Math.random() * 100;
   if (level >= 60 && roll < 0.05) return 'legendary';
@@ -50,6 +73,64 @@ function generateItems() {
     }
   });
   loader.data.items = { ...loader.data.items, ...items };
+}
+
+// Generate a single random item scaled to the given level
+function generateRandomItem(level) {
+  const types = [
+    { id: 'sword', slot: 'weapon', name: 'Sword' },
+    { id: 'axe', slot: 'weapon', name: 'Axe' },
+    { id: 'mace', slot: 'weapon', name: 'Mace' },
+    { id: 'cloth', slot: 'chest', name: 'Cloth Armor' },
+    { id: 'leather', slot: 'chest', name: 'Leather Armor' }
+  ];
+  const t = types[rand(types.length) - 1];
+  const rarity = randomRarity(level);
+  const mult = { common: 1, uncommon: 1.2, rare: 1.5, epic: 2, legendary: 3 }[
+    rarity
+  ];
+  const id = `gen_${t.id}_${Date.now()}_${rand(1000)}`;
+  const item = {
+    name: `${rarity} ${t.name}`,
+    level,
+    slot: t.slot,
+    rarity
+  };
+  if (t.slot === 'weapon') item.damage = Math.floor(level * 0.8 * mult + 1);
+  else item.armor = Math.floor(level * 0.5 * mult + 1);
+  loader.data.items[id] = item;
+  return id;
+}
+
+// Generate a random mob scaled to the given level
+function generateRandomMob(level) {
+  const names = ['Goblin', 'Wolf', 'Bandit', 'Skeleton'];
+  const name = names[rand(names.length) - 1];
+  const id = `genmob_${Date.now()}_${rand(1000)}`;
+  loader.data.mobs[id] = {
+    name: `${name} ${level}`,
+    level,
+    hp: 10 + level * 10,
+    damage: Math.max(1, Math.floor(level * 1.5)),
+    description: `A level ${level} ${name}.`
+  };
+  return id;
+}
+
+// Generate a simple kill quest for a random mob
+function generateRandomQuest(level) {
+  const mobId = generateRandomMob(level);
+  const mobName = loader.data.mobs[mobId].name;
+  const count = rand(3) + 1;
+  const qid = `genquest_${Date.now()}_${rand(1000)}`;
+  loader.data.quests[qid] = {
+    name: `Eliminate ${mobName}`,
+    giver: 'thaldo_tinkerer',
+    description: `Slay ${count} ${mobName}s for Thaldo.`,
+    objective: { kill: mobId, count },
+    reward: { xp: level * 20 }
+  };
+  return qid;
 }
 
 function dropLoot(mob) {
@@ -128,7 +209,9 @@ function renderRoom(loc) {
     <p>${loc.description}</p>
     <p><strong>Exits:</strong> ${loc.exits.join(', ')}</p>
     <p><strong>NPCs:</strong> ${npcNames}</p>
-    <p><strong>Mobs:</strong> ${mobNames}</p>
+
+    <p><strong>Mobs:</strong> ${loc.spawns.join(', ') || 'None'}</p>
+    <p><strong>Objects:</strong> ${nodeNames}</p>
   `;
   buildNPCList(loc.npcs);
   buildMobList(loc.spawns);
@@ -270,7 +353,22 @@ function buildNPCList(npcs) {
     btn.className = 'npc-btn text-xs';
     if (isQuestGiver(id)) btn.classList.add('quest');
     btn.textContent = `${npc.name} (${npc.role})`;
-    btn.onclick = () => showNpcMenu(id);
+    btn.onclick = () => selectTarget('npc', id, btn);
+    btn.ondblclick = () => showNpcMenu(id);
+    list.append(btn);
+  });
+}
+
+function buildNodeList(nodes) {
+  const list = document.getElementById('node-list');
+  list.innerHTML = '';
+  (nodes || []).forEach((id) => {
+    const node = loader.get('nodes', id);
+    if (!node) return;
+    const btn = document.createElement('button');
+    btn.className = `node-btn text-xs ${node.color || ''}`;
+    btn.textContent = node.name;
+    btn.onclick = () => selectTarget('node', id, btn);
     list.append(btn);
   });
 }
@@ -316,6 +414,13 @@ function buildHotbar() {
   });
 }
 
+function showHelp() {
+  addLog('Commands:');
+  addLog(' n,s,e,w - move');
+  addLog(' /attack - attack a nearby mob');
+  addLog(' hail - speak to your target');
+  addLog(' /target <name> - target an NPC or object by name');
+  addLog(' /help - show this help');
 function buildInventory() {
   const inv = document.getElementById('inv');
   const coins = `${game.player.coins.gold}g ${game.player.coins.silver}s ${game.player.coins.copper}c`;
@@ -329,57 +434,18 @@ function buildInventory() {
   inv.append(list);
 }
 
-function buildQuestList() {
-  const qpanel = document.getElementById('quests');
-  qpanel.innerHTML = '<h2 class="text-lg mb-2">Active Quests</h2>';
-  const list = document.createElement('ul');
-  game.player.activeQuests.forEach((qid) => {
-    const q = loader.data.quests[qid];
-    if (!q) return;
-    const li = document.createElement('li');
-    li.textContent = q.name;
-    list.append(li);
-  });
-  qpanel.append(list);
-}
-
-function findPath(start, end) {
-  const queue = [[start]];
-  const visited = new Set([start]);
-  while (queue.length) {
-    const path = queue.shift();
-    const node = path[path.length - 1];
-    if (node === end) return path;
-    const links = loader.data.locations[node].links || {};
-    Object.values(links).forEach((n) => {
-      if (!visited.has(n)) {
-        visited.add(n);
-        queue.push([...path, n]);
-      }
-    });
+function targetByName(name) {
+  const loc = loader.data.locations[game.player.location];
+  const ids = [...loc.npcs, ...(loc.nodes || [])];
+  for (const id of ids) {
+    const ent = loader.get('npcs', id) || loader.get('nodes', id);
+    if (ent && ent.name.toLowerCase().includes(name.toLowerCase())) {
+      const type = loader.get('npcs', id) ? 'npc' : 'node';
+      selectTarget(type, id);
+      return true;
+    }
   }
-  return null;
-}
-
-function buildMap() {
-  const map = document.getElementById('map');
-  map.innerHTML = '<h2 class="text-lg mb-2">World Map</h2>';
-  const list = document.createElement('ul');
-  Object.entries(loader.data.locations).forEach(([id, loc]) => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.className = 'underline text-sky-400';
-    btn.textContent = loc.name;
-    btn.onclick = () => {
-      const path = findPath(game.player.location, id);
-      if (path) {
-        addLog(`Route to ${loc.name}: ${path.join(' -> ')}`);
-      }
-    };
-    li.append(btn);
-    list.append(li);
-  });
-  map.append(list);
+  return false;
 }
 
 function handleInput(text) {
@@ -390,8 +456,39 @@ function handleInput(text) {
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
+  } else if (cmd.startsWith('/target')) {
+    const name = cmd.slice(7).trim();
+    if (!targetByName(name)) addLog('No such target here.');
+  } else if (cmd === 'hail') {
+    if (!game.target) {
+      addLog('You have no target.');
+    } else if (game.target.type === 'npc') {
+      talkToNpc(game.target.id);
+    } else if (game.target.dialogue) {
+      addLog(game.target.dialogue[0]);
+    } else {
+      addLog('Nothing happens.');
+    }
+  } else if (cmd === '/help') {
+    showHelp();
   } else if (cmd === '/who') {
     addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+  } else if (cmd.startsWith('/random')) {
+    const [, type] = cmd.split(' ');
+    if (type === 'item') {
+      const id = generateRandomItem(game.player.level);
+      game.player.inventory.push(id);
+      addLog(`You receive ${loader.data.items[id].name}.`);
+    } else if (type === 'mob') {
+      const mobId = generateRandomMob(game.player.level);
+      startCombat(mobId);
+    } else if (type === 'quest') {
+      const qid = generateRandomQuest(game.player.level);
+      game.player.activeQuests.push(qid);
+      addLog(`New quest added: ${loader.data.quests[qid].name}`);
+    } else {
+      addLog('Usage: /random item|mob|quest');
+    }
   } else if (cmd) {
     ws.send('chat', { channel: 'say', msg: `${game.player.name}: ${cmd}` });
   }
@@ -418,6 +515,20 @@ function bindUI() {
   };
 }
 
+function populateSelect(id, data) {
+  const sel = document.getElementById(id);
+  Object.entries(data).forEach(([key, obj]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = obj.name;
+    sel.append(opt);
+  });
+}
+
+function startGame(player) {
+  game.player = player;
+  document.getElementById('create-overlay').classList.add('hidden');
+  saveCharacter(player);
 export async function init() {
   await loader.init();
   generateItems();
@@ -444,6 +555,68 @@ export async function init() {
   buildHotbar();
   const start = location.hash.slice(1) || game.player.location;
   enterRoom(start);
+}
+
+function showCreateForm() {
+  populateSelect('race', loader.data.races);
+  populateSelect('class', loader.data.classes);
+  populateSelect('deity', loader.data.deities);
+  document.getElementById('create-overlay').classList.remove('hidden');
+  document.getElementById('create-form').onsubmit = (e) => {
+    e.preventDefault();
+    const base = loader.data.attributes.base;
+    const stats = {
+      str: Number(document.getElementById('attr-str').value),
+      dex: Number(document.getElementById('attr-dex').value),
+      int: Number(document.getElementById('attr-int').value),
+      wis: Number(document.getElementById('attr-wis').value),
+      spi: Number(document.getElementById('attr-spi').value),
+      vit: Number(document.getElementById('attr-vit').value)
+    };
+    const spent =
+      stats.str - base.str +
+      stats.dex - base.dex +
+      stats.int - base.int +
+      stats.wis - base.wis +
+      stats.spi - base.spi +
+      stats.vit - base.vit;
+    if (spent !== base.points) {
+      document.getElementById('points-err').classList.remove('hidden');
+      return;
+    }
+    const race = document.getElementById('race').value;
+    const player = {
+      name:
+        document.getElementById('first-name').value +
+        ' ' +
+        document.getElementById('last-name').value,
+      class: document.getElementById('class').value,
+      race,
+      deity: document.getElementById('deity').value,
+      stats,
+      hp: stats.vit * 5,
+      maxHp: stats.vit * 5,
+      mp: stats.spi * 4,
+      maxMp: stats.spi * 4,
+      location: loader.data.races[race].startLocation,
+      inventory: ['rusty_sword', 'healing_potion'],
+      equipped: { weapon: 'rusty_sword' },
+      activeQuests: ['welcome_to_realm'],
+      party: []
+    };
+    startGame(player);
+  };
+}
+
+export async function init() {
+  await loader.init();
+  bindUI();
+  const saved = loadCharacter();
+  if (saved) {
+    startGame(saved);
+  } else {
+    showCreateForm();
+  }
 }
 
 init();
