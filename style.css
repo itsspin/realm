@@ -24,6 +24,9 @@ body {
 .quest {
   @apply bg-amber-600 hover:bg-amber-500 text-black;
 }
+.exit-btn {
+  @apply underline text-sky-400 hover:text-sky-300;
+}
 
 /* Overlay panels */
 .panel {

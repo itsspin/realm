@@ -24,6 +24,9 @@
     ],
     "spawns": [
       "rogue_clockwork"
+    ],
+    "nodes": [
+      "gearhaven_sign"
     ]
   },
   "gearhaven_workshop": {
@@ -40,7 +43,10 @@
       "thaldo_tinkerer",
       "gilda_crafter"
     ],
-    "spawns": []
+    "spawns": [],
+    "nodes": [
+      "workshop_anvil"
+    ]
   },
   "shadowfen_camp": {
     "name": "Shadowfen Camp",
@@ -78,6 +84,9 @@
     "npcs": [],
     "spawns": [
       "bog_creeper"
+    ],
+    "nodes": [
+      "bog_stone"
     ]
   },
   "neutral_crossroads": {
@@ -85,15 +94,180 @@
     "faction": "neutral",
     "description": "A dusty intersection where caravans pause and news from all factions is traded.",
     "exits": [
-      "w"
+      "gearhaven_plaza",
+      "elven_glade_path",
+      "dwarf_fort_path",
+      "gnome_burrow_path",
+      "orc_stronghold_path",
+      "undead_trail"
     ],
     "links": {
-      "w": "gearhaven_plaza"
+      "west": "gearhaven_plaza",
+      "elven_path": "elven_glade_path",
+      "dwarf_path": "dwarf_fort_path",
+      "gnome_path": "gnome_burrow_path",
+      "orc_path": "orc_stronghold_path",
+      "undead_path": "undead_trail"
     },
     "npcs": [
       "ranger_npc",
       "traveling_merchant"
     ],
+    "spawns": []
+  },
+  "elven_glade_path": {
+    "name": "Elven Forest Road",
+    "faction": "neutral",
+    "description": "A serene path lined with ancient trees leading to the high elf city.",
+    "exits": [
+      "neutral_crossroads",
+      "elven_glade"
+    ],
+    "links": {
+      "crossroads": "neutral_crossroads",
+      "city": "elven_glade"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "elven_glade": {
+    "name": "Elven Glade",
+    "faction": "luminara",
+    "description": "Homes built high in the trees sparkle with arcane light.",
+    "exits": [
+      "elven_glade_path"
+    ],
+    "links": {
+      "road": "elven_glade_path"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "dwarf_fort_path": {
+    "name": "Stone Tunnel",
+    "faction": "neutral",
+    "description": "A well-carved tunnel slopes downward toward a dwarven stronghold.",
+    "exits": [
+      "neutral_crossroads",
+      "dwarf_fortress"
+    ],
+    "links": {
+      "crossroads": "neutral_crossroads",
+      "city": "dwarf_fortress"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "dwarf_fortress": {
+    "name": "Dwarf Fortress",
+    "faction": "luminara",
+    "description": "Massive stone walls guard the halls of the stout folk.",
+    "exits": [
+      "dwarf_fort_path"
+    ],
+    "links": {
+      "road": "dwarf_fort_path"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "gnome_burrow_path": {
+    "name": "Gnome Tunnel",
+    "faction": "neutral",
+    "description": "A cramped tunnel lit by flickering lanterns.",
+    "exits": [
+      "neutral_crossroads",
+      "gnome_burrow"
+    ],
+    "links": {
+      "crossroads": "neutral_crossroads",
+      "city": "gnome_burrow"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "gnome_burrow": {
+    "name": "Gnome Burrow",
+    "faction": "luminara",
+    "description": "A maze of cozy burrows bustling with tinkering gnomes.",
+    "exits": [
+      "gnome_burrow_path"
+    ],
+    "links": {
+      "road": "gnome_burrow_path"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "orc_stronghold_path": {
+    "name": "Blasted Trail",
+    "faction": "neutral",
+    "description": "A rough trail littered with bones leading to the orc stronghold.",
+    "exits": [
+      "neutral_crossroads",
+      "orc_stronghold"
+    ],
+    "links": {
+      "crossroads": "neutral_crossroads",
+      "city": "orc_stronghold"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "orc_stronghold": {
+    "name": "Orc Stronghold",
+    "faction": "umbra",
+    "description": "A fortified camp echoing with war drums.",
+    "exits": [
+      "orc_stronghold_path"
+    ],
+    "links": {
+      "road": "orc_stronghold_path"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "undead_trail": {
+    "name": "Forsaken Path",
+    "faction": "neutral",
+    "description": "A chilling road lined with the remnants of battles long past.",
+    "exits": [
+      "neutral_crossroads",
+      "undead_necropolis"
+    ],
+    "links": {
+      "crossroads": "neutral_crossroads",
+      "city": "undead_necropolis"
+    },
+    "npcs": [],
+    "spawns": []
+  },
+  "undead_necropolis": {
+    "name": "Undead Necropolis",
+    "faction": "umbra",
+    "description": "Crumbling mausoleums rise from dark soil under a perpetual gloom.",
+    "exits": [
+      "undead_trail"
+    ],
+    "links": {
+      "road": "undead_trail"
+    },
+    "boats": [
+      "dawn_isle_port"
+    ],
+    "npcs": [],
+    "spawns": []
+  },
+  "dawn_isle_port": {
+    "name": "Dawn Isle Port",
+    "faction": "luminara",
+    "description": "A small harbor where boats depart for distant lands.",
+    "exits": [],
+    "links": {},
+    "boats": [
+      "undead_necropolis"
+    ],
+    "npcs": [],
     "spawns": []
   }
 }

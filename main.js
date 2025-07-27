@@ -8,6 +8,16 @@ const game = {
   onlinePlayers: []
 };
 
+function saveCharacter(p) {
+  localStorage.setItem('player', JSON.stringify(p));
+}
+
+function loadCharacter() {
+  const data = localStorage.getItem('player');
+  return data ? JSON.parse(data) : null;
+}
+let currentTargetBtn = null;
+
 function isQuestGiver(id) {
   return Object.values(loader.data.quests).some((q) => q.giver === id);
 }
@@ -16,6 +26,19 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function selectTarget(type, id, btn) {
+  if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
+  currentTargetBtn = btn || null;
+  if (currentTargetBtn) currentTargetBtn.classList.add('targeted');
+  if (type === 'npc') {
+    game.target = { ...loader.get('npcs', id), id, type };
+  } else if (type === 'node') {
+    game.target = { ...loader.get('nodes', id), id, type };
+  } else {
+    game.target = null;
+  }
+  document.getElementById('dialogue').classList.add('hidden');
+  updateHUD();
 function randomRarity(level) {
   const roll = Math.random() * 100;
   if (level >= 60 && roll < 0.05) return 'legendary';
@@ -182,14 +205,35 @@ function renderRoom(loc) {
       return `<span class="${color}">${mob.name}</span>`;
     })
     .join(', ') || 'None';
+
+  const exitButtons = Object.entries(loc.links || {})
+    .map(([key, dest]) => {
+      const d = loader.data.locations[dest];
+      const name = d ? d.name : dest;
+      return `<button class="exit-btn underline text-sky-400" data-dest="${dest}">${name}</button>`;
+    })
+    .concat(
+      (loc.boats || []).map(
+        (dest) =>
+          `<button class="exit-btn underline text-teal-400" data-dest="${dest}">Sail to ${loader.data.locations[dest]?.name || dest}</button>`
+      )
+    )
+    .join(', ') || 'None';
+
   log.innerHTML = `
     <h2 class="text-lg font-bold">${loc.name}</h2>
     <p>${loc.description}</p>
-    <p><strong>Exits:</strong> ${loc.exits.join(', ')}</p>
+    <p><strong>Travel:</strong> ${exitButtons}</p>
     <p><strong>NPCs:</strong> ${npcNames}</p>
-    <p><strong>Mobs:</strong> ${mobNames}</p>
+
+    <p><strong>Mobs:</strong> ${loc.spawns.join(', ') || 'None'}</p>
+    <p><strong>Objects:</strong> ${nodeNames}</p>
   `;
+  log.querySelectorAll('.exit-btn').forEach((btn) => {
+    btn.onclick = () => enterRoom(btn.dataset.dest);
+  });
   buildNPCList(loc.npcs);
+  buildMobList(loc.spawns);
 }
 
 function enterRoom(id) {
@@ -342,8 +386,65 @@ function buildNPCList(npcs) {
     btn.className = 'npc-btn text-xs';
     if (isQuestGiver(id)) btn.classList.add('quest');
     btn.textContent = `${npc.name} (${npc.role})`;
-    btn.onclick = () => showNpcMenu(id);
+    btn.onclick = () => selectTarget('npc', id, btn);
+    btn.ondblclick = () => showNpcMenu(id);
     list.append(btn);
+  });
+}
+
+function buildNodeList(nodes) {
+  const list = document.getElementById('node-list');
+  list.innerHTML = '';
+  (nodes || []).forEach((id) => {
+    const node = loader.get('nodes', id);
+    if (!node) return;
+    const btn = document.createElement('button');
+    btn.className = `node-btn text-xs ${node.color || ''}`;
+    btn.textContent = node.name;
+    btn.onclick = () => selectTarget('node', id, btn);
+    list.append(btn);
+  });
+}
+
+function buildMobList(mobs) {
+  const list = document.getElementById('mob-list');
+  list.innerHTML = '';
+  mobs.forEach((id) => {
+    const mob = loader.data.mobs[id];
+    if (!mob) return;
+    const btn = document.createElement('button');
+    btn.className = 'mob-btn text-xs';
+    const diff = mob.level - game.player.level;
+    let color = '';
+    if (diff <= -3) color = 'text-green-400';
+    else if (diff <= -1) color = 'text-blue-400';
+    else if (diff <= 0) color = '';
+    else if (diff <= 2) color = 'text-yellow-400';
+    else color = 'text-red-600';
+    if (color) btn.classList.add(color);
+    btn.textContent = mob.name;
+    btn.onclick = () => startCombat(id);
+    list.append(btn);
+  });
+}
+
+function buildMobList(mobs) {
+  const list = document.getElementById('mob-list');
+  if (!list) return;
+  list.innerHTML = '';
+  mobs.forEach((id) => {
+    const mob = loader.data.mobs[id];
+    if (!mob) return;
+    const span = document.createElement('span');
+    span.className = 'text-xs mr-1';
+    const diff = mob.level - game.player.level;
+    let color = 'text-white';
+    if (diff > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < -1) color = 'text-green-400';
+    span.classList.add(color);
+    span.textContent = mob.name;
+    list.append(span);
   });
 }
 
@@ -366,6 +467,13 @@ function buildHotbar() {
   });
 }
 
+function showHelp() {
+  addLog('Commands:');
+  addLog(' n,s,e,w - move');
+  addLog(' /attack - attack a nearby mob');
+  addLog(' hail - speak to your target');
+  addLog(' /target <name> - target an NPC or object by name');
+  addLog(' /help - show this help');
 function buildInventory() {
   const inv = document.getElementById('inv');
   const coins = `${game.player.coins.gold}g ${game.player.coins.silver}s ${game.player.coins.copper}c`;
@@ -400,8 +508,15 @@ function findPath(start, end) {
     const path = queue.shift();
     const node = path[path.length - 1];
     if (node === end) return path;
-    const links = loader.data.locations[node].links || {};
+    const loc = loader.data.locations[node];
+    const links = loc.links || {};
     Object.values(links).forEach((n) => {
+      if (!visited.has(n)) {
+        visited.add(n);
+        queue.push([...path, n]);
+      }
+    });
+    (loc.boats || []).forEach((n) => {
       if (!visited.has(n)) {
         visited.add(n);
         queue.push([...path, n]);
@@ -425,11 +540,9 @@ function buildMap() {
       if (path) {
         addLog(`Route to ${loc.name}: ${path.join(' -> ')}`);
       }
-    };
-    li.append(btn);
-    list.append(li);
-  });
-  map.append(list);
+    });
+  }
+  return false;
 }
 
 function craftItem(prof, rid) {
@@ -501,9 +614,30 @@ function handleInput(text) {
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     const dest = loader.data.locations[game.player.location].links[cmd];
     if (dest) enterRoom(dest);
+  } else if (cmd.startsWith('/goto ')) {
+    const target = cmd.slice(6);
+    const loc = loader.data.locations[game.player.location];
+    const linkDest = Object.values(loc.links || {}).find((v) => v === target);
+    const boatDest = (loc.boats || []).find((v) => v === target);
+    if (linkDest || boatDest) enterRoom(target);
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
+  } else if (cmd.startsWith('/target')) {
+    const name = cmd.slice(7).trim();
+    if (!targetByName(name)) addLog('No such target here.');
+  } else if (cmd === 'hail') {
+    if (!game.target) {
+      addLog('You have no target.');
+    } else if (game.target.type === 'npc') {
+      talkToNpc(game.target.id);
+    } else if (game.target.dialogue) {
+      addLog(game.target.dialogue[0]);
+    } else {
+      addLog('Nothing happens.');
+    }
+  } else if (cmd === '/help') {
+    showHelp();
   } else if (cmd === '/who') {
     addLog(`Online: ${game.onlinePlayers.join(', ')}`);
   } else if (cmd.startsWith('/random')) {
@@ -548,6 +682,20 @@ function bindUI() {
   };
 }
 
+function populateSelect(id, data) {
+  const sel = document.getElementById(id);
+  Object.entries(data).forEach(([key, obj]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = obj.name;
+    sel.append(opt);
+  });
+}
+
+function startGame(player) {
+  game.player = player;
+  document.getElementById('create-overlay').classList.add('hidden');
+  saveCharacter(player);
 export async function init() {
   await loader.init();
   generateItems();
@@ -575,6 +723,68 @@ export async function init() {
   buildHotbar();
   const start = location.hash.slice(1) || game.player.location;
   enterRoom(start);
+}
+
+function showCreateForm() {
+  populateSelect('race', loader.data.races);
+  populateSelect('class', loader.data.classes);
+  populateSelect('deity', loader.data.deities);
+  document.getElementById('create-overlay').classList.remove('hidden');
+  document.getElementById('create-form').onsubmit = (e) => {
+    e.preventDefault();
+    const base = loader.data.attributes.base;
+    const stats = {
+      str: Number(document.getElementById('attr-str').value),
+      dex: Number(document.getElementById('attr-dex').value),
+      int: Number(document.getElementById('attr-int').value),
+      wis: Number(document.getElementById('attr-wis').value),
+      spi: Number(document.getElementById('attr-spi').value),
+      vit: Number(document.getElementById('attr-vit').value)
+    };
+    const spent =
+      stats.str - base.str +
+      stats.dex - base.dex +
+      stats.int - base.int +
+      stats.wis - base.wis +
+      stats.spi - base.spi +
+      stats.vit - base.vit;
+    if (spent !== base.points) {
+      document.getElementById('points-err').classList.remove('hidden');
+      return;
+    }
+    const race = document.getElementById('race').value;
+    const player = {
+      name:
+        document.getElementById('first-name').value +
+        ' ' +
+        document.getElementById('last-name').value,
+      class: document.getElementById('class').value,
+      race,
+      deity: document.getElementById('deity').value,
+      stats,
+      hp: stats.vit * 5,
+      maxHp: stats.vit * 5,
+      mp: stats.spi * 4,
+      maxMp: stats.spi * 4,
+      location: loader.data.races[race].startLocation,
+      inventory: ['rusty_sword', 'healing_potion'],
+      equipped: { weapon: 'rusty_sword' },
+      activeQuests: ['welcome_to_realm'],
+      party: []
+    };
+    startGame(player);
+  };
+}
+
+export async function init() {
+  await loader.init();
+  bindUI();
+  const saved = loadCharacter();
+  if (saved) {
+    startGame(saved);
+  } else {
+    showCreateForm();
+  }
 }
 
 init();
