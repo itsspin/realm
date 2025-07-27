@@ -45,6 +45,50 @@
     <button id="send" class="btn">Send</button>
   </footer>
 
+  <!-- Character creation overlay -->
+  <div id="create-overlay" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center hidden">
+    <form id="create-form" class="bg-slate-800 p-4 rounded space-y-2 text-sm">
+      <div>
+        <label class="block mb-1">First Name
+          <input id="first-name" required class="w-full bg-slate-700 p-1 rounded">
+        </label>
+      </div>
+      <div>
+        <label class="block mb-1">Surname
+          <input id="last-name" required class="w-full bg-slate-700 p-1 rounded">
+        </label>
+      </div>
+      <div>
+        <label class="block mb-1">Race
+          <select id="race" class="w-full bg-slate-700 p-1 rounded"></select>
+        </label>
+      </div>
+      <div>
+        <label class="block mb-1">Class
+          <select id="class" class="w-full bg-slate-700 p-1 rounded"></select>
+        </label>
+      </div>
+      <div>
+        <label class="block mb-1">Deity
+          <select id="deity" class="w-full bg-slate-700 p-1 rounded"></select>
+        </label>
+      </div>
+      <div class="font-bold">Allocate Attribute Points (30)</div>
+      <div class="grid grid-cols-2 gap-1">
+        <label>STR <input id="attr-str" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+        <label>DEX <input id="attr-dex" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+        <label>INT <input id="attr-int" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+        <label>WIS <input id="attr-wis" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+        <label>SPI <input id="attr-spi" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+        <label>VIT <input id="attr-vit" type="number" min="5" value="5" class="bg-slate-700 p-1 rounded w-16"></label>
+      </div>
+      <div id="points-err" class="text-red-400 hidden">Please use exactly 30 points.</div>
+      <div class="text-center pt-2">
+        <button class="btn" type="submit">Create</button>
+      </div>
+    </form>
+  </div>
+
   <script type="module" src="main.js"></script>
 </body>
 </html>
