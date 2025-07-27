@@ -1,0 +1,72 @@
+{
+  "warrior": [
+    {"level": 1, "skills": ["slash", "block"]},
+    {"level": 20, "skills": ["slash_2", "block_2"]},
+    {"level": 30, "skills": ["war_cry"]},
+    {"level": 40, "skills": ["slash_3", "block_3"]},
+    {"level": 60, "skills": ["war_cry_2"]}
+  ],
+  "paladin": [
+    {"level": 1, "skills": ["smite", "heal"]},
+    {"level": 20, "skills": ["smite_2", "heal_2"]},
+    {"level": 30, "skills": ["holy_light"]},
+    {"level": 40, "skills": ["smite_3", "heal_3"]},
+    {"level": 60, "skills": ["divine_shield", "holy_light_2"]}
+  ],
+  "cleric": [
+    {"level": 1, "skills": ["heal", "bless"]},
+    {"level": 20, "skills": ["heal_2", "bless_2"]},
+    {"level": 30, "skills": ["holy_light"]},
+    {"level": 40, "skills": ["heal_3", "bless_3"]},
+    {"level": 60, "skills": ["divine_shield", "holy_light_2"]}
+  ],
+  "mage": [
+    {"level": 1, "skills": ["fireball", "frostbolt"]},
+    {"level": 20, "skills": ["fireball_2", "frostbolt_2"]},
+    {"level": 30, "skills": ["arcane_blast"]},
+    {"level": 40, "skills": ["fireball_3", "frostbolt_3"]},
+    {"level": 60, "skills": ["arcane_blast_2"]}
+  ],
+  "rogue": [
+    {"level": 1, "skills": ["backstab", "stealth"]},
+    {"level": 20, "skills": ["backstab_2", "stealth_2"]},
+    {"level": 30, "skills": ["eviscerate"]},
+    {"level": 40, "skills": ["backstab_3", "stealth_3"]},
+    {"level": 60, "skills": ["eviscerate_2"]}
+  ],
+  "ranger": [
+    {"level": 1, "skills": ["shoot", "track"]},
+    {"level": 20, "skills": ["shoot_2", "track_2"]},
+    {"level": 30, "skills": ["rapid_fire"]},
+    {"level": 40, "skills": ["shoot_3", "track_3"]},
+    {"level": 60, "skills": ["rapid_fire_2"]}
+  ],
+  "druid": [
+    {"level": 1, "skills": ["entangle", "regrowth"]},
+    {"level": 20, "skills": ["entangle_2", "regrowth_2"]},
+    {"level": 30, "skills": ["bear_form"]},
+    {"level": 40, "skills": ["entangle_3", "regrowth_3"]},
+    {"level": 60, "skills": ["bear_form_2"]}
+  ],
+  "necromancer": [
+    {"level": 1, "skills": ["drain", "raise_dead"]},
+    {"level": 20, "skills": ["drain_2", "raise_dead_2"]},
+    {"level": 30, "skills": ["bone_spear"]},
+    {"level": 40, "skills": ["drain_3", "raise_dead_3"]},
+    {"level": 60, "skills": ["bone_spear_2"]}
+  ],
+  "shaman": [
+    {"level": 1, "skills": ["lightning", "totem"]},
+    {"level": 20, "skills": ["lightning_2", "totem_2"]},
+    {"level": 30, "skills": ["earth_shield"]},
+    {"level": 40, "skills": ["lightning_3", "totem_3"]},
+    {"level": 60, "skills": ["earth_shield_2"]}
+  ],
+  "bard": [
+    {"level": 1, "skills": ["song_of_valor", "lullaby"]},
+    {"level": 20, "skills": ["song_of_valor_2", "lullaby_2"]},
+    {"level": 30, "skills": ["power_chord"]},
+    {"level": 40, "skills": ["song_of_valor_3", "lullaby_3"]},
+    {"level": 60, "skills": ["power_chord_2"]}
+  ]
+}
