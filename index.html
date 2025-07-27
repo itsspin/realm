@@ -28,6 +28,10 @@
       <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
       <div id="target" class="hud-box">Target: —</div>
       <div id="party" class="hud-box">Party: —</div>
+      <div id="players-box" class="hud-box">
+        <div class="font-bold mb-1">Nearby Players</div>
+        <div id="player-list" class="flex flex-wrap gap-1"></div>
+      </div>
       <div id="npcs-box" class="hud-box">
         <div class="font-bold mb-1">Nearby NPCs</div>
         <div id="npc-list" class="flex flex-wrap gap-1"></div>
@@ -39,6 +43,18 @@
       <div id="dialogue" class="hud-box hidden"></div>
     </aside>
   </main>
+
+  <!-- Overlay panels -->
+  <div id="overlay" class="hidden fixed inset-0 bg-black/70 p-4 overflow-auto">
+    <div id="map" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="inv" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="quests" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="chat-panel" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div class="text-center">
+      <button id="close-overlay" class="btn">Close</button>
+    </div>
+  </div>
 
   <!-- Hotbar for abilities -->
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
