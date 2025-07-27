@@ -10,7 +10,8 @@ export const loader = {
       'spells',
       'quests',
       'locations',
-      'mobs'
+      'mobs',
+      'npcs'
     ];
     await Promise.all(
       files.map(async (name) => {

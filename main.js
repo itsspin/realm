@@ -7,6 +7,10 @@ const game = {
   combatTimer: 0
 };
 
+function isQuestGiver(id) {
+  return Object.values(loader.data.quests).some((q) => q.giver === id);
+}
+
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
@@ -30,13 +34,17 @@ function addLog(txt) {
 
 function renderRoom(loc) {
   const log = document.getElementById('log');
+  const npcNames = loc.npcs
+    .map((id) => loader.get('npcs', id)?.name || id)
+    .join(', ') || 'None';
   log.innerHTML = `
     <h2 class="text-lg font-bold">${loc.name}</h2>
     <p>${loc.description}</p>
     <p><strong>Exits:</strong> ${loc.exits.join(', ')}</p>
-    <p><strong>NPCs:</strong> ${loc.npcs.join(', ') || 'None'}</p>
+    <p><strong>NPCs:</strong> ${npcNames}</p>
     <p><strong>Mobs:</strong> ${loc.spawns.join(', ') || 'None'}</p>
   `;
+  buildNPCList(loc.npcs);
 }
 
 function enterRoom(id) {
@@ -83,6 +91,60 @@ function startCombat(mobId) {
   clearInterval(game.combatTimer);
   game.combatTimer = setInterval(attackRound, 2000);
   updateHUD();
+  document.getElementById('dialogue').classList.add('hidden');
+}
+
+function attackNpc(id) {
+  const npc = loader.get('npcs', id);
+  if (npc && npc.hp) {
+    game.target = { ...npc };
+    clearInterval(game.combatTimer);
+    game.combatTimer = setInterval(attackRound, 2000);
+    updateHUD();
+  } else {
+    addLog(`${npc.name} does not seem interested in fighting.`);
+  }
+  document.getElementById('dialogue').classList.add('hidden');
+}
+
+function talkToNpc(id) {
+  const npc = loader.get('npcs', id);
+  if (!npc) return;
+  const line = npc.dialogue?.[0] || '...';
+  addLog(`${npc.name} says: "${line}"`);
+  document.getElementById('dialogue').classList.add('hidden');
+}
+
+function showNpcMenu(id) {
+  const npc = loader.get('npcs', id);
+  if (!npc) return;
+  const dlg = document.getElementById('dialogue');
+  dlg.innerHTML = `
+    <div class="font-bold mb-1">${npc.name}</div>
+    <div class="text-xs mb-2">${npc.role}</div>
+    <div class="flex gap-2">
+      <button id="talk" class="btn">Talk</button>
+      <button id="attack" class="btn">Attack</button>
+    </div>
+  `;
+  dlg.classList.remove('hidden');
+  document.getElementById('talk').onclick = () => talkToNpc(id);
+  document.getElementById('attack').onclick = () => attackNpc(id);
+}
+
+function buildNPCList(npcs) {
+  const list = document.getElementById('npc-list');
+  list.innerHTML = '';
+  npcs.forEach((id) => {
+    const npc = loader.get('npcs', id);
+    if (!npc) return;
+    const btn = document.createElement('button');
+    btn.className = 'npc-btn text-xs';
+    if (isQuestGiver(id)) btn.classList.add('quest');
+    btn.textContent = `${npc.name} (${npc.role})`;
+    btn.onclick = () => showNpcMenu(id);
+    list.append(btn);
+  });
 }
 
 function castSpell(id) {
