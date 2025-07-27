@@ -39,6 +39,7 @@ function selectTarget(type, id, btn) {
   }
   document.getElementById('dialogue').classList.add('hidden');
   updateHUD();
+}
 function randomRarity(level) {
   const roll = Math.random() * 100;
   if (level >= 60 && roll < 0.05) return 'legendary';
@@ -205,9 +206,12 @@ function renderRoom(loc) {
       return `<span class="${color}">${mob.name}</span>`;
     })
     .join(', ') || 'None';
+  const nodeNames = (loc.nodes || [])
+    .map((id) => loader.get('nodes', id)?.name || id)
+    .join(', ') || 'None';
 
   const exitButtons = Object.entries(loc.links || {})
-    .map(([key, dest]) => {
+    .map(([, dest]) => {
       const d = loader.data.locations[dest];
       const name = d ? d.name : dest;
       return `<button class="exit-btn underline text-sky-400" data-dest="${dest}">${name}</button>`;
@@ -226,7 +230,7 @@ function renderRoom(loc) {
     <p><strong>Travel:</strong> ${exitButtons}</p>
     <p><strong>NPCs:</strong> ${npcNames}</p>
 
-    <p><strong>Mobs:</strong> ${loc.spawns.join(', ') || 'None'}</p>
+    <p><strong>Mobs:</strong> ${mobNames}</p>
     <p><strong>Objects:</strong> ${nodeNames}</p>
   `;
   log.querySelectorAll('.exit-btn').forEach((btn) => {
@@ -234,6 +238,7 @@ function renderRoom(loc) {
   });
   buildNPCList(loc.npcs);
   buildMobList(loc.spawns);
+  buildNodeList(loc.nodes);
 }
 
 function enterRoom(id) {
@@ -428,25 +433,28 @@ function buildMobList(mobs) {
   });
 }
 
-function buildMobList(mobs) {
-  const list = document.getElementById('mob-list');
-  if (!list) return;
-  list.innerHTML = '';
-  mobs.forEach((id) => {
-    const mob = loader.data.mobs[id];
-    if (!mob) return;
-    const span = document.createElement('span');
-    span.className = 'text-xs mr-1';
-    const diff = mob.level - game.player.level;
-    let color = 'text-white';
-    if (diff > 2) color = 'text-red-600';
-    else if (diff > 0) color = 'text-yellow-400';
-    else if (diff < -1) color = 'text-green-400';
-    span.classList.add(color);
-    span.textContent = mob.name;
-    list.append(span);
-  });
+function targetByName(name) {
+  const loc = loader.data.locations[game.player.location];
+  const lower = name.toLowerCase();
+  const npc = loc.npcs.find((nid) => loader.get('npcs', nid)?.name.toLowerCase() === lower);
+  if (npc) {
+    selectTarget('npc', npc);
+    return true;
+  }
+  const node = (loc.nodes || []).find((nid) => loader.get('nodes', nid)?.name.toLowerCase() === lower);
+  if (node) {
+    selectTarget('node', node);
+    return true;
+  }
+  const mob = loc.spawns.find((mid) => loader.data.mobs[mid]?.name.toLowerCase() === lower);
+  if (mob) {
+    game.target = { ...loader.data.mobs[mob] };
+    updateHUD();
+    return true;
+  }
+  return false;
 }
+
 
 function castSpell(id) {
   const spell = loader.data.spells[id];
@@ -474,6 +482,7 @@ function showHelp() {
   addLog(' hail - speak to your target');
   addLog(' /target <name> - target an NPC or object by name');
   addLog(' /help - show this help');
+}
 function buildInventory() {
   const inv = document.getElementById('inv');
   const coins = `${game.player.coins.gold}g ${game.player.coins.silver}s ${game.player.coins.copper}c`;
@@ -582,9 +591,11 @@ function buildMap() {
       if (path) {
         addLog(`Route to ${loc.name}: ${path.join(' -> ')}`);
       }
-    });
-  }
-  return false;
+    };
+    li.append(btn);
+    list.append(li);
+  });
+  map.append(list);
 }
 
 function craftItem(prof, rid) {
@@ -738,27 +749,6 @@ function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
-export async function init() {
-  await loader.init();
-  generateItems();
-  game.player = {
-    name: 'Hero',
-    class: 'warrior',
-    race: 'human',
-    level: 1,
-    stats: { str: 10, dex: 8, int: 5, wis: 5, spi: 5, vit: 10 },
-    hp: 50,
-    maxHp: 50,
-    mp: 20,
-    maxMp: 20,
-    location: loader.data.races.human.startLocation,
-    inventory: ['rusty_sword', 'healing_potion'],
-    coins: { gold: 0, silver: 0, copper: 0 },
-    equipped: { weapon: 'rusty_sword' },
-    activeQuests: ['welcome_to_realm'],
-    professions: [],
-    party: []
-  };
   game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];
   updatePlayersList();
   bindUI();
@@ -820,6 +810,7 @@ function showCreateForm() {
 
 export async function init() {
   await loader.init();
+  generateItems();
   bindUI();
   const saved = loadCharacter();
   if (saved) {
