@@ -1,0 +1,47 @@
+{
+  "human": {
+    "name": "Human",
+    "faction": "luminara",
+    "startLocation": "gearhaven_plaza"
+  },
+  "high_elf": {
+    "name": "High Elf",
+    "faction": "luminara",
+    "startLocation": "gearhaven_plaza"
+  },
+  "dwarf": {
+    "name": "Dwarf",
+    "faction": "luminara",
+    "startLocation": "gearhaven_plaza"
+  },
+  "gnome": {
+    "name": "Gnome",
+    "faction": "luminara",
+    "startLocation": "gearhaven_plaza"
+  },
+  "orc": {
+    "name": "Orc",
+    "faction": "umbra",
+    "startLocation": "shadowfen_camp"
+  },
+  "dark_elf": {
+    "name": "Dark Elf",
+    "faction": "umbra",
+    "startLocation": "shadowfen_camp"
+  },
+  "troll": {
+    "name": "Troll",
+    "faction": "umbra",
+    "startLocation": "shadowfen_camp"
+  },
+  "undead": {
+    "name": "Undead",
+    "faction": "umbra",
+    "startLocation": "shadowfen_camp"
+  },
+  "goblin": {
+    "name": "Goblin",
+    "faction": "umbra",
+    "startLocation": "shadowfen_camp"
+  }
+}

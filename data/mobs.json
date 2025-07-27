@@ -1,0 +1,23 @@
+{
+  "rogue_clockwork": {
+    "name": "Rogue Clockwork",
+    "level": 2,
+    "hp": 30,
+    "damage": 4,
+    "description": "A malfunctioning automaton covered in rust."
+  },
+  "bog_creeper": {
+    "name": "Bog Creeper",
+    "level": 3,
+    "hp": 40,
+    "damage": 5,
+    "description": "Slimy creature lurking in the bog."
+  },
+  "goblin_raider": {
+    "name": "Goblin Raider",
+    "level": 2,
+    "hp": 25,
+    "damage": 3,
+    "description": "Sneaky goblin looking for trouble."
+  }
+}

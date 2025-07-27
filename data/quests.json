@@ -1,0 +1,77 @@
+{
+  "fix_the_pipes": {
+    "name": "Fix the Pipes",
+    "giver": "thaldo_tinkerer",
+    "description": "Collect 3 pipe parts from rogue clockworks.",
+    "objective": {
+      "item": "pipe_part",
+      "count": 3
+    },
+    "reward": {
+      "xp": 100,
+      "item": "healing_potion"
+    }
+  },
+  "clear_the_bog": {
+    "name": "Clear the Bog",
+    "giver": "bog_hunter",
+    "description": "Slay 2 bog creepers in Shadowfen.",
+    "objective": {
+      "kill": "bog_creeper",
+      "count": 2
+    },
+    "reward": {
+      "xp": 120,
+      "item": "mana_potion"
+    }
+  },
+  "lost_lute": {
+    "name": "Lost Lute",
+    "giver": "bard_npc",
+    "description": "Retrieve the bard's lost lute from goblin raiders.",
+    "objective": {
+      "item": "bard_lute",
+      "count": 1
+    },
+    "reward": {
+      "xp": 150,
+      "item": "bard_lute"
+    }
+  },
+  "gather_herbs": {
+    "name": "Gather Herbs",
+    "giver": "druid_npc",
+    "description": "Collect 5 healing herbs around Gearhaven.",
+    "objective": {
+      "item": "healing_herb",
+      "count": 5
+    },
+    "reward": {
+      "xp": 80,
+      "item": "regrowth_scroll"
+    }
+  },
+  "scout_camp": {
+    "name": "Scout the Camp",
+    "giver": "ranger_npc",
+    "description": "Report the strength of the goblin camp.",
+    "objective": {
+      "location": "goblin_camp"
+    },
+    "reward": {
+      "xp": 70
+    }
+  },
+  "welcome_to_realm": {
+    "name": "Welcome to Twilight Realms",
+    "giver": "thaldo_tinkerer",
+    "description": "Speak with Thaldo to learn the basics.",
+    "objective": {
+      "talk": "thaldo_tinkerer"
+    },
+    "reward": {
+      "xp": 50,
+      "item": "rusty_sword"
+    }
+  }
+}

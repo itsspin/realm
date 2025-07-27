@@ -1,0 +1,107 @@
+{
+  "slash": {
+    "name": "Slash",
+    "level": 1,
+    "damage": 3,
+    "description": "A quick melee attack."
+  },
+  "block": {
+    "name": "Block",
+    "level": 1,
+    "description": "Raise shield to reduce damage."
+  },
+  "smite": {
+    "name": "Smite",
+    "level": 1,
+    "damage": 4,
+    "description": "Holy strike versus foes."
+  },
+  "heal": {
+    "name": "Heal",
+    "level": 1,
+    "heal": 10,
+    "description": "Restore a small amount of HP."
+  },
+  "bless": {
+    "name": "Bless",
+    "level": 1,
+    "description": "Increase allies' attack briefly."
+  },
+  "fireball": {
+    "name": "Fireball",
+    "level": 1,
+    "damage": 6,
+    "description": "Hurl a ball of fire."
+  },
+  "frostbolt": {
+    "name": "Frostbolt",
+    "level": 1,
+    "damage": 5,
+    "description": "Chill target with frost."
+  },
+  "backstab": {
+    "name": "Backstab",
+    "level": 1,
+    "damage": 7,
+    "description": "Deal high damage from stealth."
+  },
+  "stealth": {
+    "name": "Stealth",
+    "level": 1,
+    "description": "Vanish from sight."
+  },
+  "shoot": {
+    "name": "Shoot",
+    "level": 1,
+    "damage": 4,
+    "description": "Fire an arrow from your bow."
+  },
+  "track": {
+    "name": "Track",
+    "level": 1,
+    "description": "Reveal nearby creatures."
+  },
+  "entangle": {
+    "name": "Entangle",
+    "level": 1,
+    "description": "Roots the target in place."
+  },
+  "regrowth": {
+    "name": "Regrowth",
+    "level": 1,
+    "heal": 8,
+    "description": "Gradually heals over time."
+  },
+  "drain": {
+    "name": "Drain",
+    "level": 1,
+    "damage": 4,
+    "description": "Steal life from target."
+  },
+  "raise_dead": {
+    "name": "Raise Dead",
+    "level": 1,
+    "description": "Summon an undead minion."
+  },
+  "lightning": {
+    "name": "Lightning",
+    "level": 1,
+    "damage": 5,
+    "description": "Strike a foe with lightning."
+  },
+  "totem": {
+    "name": "Totem",
+    "level": 1,
+    "description": "Place a supportive totem."
+  },
+  "song_of_valor": {
+    "name": "Song of Valor",
+    "level": 1,
+    "description": "Buff allies with inspiring tune."
+  },
+  "lullaby": {
+    "name": "Lullaby",
+    "level": 1,
+    "description": "Attempt to put enemies to sleep."
+  }
+}

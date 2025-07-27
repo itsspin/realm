@@ -1,0 +1,14 @@
+{
+  "solara": {
+    "name": "Solara",
+    "domain": "Light",
+    "faction": "luminara",
+    "description": "Goddess of the radiant sun."
+  },
+  "nocturn": {
+    "name": "Nocturn",
+    "domain": "Shadow",
+    "faction": "umbra",
+    "description": "Lord of the endless night."
+  }
+}
