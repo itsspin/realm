@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Twilight Realms</title>
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-full bg-slate-900 text-slate-200 flex flex-col">
+  <!-- Header -->
+  <header class="shrink-0 p-2 bg-slate-800 flex items-center gap-4">
+    <h1 class="text-xl font-bold">Twilight Realms</h1>
+    <nav class="flex gap-2 text-sm">
+      <button data-panel="map" class="btn">Map</button>
+      <button data-panel="inv" class="btn">Inventory</button>
+      <button data-panel="craft" class="btn">Craft</button>
+      <button data-panel="quests" class="btn">Quests</button>
+      <button data-panel="chat" class="btn">Chat</button>
+    </nav>
+  </header>
+
+  <!-- Main layout -->
+  <main class="grow grid md:grid-cols-4 gap-2 p-2 overflow-hidden">
+    <section id="log" class="col-span-3 bg-slate-800 p-3 rounded overflow-y-auto"></section>
+    <aside id="hud" class="bg-slate-800 p-3 rounded flex flex-col gap-2">
+      <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
+      <div id="target" class="hud-box">Target: —</div>
+      <div id="party" class="hud-box">Party: —</div>
+    </aside>
+  </main>
+
+  <!-- Hotbar for abilities -->
+  <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
+
+  <!-- Command input -->
+  <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
+    <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
+    <button id="send" class="btn">Send</button>
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
