@@ -1,0 +1,42 @@
+{
+  "warrior": {
+    "name": "Warrior",
+    "starterAbilities": ["slash", "block"]
+  },
+  "paladin": {
+    "name": "Paladin",
+    "starterAbilities": ["smite", "heal"]
+  },
+  "cleric": {
+    "name": "Cleric",
+    "starterAbilities": ["heal", "bless"]
+  },
+  "mage": {
+    "name": "Mage",
+    "starterAbilities": ["fireball", "frostbolt"]
+  },
+  "rogue": {
+    "name": "Rogue",
+    "starterAbilities": ["backstab", "stealth"]
+  },
+  "ranger": {
+    "name": "Ranger",
+    "starterAbilities": ["shoot", "track"]
+  },
+  "druid": {
+    "name": "Druid",
+    "starterAbilities": ["entangle", "regrowth"]
+  },
+  "necromancer": {
+    "name": "Necromancer",
+    "starterAbilities": ["drain", "raise_dead"]
+  },
+  "shaman": {
+    "name": "Shaman",
+    "starterAbilities": ["lightning", "totem"]
+  },
+  "bard": {
+    "name": "Bard",
+    "starterAbilities": ["song_of_valor", "lullaby"]
+  }
+}

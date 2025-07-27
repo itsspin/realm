@@ -1,0 +1,69 @@
+{
+  "rusty_sword": {
+    "name": "Rusty Sword",
+    "level": 1,
+    "damage": 4,
+    "slot": "weapon",
+    "description": "An old sword with a dull blade."
+  },
+  "leather_armor": {
+    "name": "Leather Armor",
+    "level": 1,
+    "armor": 2,
+    "slot": "chest",
+    "description": "Provides minimal protection."
+  },
+  "healing_potion": {
+    "name": "Healing Potion",
+    "level": 1,
+    "heal": 20,
+    "description": "Restores a small amount of HP."
+  },
+  "mana_potion": {
+    "name": "Mana Potion",
+    "level": 1,
+    "mana": 20,
+    "description": "Restores a small amount of MP."
+  },
+  "wooden_shield": {
+    "name": "Wooden Shield",
+    "level": 1,
+    "armor": 1,
+    "slot": "offhand",
+    "description": "A basic wooden shield."
+  },
+  "hunter_bow": {
+    "name": "Hunter Bow",
+    "level": 1,
+    "damage": 3,
+    "slot": "weapon",
+    "description": "Simple bow favored by rangers."
+  },
+  "druid_staff": {
+    "name": "Druid Staff",
+    "level": 1,
+    "damage": 2,
+    "slot": "weapon",
+    "description": "Carved from an ancient tree."
+  },
+  "shadow_dagger": {
+    "name": "Shadow Dagger",
+    "level": 1,
+    "damage": 5,
+    "slot": "weapon",
+    "description": "A blade that seems to drink the light."
+  },
+  "bard_lute": {
+    "name": "Bard's Lute",
+    "level": 1,
+    "damage": 1,
+    "slot": "weapon",
+    "description": "Plays enchanting melodies."
+  },
+  "torch": {
+    "name": "Torch",
+    "level": 1,
+    "slot": "offhand",
+    "description": "Lights the way in dark places."
+  }
+}
