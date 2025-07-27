@@ -123,14 +123,33 @@ function renderRoom(loc) {
       return `<span class="${color}">${mob.name}</span>`;
     })
     .join(', ') || 'None';
+
+  const exitButtons = Object.entries(loc.links || {})
+    .map(([key, dest]) => {
+      const d = loader.data.locations[dest];
+      const name = d ? d.name : dest;
+      return `<button class="exit-btn underline text-sky-400" data-dest="${dest}">${name}</button>`;
+    })
+    .concat(
+      (loc.boats || []).map(
+        (dest) =>
+          `<button class="exit-btn underline text-teal-400" data-dest="${dest}">Sail to ${loader.data.locations[dest]?.name || dest}</button>`
+      )
+    )
+    .join(', ') || 'None';
+
   log.innerHTML = `
     <h2 class="text-lg font-bold">${loc.name}</h2>
     <p>${loc.description}</p>
-    <p><strong>Exits:</strong> ${loc.exits.join(', ')}</p>
+    <p><strong>Travel:</strong> ${exitButtons}</p>
     <p><strong>NPCs:</strong> ${npcNames}</p>
     <p><strong>Mobs:</strong> ${mobNames}</p>
   `;
+  log.querySelectorAll('.exit-btn').forEach((btn) => {
+    btn.onclick = () => enterRoom(btn.dataset.dest);
+  });
   buildNPCList(loc.npcs);
+  buildMobList(loc.spawns);
 }
 
 function enterRoom(id) {
@@ -274,6 +293,26 @@ function buildNPCList(npcs) {
   });
 }
 
+function buildMobList(mobs) {
+  const list = document.getElementById('mob-list');
+  if (!list) return;
+  list.innerHTML = '';
+  mobs.forEach((id) => {
+    const mob = loader.data.mobs[id];
+    if (!mob) return;
+    const span = document.createElement('span');
+    span.className = 'text-xs mr-1';
+    const diff = mob.level - game.player.level;
+    let color = 'text-white';
+    if (diff > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < -1) color = 'text-green-400';
+    span.classList.add(color);
+    span.textContent = mob.name;
+    list.append(span);
+  });
+}
+
 function castSpell(id) {
   const spell = loader.data.spells[id];
   if (!spell) return;
@@ -327,8 +366,15 @@ function findPath(start, end) {
     const path = queue.shift();
     const node = path[path.length - 1];
     if (node === end) return path;
-    const links = loader.data.locations[node].links || {};
+    const loc = loader.data.locations[node];
+    const links = loc.links || {};
     Object.values(links).forEach((n) => {
+      if (!visited.has(n)) {
+        visited.add(n);
+        queue.push([...path, n]);
+      }
+    });
+    (loc.boats || []).forEach((n) => {
       if (!visited.has(n)) {
         visited.add(n);
         queue.push([...path, n]);
@@ -364,6 +410,12 @@ function handleInput(text) {
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     const dest = loader.data.locations[game.player.location].links[cmd];
     if (dest) enterRoom(dest);
+  } else if (cmd.startsWith('/goto ')) {
+    const target = cmd.slice(6);
+    const loc = loader.data.locations[game.player.location];
+    const linkDest = Object.values(loc.links || {}).find((v) => v === target);
+    const boatDest = (loc.boats || []).find((v) => v === target);
+    if (linkDest || boatDest) enterRoom(target);
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
