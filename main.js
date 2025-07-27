@@ -7,12 +7,29 @@ const game = {
   combatTimer: 0
 };
 
+let currentTargetBtn = null;
+
 function isQuestGiver(id) {
   return Object.values(loader.data.quests).some((q) => q.giver === id);
 }
 
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function selectTarget(type, id, btn) {
+  if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
+  currentTargetBtn = btn || null;
+  if (currentTargetBtn) currentTargetBtn.classList.add('targeted');
+  if (type === 'npc') {
+    game.target = { ...loader.get('npcs', id), id, type };
+  } else if (type === 'node') {
+    game.target = { ...loader.get('nodes', id), id, type };
+  } else {
+    game.target = null;
+  }
+  document.getElementById('dialogue').classList.add('hidden');
+  updateHUD();
 }
 
 function updateHUD() {
@@ -37,14 +54,19 @@ function renderRoom(loc) {
   const npcNames = loc.npcs
     .map((id) => loader.get('npcs', id)?.name || id)
     .join(', ') || 'None';
+  const nodeNames = (loc.nodes || [])
+    .map((id) => loader.get('nodes', id)?.name || id)
+    .join(', ') || 'None';
   log.innerHTML = `
     <h2 class="text-lg font-bold">${loc.name}</h2>
     <p>${loc.description}</p>
     <p><strong>Exits:</strong> ${loc.exits.join(', ')}</p>
     <p><strong>NPCs:</strong> ${npcNames}</p>
     <p><strong>Mobs:</strong> ${loc.spawns.join(', ') || 'None'}</p>
+    <p><strong>Objects:</strong> ${nodeNames}</p>
   `;
   buildNPCList(loc.npcs);
+  buildNodeList(loc.nodes || []);
 }
 
 function enterRoom(id) {
@@ -142,7 +164,22 @@ function buildNPCList(npcs) {
     btn.className = 'npc-btn text-xs';
     if (isQuestGiver(id)) btn.classList.add('quest');
     btn.textContent = `${npc.name} (${npc.role})`;
-    btn.onclick = () => showNpcMenu(id);
+    btn.onclick = () => selectTarget('npc', id, btn);
+    btn.ondblclick = () => showNpcMenu(id);
+    list.append(btn);
+  });
+}
+
+function buildNodeList(nodes) {
+  const list = document.getElementById('node-list');
+  list.innerHTML = '';
+  (nodes || []).forEach((id) => {
+    const node = loader.get('nodes', id);
+    if (!node) return;
+    const btn = document.createElement('button');
+    btn.className = `node-btn text-xs ${node.color || ''}`;
+    btn.textContent = node.name;
+    btn.onclick = () => selectTarget('node', id, btn);
     list.append(btn);
   });
 }
@@ -166,6 +203,29 @@ function buildHotbar() {
   });
 }
 
+function showHelp() {
+  addLog('Commands:');
+  addLog(' n,s,e,w - move');
+  addLog(' /attack - attack a nearby mob');
+  addLog(' hail - speak to your target');
+  addLog(' /target <name> - target an NPC or object by name');
+  addLog(' /help - show this help');
+}
+
+function targetByName(name) {
+  const loc = loader.data.locations[game.player.location];
+  const ids = [...loc.npcs, ...(loc.nodes || [])];
+  for (const id of ids) {
+    const ent = loader.get('npcs', id) || loader.get('nodes', id);
+    if (ent && ent.name.toLowerCase().includes(name.toLowerCase())) {
+      const type = loader.get('npcs', id) ? 'npc' : 'node';
+      selectTarget(type, id);
+      return true;
+    }
+  }
+  return false;
+}
+
 function handleInput(text) {
   const cmd = text.trim();
   if (['n', 's', 'e', 'w'].includes(cmd)) {
@@ -174,6 +234,21 @@ function handleInput(text) {
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
+  } else if (cmd.startsWith('/target')) {
+    const name = cmd.slice(7).trim();
+    if (!targetByName(name)) addLog('No such target here.');
+  } else if (cmd === 'hail') {
+    if (!game.target) {
+      addLog('You have no target.');
+    } else if (game.target.type === 'npc') {
+      talkToNpc(game.target.id);
+    } else if (game.target.dialogue) {
+      addLog(game.target.dialogue[0]);
+    } else {
+      addLog('Nothing happens.');
+    }
+  } else if (cmd === '/help') {
+    showHelp();
   } else if (cmd) {
     ws.send('chat', { channel: 'say', msg: `${game.player.name}: ${cmd}` });
   }
