@@ -52,6 +52,64 @@ function generateItems() {
   loader.data.items = { ...loader.data.items, ...items };
 }
 
+// Generate a single random item scaled to the given level
+function generateRandomItem(level) {
+  const types = [
+    { id: 'sword', slot: 'weapon', name: 'Sword' },
+    { id: 'axe', slot: 'weapon', name: 'Axe' },
+    { id: 'mace', slot: 'weapon', name: 'Mace' },
+    { id: 'cloth', slot: 'chest', name: 'Cloth Armor' },
+    { id: 'leather', slot: 'chest', name: 'Leather Armor' }
+  ];
+  const t = types[rand(types.length) - 1];
+  const rarity = randomRarity(level);
+  const mult = { common: 1, uncommon: 1.2, rare: 1.5, epic: 2, legendary: 3 }[
+    rarity
+  ];
+  const id = `gen_${t.id}_${Date.now()}_${rand(1000)}`;
+  const item = {
+    name: `${rarity} ${t.name}`,
+    level,
+    slot: t.slot,
+    rarity
+  };
+  if (t.slot === 'weapon') item.damage = Math.floor(level * 0.8 * mult + 1);
+  else item.armor = Math.floor(level * 0.5 * mult + 1);
+  loader.data.items[id] = item;
+  return id;
+}
+
+// Generate a random mob scaled to the given level
+function generateRandomMob(level) {
+  const names = ['Goblin', 'Wolf', 'Bandit', 'Skeleton'];
+  const name = names[rand(names.length) - 1];
+  const id = `genmob_${Date.now()}_${rand(1000)}`;
+  loader.data.mobs[id] = {
+    name: `${name} ${level}`,
+    level,
+    hp: 10 + level * 10,
+    damage: Math.max(1, Math.floor(level * 1.5)),
+    description: `A level ${level} ${name}.`
+  };
+  return id;
+}
+
+// Generate a simple kill quest for a random mob
+function generateRandomQuest(level) {
+  const mobId = generateRandomMob(level);
+  const mobName = loader.data.mobs[mobId].name;
+  const count = rand(3) + 1;
+  const qid = `genquest_${Date.now()}_${rand(1000)}`;
+  loader.data.quests[qid] = {
+    name: `Eliminate ${mobName}`,
+    giver: 'thaldo_tinkerer',
+    description: `Slay ${count} ${mobName}s for Thaldo.`,
+    objective: { kill: mobId, count },
+    reward: { xp: level * 20 }
+  };
+  return qid;
+}
+
 function dropLoot(mob) {
   const loot = { items: [], copper: 0, silver: 0, gold: 0 };
   loot.copper = rand(mob.level * 2);
@@ -369,6 +427,22 @@ function handleInput(text) {
     if (mob) startCombat(mob);
   } else if (cmd === '/who') {
     addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+  } else if (cmd.startsWith('/random')) {
+    const [, type] = cmd.split(' ');
+    if (type === 'item') {
+      const id = generateRandomItem(game.player.level);
+      game.player.inventory.push(id);
+      addLog(`You receive ${loader.data.items[id].name}.`);
+    } else if (type === 'mob') {
+      const mobId = generateRandomMob(game.player.level);
+      startCombat(mobId);
+    } else if (type === 'quest') {
+      const qid = generateRandomQuest(game.player.level);
+      game.player.activeQuests.push(qid);
+      addLog(`New quest added: ${loader.data.quests[qid].name}`);
+    } else {
+      addLog('Usage: /random item|mob|quest');
+    }
   } else if (cmd) {
     ws.send('chat', { channel: 'say', msg: `${game.player.name}: ${cmd}` });
   }
