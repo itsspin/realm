@@ -65,5 +65,40 @@
     "level": 1,
     "slot": "offhand",
     "description": "Lights the way in dark places."
+  },
+  "iron_ore": {
+    "name": "Iron Ore",
+    "level": 1,
+    "description": "Ore used in basic smithing."
+  },
+  "wood_plank": {
+    "name": "Wood Plank",
+    "level": 1,
+    "description": "A sturdy piece of wood for crafting."
+  },
+  "cloth_scrap": {
+    "name": "Cloth Scrap",
+    "level": 1,
+    "description": "Bits of cloth useful for tailoring."
+  },
+  "herb_leaf": {
+    "name": "Herb Leaf",
+    "level": 1,
+    "description": "A common herb used in alchemy."
+  },
+  "arcane_dust": {
+    "name": "Arcane Dust",
+    "level": 1,
+    "description": "Residue left from disenchanted items."
+  },
+  "feather": {
+    "name": "Feather",
+    "level": 1,
+    "description": "Useful for fletching arrows."
+  },
+  "water": {
+    "name": "Water Flask",
+    "level": 1,
+    "description": "Used in many recipes."
   }
 }

@@ -12,7 +12,7 @@ export const loader = {
       'locations',
       'mobs',
       'npcs',
-      'nodes'
+      'crafting'
     ];
     await Promise.all(
       files.map(async (name) => {

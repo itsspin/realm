@@ -15,7 +15,8 @@
     "description": "She hammers away at metal plates, teaching apprentices the trade.",
     "dialogue": [
       "Need to learn crafting? My workshop is open to all diligent hands."
-    ]
+    ],
+    "teaches": ["blacksmithing", "tailoring"]
   },
   "rogar_trainer": {
     "name": "Rogar Ironfist",
@@ -51,7 +52,8 @@
     "description": "A calm druid collecting herbs for her rituals.",
     "dialogue": [
       "The balance of nature must be preserved, even in a place of gears."
-    ]
+    ],
+    "teaches": ["alchemy"]
   },
   "joran_barkeep": {
     "name": "Joran Barkeep",
@@ -60,7 +62,8 @@
     "description": "He polishes mugs while sharing gossip of far lands.",
     "dialogue": [
       "Pull up a stool! Nothing chases away road dust like my stout."
-    ]
+    ],
+    "teaches": ["brewing", "baking"]
   },
   "bog_hunter": {
     "name": "Cressa the Bog Hunter",
@@ -78,7 +81,8 @@
     "description": "Mystic runes glow faintly across her staff.",
     "dialogue": [
       "Spirits whisper of power for those who listen."
-    ]
+    ],
+    "teaches": ["enchanting"]
   },
   "gruk_trainer": {
     "name": "Gruk Crusher",
@@ -105,7 +109,8 @@
     "description": "A gruff blacksmith pounding out crude but effective weapons.",
     "dialogue": [
       "If you bring the ore, I'll show you how to shape it."
-    ]
+    ],
+    "teaches": ["blacksmithing"]
   },
   "ranger_npc": {
     "name": "Elora the Ranger",
@@ -113,8 +118,9 @@
     "level": 5,
     "description": "She scouts the wilderness and keeps travelers safe.",
     "dialogue": [
-      "The goblins are restless. I need fresh eyes on their camp." 
-    ]
+      "The goblins are restless. I need fresh eyes on their camp."
+    ],
+    "teaches": ["fletching"]
   },
   "traveling_merchant": {
     "name": "Lira the Merchant",
@@ -122,8 +128,9 @@
     "level": 3,
     "description": "Her wagon overflows with wares from distant realms.",
     "dialogue": [
-      "Coins jingle sweetest when they're leaving your purse and entering mine." 
-    ]
+      "Coins jingle sweetest when they're leaving your purse and entering mine."
+    ],
+    "teaches": ["pottery", "jewelry"]
   }
 }
 
