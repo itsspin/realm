@@ -508,6 +508,25 @@ function findPath(start, end) {
       }
     });
   }
+  return null;
+}
+
+function buildMap() {
+  const map = document.getElementById('map');
+  map.innerHTML = '<h2 class="text-lg mb-2">World Map</h2>';
+  const list = document.createElement('ul');
+  Object.entries(loader.data.locations).forEach(([id, loc]) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'underline text-sky-400';
+    btn.textContent = loc.name;
+    btn.onclick = () => {
+      const path = findPath(game.player.location, id);
+      if (path) {
+        addLog(`Route to ${loc.name}: ${path.join(' -> ')}`);
+      }
+    });
+  }
   return false;
 }
 
