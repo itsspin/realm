@@ -24,3 +24,8 @@ body {
 .quest {
   @apply bg-amber-600 hover:bg-amber-500 text-black;
 }
+
+/* Overlay panels */
+.panel {
+  @apply w-full md:w-2/3 mx-auto;
+}
