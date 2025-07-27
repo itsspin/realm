@@ -8,6 +8,14 @@ const game = {
   onlinePlayers: []
 };
 
+function saveCharacter(p) {
+  localStorage.setItem('player', JSON.stringify(p));
+}
+
+function loadCharacter() {
+  const data = localStorage.getItem('player');
+  return data ? JSON.parse(data) : null;
+}
 let currentTargetBtn = null;
 
 function isQuestGiver(id) {
@@ -485,6 +493,20 @@ function bindUI() {
   };
 }
 
+function populateSelect(id, data) {
+  const sel = document.getElementById(id);
+  Object.entries(data).forEach(([key, obj]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = obj.name;
+    sel.append(opt);
+  });
+}
+
+function startGame(player) {
+  game.player = player;
+  document.getElementById('create-overlay').classList.add('hidden');
+  saveCharacter(player);
 export async function init() {
   await loader.init();
   generateItems();
@@ -511,6 +533,68 @@ export async function init() {
   buildHotbar();
   const start = location.hash.slice(1) || game.player.location;
   enterRoom(start);
+}
+
+function showCreateForm() {
+  populateSelect('race', loader.data.races);
+  populateSelect('class', loader.data.classes);
+  populateSelect('deity', loader.data.deities);
+  document.getElementById('create-overlay').classList.remove('hidden');
+  document.getElementById('create-form').onsubmit = (e) => {
+    e.preventDefault();
+    const base = loader.data.attributes.base;
+    const stats = {
+      str: Number(document.getElementById('attr-str').value),
+      dex: Number(document.getElementById('attr-dex').value),
+      int: Number(document.getElementById('attr-int').value),
+      wis: Number(document.getElementById('attr-wis').value),
+      spi: Number(document.getElementById('attr-spi').value),
+      vit: Number(document.getElementById('attr-vit').value)
+    };
+    const spent =
+      stats.str - base.str +
+      stats.dex - base.dex +
+      stats.int - base.int +
+      stats.wis - base.wis +
+      stats.spi - base.spi +
+      stats.vit - base.vit;
+    if (spent !== base.points) {
+      document.getElementById('points-err').classList.remove('hidden');
+      return;
+    }
+    const race = document.getElementById('race').value;
+    const player = {
+      name:
+        document.getElementById('first-name').value +
+        ' ' +
+        document.getElementById('last-name').value,
+      class: document.getElementById('class').value,
+      race,
+      deity: document.getElementById('deity').value,
+      stats,
+      hp: stats.vit * 5,
+      maxHp: stats.vit * 5,
+      mp: stats.spi * 4,
+      maxMp: stats.spi * 4,
+      location: loader.data.races[race].startLocation,
+      inventory: ['rusty_sword', 'healing_potion'],
+      equipped: { weapon: 'rusty_sword' },
+      activeQuests: ['welcome_to_realm'],
+      party: []
+    };
+    startGame(player);
+  };
+}
+
+export async function init() {
+  await loader.init();
+  bindUI();
+  const saved = loadCharacter();
+  if (saved) {
+    startGame(saved);
+  } else {
+    showCreateForm();
+  }
 }
 
 init();
