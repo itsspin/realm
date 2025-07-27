@@ -495,10 +495,52 @@ function buildQuestList() {
     const q = loader.data.quests[qid];
     if (!q) return;
     const li = document.createElement('li');
-    li.textContent = q.name;
+    const btn = document.createElement('button');
+    btn.className = 'underline text-sky-400';
+    btn.textContent = q.name;
+    btn.onclick = () => showQuestDetails(qid);
+    li.append(btn);
     list.append(li);
   });
   qpanel.append(list);
+  const details = document.createElement('div');
+  details.id = 'quest-details';
+  details.className = 'mt-4 text-sm';
+  details.textContent = 'Select a quest to see details.';
+  qpanel.append(details);
+}
+
+function showQuestDetails(qid) {
+  const q = loader.data.quests[qid];
+  if (!q) return;
+  const giver = loader.get('npcs', q.giver)?.name || q.giver;
+  let objective = '';
+  if (q.objective.item) {
+    const itm = loader.data.items[q.objective.item]?.name || q.objective.item;
+    objective = `Collect ${q.objective.count} ${itm}`;
+  } else if (q.objective.kill) {
+    const mob = loader.data.mobs[q.objective.kill]?.name || q.objective.kill;
+    objective = `Defeat ${q.objective.count} ${mob}`;
+  } else if (q.objective.talk) {
+    const npc = loader.get('npcs', q.objective.talk)?.name || q.objective.talk;
+    objective = `Speak with ${npc}`;
+  } else if (q.objective.location) {
+    const loc =
+      loader.data.locations[q.objective.location]?.name || q.objective.location;
+    objective = `Travel to ${loc}`;
+  }
+  const rewards = [];
+  if (q.reward.xp) rewards.push(`${q.reward.xp} XP`);
+  if (q.reward.item)
+    rewards.push(loader.data.items[q.reward.item]?.name || q.reward.item);
+  const details = document.getElementById('quest-details');
+  details.innerHTML = `
+    <h3 class="text-md font-bold mb-1">${q.name}</h3>
+    <p class="mb-1">${q.description}</p>
+    <p class="mb-1"><strong>Objective:</strong> ${objective}</p>
+    <p class="mb-1"><strong>Reward:</strong> ${rewards.join(', ') || 'None'}</p>
+    <p class="mb-1"><strong>Turn in:</strong> ${giver}</p>
+  `;
 }
 
 function findPath(start, end) {
