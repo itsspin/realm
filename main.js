@@ -160,6 +160,7 @@ function showPanel(name) {
   if (name === 'inv') buildInventory();
   if (name === 'quests') buildQuestList();
   if (name === 'map') buildMap();
+  if (name === 'craft') buildCraftPanel();
 }
 
 function renderRoom(loc) {
@@ -296,6 +297,7 @@ function showNpcMenu(id) {
       <button id="attack" class="btn">Attack</button>
     </div>
     <div id="quest-offers" class="flex flex-col gap-1"></div>
+    <div id="training" class="flex flex-col gap-1 mt-2"></div>
   `;
   dlg.classList.remove('hidden');
   document.getElementById('talk').onclick = () => talkToNpc(id);
@@ -314,6 +316,19 @@ function showNpcMenu(id) {
       }
     };
     qdiv.append(btn);
+  });
+  const tdiv = document.getElementById('training');
+  (npc.teaches || []).forEach((prof) => {
+    if (game.player.professions.includes(prof)) return;
+    const btn = document.createElement('button');
+    btn.className = 'btn text-xs';
+    btn.textContent = `Learn ${loader.data.crafting[prof].name}`;
+    btn.onclick = () => {
+      game.player.professions.push(prof);
+      addLog(`You learn ${loader.data.crafting[prof].name}.`);
+      dlg.classList.add('hidden');
+    };
+    tdiv.append(btn);
   });
 }
 
@@ -417,6 +432,70 @@ function buildMap() {
   map.append(list);
 }
 
+function craftItem(prof, rid) {
+  if (!game.player.professions.includes(prof)) {
+    addLog('You have not learned that profession.');
+    return;
+  }
+  const recipe = loader.data.crafting[prof].recipes[rid];
+  const mats = recipe.materials;
+  for (const [mat, qty] of Object.entries(mats)) {
+    const count = game.player.inventory.filter((i) => i === mat).length;
+    if (count < qty) {
+      addLog('Missing materials.');
+      return;
+    }
+  }
+  for (const [mat, qty] of Object.entries(mats)) {
+    let remaining = qty;
+    for (let i = game.player.inventory.length - 1; i >= 0 && remaining > 0; i--) {
+      if (game.player.inventory[i] === mat) {
+        game.player.inventory.splice(i, 1);
+        remaining--;
+      }
+    }
+  }
+  game.player.inventory.push(recipe.result);
+  addLog(`You craft ${loader.data.items[recipe.result].name}.`);
+  buildInventory();
+}
+
+function showRecipes(prof) {
+  const div = document.getElementById('recipe-list');
+  div.innerHTML = `<h3 class="font-bold mb-1">${loader.data.crafting[prof].name}</h3>`;
+  Object.entries(loader.data.crafting[prof].recipes).forEach(([rid, r]) => {
+    const btn = document.createElement('button');
+    const req = Object.entries(r.materials)
+      .map(([m, q]) => `${q} ${loader.data.items[m].name}`)
+      .join(', ');
+    btn.className = 'btn text-xs mt-1';
+    btn.textContent = `Craft ${loader.data.items[r.result].name} (${req})`;
+    if (!game.player.professions.includes(prof)) btn.disabled = true;
+    btn.onclick = () => craftItem(prof, rid);
+    div.append(btn);
+  });
+}
+
+function buildCraftPanel() {
+  const panel = document.getElementById('craft');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Crafting</h2>';
+  const list = document.createElement('ul');
+  Object.entries(loader.data.crafting).forEach(([pid, prof]) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'underline text-sky-400';
+    const trained = game.player.professions.includes(pid) ? '' : ' (untrained)';
+    btn.textContent = prof.name + trained;
+    btn.onclick = () => showRecipes(pid);
+    li.append(btn);
+    list.append(li);
+  });
+  panel.append(list);
+  const div = document.createElement('div');
+  div.id = 'recipe-list';
+  panel.append(div);
+}
+
 function handleInput(text) {
   const cmd = text.trim();
   if (['n', 's', 'e', 'w'].includes(cmd)) {
@@ -487,6 +566,7 @@ export async function init() {
     coins: { gold: 0, silver: 0, copper: 0 },
     equipped: { weapon: 'rusty_sword' },
     activeQuests: ['welcome_to_realm'],
+    professions: [],
     party: []
   };
   game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];

@@ -1,0 +1,52 @@
+{
+  "blacksmithing": {
+    "name": "Blacksmithing",
+    "recipes": {
+      "iron_sword": {
+        "result": "rusty_sword",
+        "materials": { "iron_ore": 3, "wood_plank": 1 }
+      }
+    }
+  },
+  "tailoring": {
+    "name": "Tailoring",
+    "recipes": {
+      "leather_armor": {
+        "result": "leather_armor",
+        "materials": { "cloth_scrap": 4 }
+      }
+    }
+  },
+  "alchemy": {
+    "name": "Alchemy",
+    "recipes": {
+      "healing_potion": {
+        "result": "healing_potion",
+        "materials": { "herb_leaf": 2, "water": 1 }
+      }
+    }
+  },
+  "enchanting": {
+    "name": "Enchanting",
+    "recipes": {
+      "mana_potion": {
+        "result": "mana_potion",
+        "materials": { "arcane_dust": 2, "water": 1 }
+      }
+    }
+  },
+  "fletching": {
+    "name": "Fletching",
+    "recipes": {
+      "hunter_bow": {
+        "result": "hunter_bow",
+        "materials": { "wood_plank": 2, "feather": 2 }
+      }
+    }
+  },
+  "brewing": { "name": "Brewing", "recipes": {} },
+  "baking": { "name": "Baking", "recipes": {} },
+  "jewelry": { "name": "Jewelry", "recipes": {} },
+  "pottery": { "name": "Pottery", "recipes": {} },
+  "research": { "name": "Research", "recipes": {} }
+}
