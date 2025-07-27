@@ -104,4 +104,322 @@
     "level": 1,
     "description": "Attempt to put enemies to sleep."
   }
+,
+  "slash_2": {
+    "name": "Slash II",
+    "level": 20,
+    "damage": 6,
+    "description": "A stronger melee attack."
+  },
+  "slash_3": {
+    "name": "Slash III",
+    "level": 40,
+    "damage": 9,
+    "description": "A powerful melee attack."
+  },
+  "block_2": {
+    "name": "Block II",
+    "level": 20,
+    "description": "Improved damage reduction."
+  },
+  "block_3": {
+    "name": "Block III",
+    "level": 40,
+    "description": "Greatly reduce incoming damage."
+  },
+  "war_cry": {
+    "name": "War Cry",
+    "level": 30,
+    "description": "Boost allies' attack power."
+  },
+  "war_cry_2": {
+    "name": "War Cry II",
+    "level": 60,
+    "description": "Greatly boost allies' attack power."
+  },
+  "smite_2": {
+    "name": "Smite II",
+    "level": 20,
+    "damage": 8,
+    "description": "A stronger holy strike."
+  },
+  "smite_3": {
+    "name": "Smite III",
+    "level": 40,
+    "damage": 12,
+    "description": "A devastating holy strike."
+  },
+  "heal_2": {
+    "name": "Heal II",
+    "level": 20,
+    "heal": 20,
+    "description": "Restore a moderate amount of HP."
+  },
+  "heal_3": {
+    "name": "Heal III",
+    "level": 40,
+    "heal": 30,
+    "description": "Restore a large amount of HP."
+  },
+  "divine_shield": {
+    "name": "Divine Shield",
+    "level": 60,
+    "description": "Become immune to damage briefly."
+  },
+  "bless_2": {
+    "name": "Bless II",
+    "level": 20,
+    "description": "Greater increase to allies' attack."
+  },
+  "bless_3": {
+    "name": "Bless III",
+    "level": 40,
+    "description": "Greatly increase allies' attack."
+  },
+  "holy_light": {
+    "name": "Holy Light",
+    "level": 30,
+    "damage": 8,
+    "description": "Blast foes with radiant energy."
+  },
+  "holy_light_2": {
+    "name": "Holy Light II",
+    "level": 60,
+    "damage": 16,
+    "description": "A stronger blast of radiant energy."
+  },
+  "fireball_2": {
+    "name": "Fireball II",
+    "level": 20,
+    "damage": 12,
+    "description": "A larger ball of fire."
+  },
+  "fireball_3": {
+    "name": "Fireball III",
+    "level": 40,
+    "damage": 18,
+    "description": "An explosive ball of fire."
+  },
+  "frostbolt_2": {
+    "name": "Frostbolt II",
+    "level": 20,
+    "damage": 10,
+    "description": "A chilling bolt of frost."
+  },
+  "frostbolt_3": {
+    "name": "Frostbolt III",
+    "level": 40,
+    "damage": 15,
+    "description": "A freezing bolt of frost."
+  },
+  "arcane_blast": {
+    "name": "Arcane Blast",
+    "level": 30,
+    "damage": 14,
+    "description": "Release a blast of arcane energy."
+  },
+  "arcane_blast_2": {
+    "name": "Arcane Blast II",
+    "level": 60,
+    "damage": 28,
+    "description": "A potent blast of arcane energy."
+  },
+  "backstab_2": {
+    "name": "Backstab II",
+    "level": 20,
+    "damage": 14,
+    "description": "More deadly strike from shadows."
+  },
+  "backstab_3": {
+    "name": "Backstab III",
+    "level": 40,
+    "damage": 21,
+    "description": "Extremely deadly strike from shadows."
+  },
+  "stealth_2": {
+    "name": "Stealth II",
+    "level": 20,
+    "description": "Improved ability to remain unseen."
+  },
+  "stealth_3": {
+    "name": "Stealth III",
+    "level": 40,
+    "description": "Greatly improved stealth capabilities."
+  },
+  "eviscerate": {
+    "name": "Eviscerate",
+    "level": 30,
+    "damage": 16,
+    "description": "Brutal finishing attack."
+  },
+  "eviscerate_2": {
+    "name": "Eviscerate II",
+    "level": 60,
+    "damage": 32,
+    "description": "Devastating finishing attack."
+  },
+  "shoot_2": {
+    "name": "Shoot II",
+    "level": 20,
+    "damage": 8,
+    "description": "A more accurate shot."
+  },
+  "shoot_3": {
+    "name": "Shoot III",
+    "level": 40,
+    "damage": 12,
+    "description": "A powerful ranged shot."
+  },
+  "track_2": {
+    "name": "Track II",
+    "level": 20,
+    "description": "Improved ability to locate creatures."
+  },
+  "track_3": {
+    "name": "Track III",
+    "level": 40,
+    "description": "Greatly improved tracking skills."
+  },
+  "rapid_fire": {
+    "name": "Rapid Fire",
+    "level": 30,
+    "damage": 10,
+    "description": "Shoot several arrows in quick succession."
+  },
+  "rapid_fire_2": {
+    "name": "Rapid Fire II",
+    "level": 60,
+    "damage": 20,
+    "description": "Unleash a hail of arrows."
+  },
+  "entangle_2": {
+    "name": "Entangle II",
+    "level": 20,
+    "description": "Longer lasting roots."
+  },
+  "entangle_3": {
+    "name": "Entangle III",
+    "level": 40,
+    "description": "Powerful roots that hold fast."
+  },
+  "regrowth_2": {
+    "name": "Regrowth II",
+    "level": 20,
+    "heal": 16,
+    "description": "Greater healing over time."
+  },
+  "regrowth_3": {
+    "name": "Regrowth III",
+    "level": 40,
+    "heal": 24,
+    "description": "Strong healing over time."
+  },
+  "bear_form": {
+    "name": "Bear Form",
+    "level": 30,
+    "description": "Take on the sturdy form of a bear."
+  },
+  "bear_form_2": {
+    "name": "Bear Form II",
+    "level": 60,
+    "description": "An even tougher bear form."
+  },
+  "drain_2": {
+    "name": "Drain II",
+    "level": 20,
+    "damage": 8,
+    "description": "Steal more life from target."
+  },
+  "drain_3": {
+    "name": "Drain III",
+    "level": 40,
+    "damage": 12,
+    "description": "Steal a large amount of life from target."
+  },
+  "raise_dead_2": {
+    "name": "Raise Dead II",
+    "level": 20,
+    "description": "Summon a stronger undead minion."
+  },
+  "raise_dead_3": {
+    "name": "Raise Dead III",
+    "level": 40,
+    "description": "Summon a powerful undead minion."
+  },
+  "bone_spear": {
+    "name": "Bone Spear",
+    "level": 30,
+    "damage": 10,
+    "description": "Launch a piercing spear of bone."
+  },
+  "bone_spear_2": {
+    "name": "Bone Spear II",
+    "level": 60,
+    "damage": 20,
+    "description": "Launch a deadly bone spear."
+  },
+  "lightning_2": {
+    "name": "Lightning II",
+    "level": 20,
+    "damage": 10,
+    "description": "A stronger lightning strike."
+  },
+  "lightning_3": {
+    "name": "Lightning III",
+    "level": 40,
+    "damage": 15,
+    "description": "A powerful lightning strike."
+  },
+  "totem_2": {
+    "name": "Totem II",
+    "level": 20,
+    "description": "Place an improved totem."
+  },
+  "totem_3": {
+    "name": "Totem III",
+    "level": 40,
+    "description": "Place a powerful totem."
+  },
+  "earth_shield": {
+    "name": "Earth Shield",
+    "level": 30,
+    "description": "Protect an ally with earth energy."
+  },
+  "earth_shield_2": {
+    "name": "Earth Shield II",
+    "level": 60,
+    "description": "Greatly protect an ally with earth energy."
+  },
+  "song_of_valor_2": {
+    "name": "Song of Valor II",
+    "level": 20,
+    "description": "A stronger inspiring tune."
+  },
+  "song_of_valor_3": {
+    "name": "Song of Valor III",
+    "level": 40,
+    "description": "Greatly inspire allies."
+  },
+  "lullaby_2": {
+    "name": "Lullaby II",
+    "level": 20,
+    "description": "Improved chance to put enemies to sleep."
+  },
+  "lullaby_3": {
+    "name": "Lullaby III",
+    "level": 40,
+    "description": "Great chance to put enemies to sleep."
+  },
+  "power_chord": {
+    "name": "Power Chord",
+    "level": 30,
+    "damage": 9,
+    "description": "Blast foes with a sonic riff."
+  },
+  "power_chord_2": {
+    "name": "Power Chord II",
+    "level": 60,
+    "damage": 18,
+    "description": "Devastate foes with a mighty riff."
+  }
 }
