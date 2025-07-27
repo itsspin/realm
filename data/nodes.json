@@ -1,0 +1,20 @@
+{
+  "gearhaven_sign": {
+    "name": "Town Sign",
+    "description": "A weathered sign welcoming visitors to Gearhaven.",
+    "dialogue": ["Welcome to Gearhaven!"],
+    "color": "text-cyan-400"
+  },
+  "workshop_anvil": {
+    "name": "Sturdy Anvil",
+    "description": "Blacksmiths shape metal here.",
+    "dialogue": ["You hear the ring of hammer strikes."],
+    "color": "text-orange-400"
+  },
+  "bog_stone": {
+    "name": "Mysterious Stone",
+    "description": "Strange runes glow faintly on its surface.",
+    "dialogue": ["The stone hums with unknown power."],
+    "color": "text-purple-400"
+  }
+}

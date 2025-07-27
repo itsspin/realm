@@ -24,6 +24,9 @@
     ],
     "spawns": [
       "rogue_clockwork"
+    ],
+    "nodes": [
+      "gearhaven_sign"
     ]
   },
   "gearhaven_workshop": {
@@ -40,7 +43,10 @@
       "thaldo_tinkerer",
       "gilda_crafter"
     ],
-    "spawns": []
+    "spawns": [],
+    "nodes": [
+      "workshop_anvil"
+    ]
   },
   "shadowfen_camp": {
     "name": "Shadowfen Camp",
@@ -78,6 +84,9 @@
     "npcs": [],
     "spawns": [
       "bog_creeper"
+    ],
+    "nodes": [
+      "bog_stone"
     ]
   },
   "neutral_crossroads": {
@@ -94,6 +103,7 @@
       "ranger_npc",
       "traveling_merchant"
     ],
-    "spawns": []
+    "spawns": [],
+    "nodes": []
   }
 }
