@@ -28,12 +28,9 @@ body {
   @apply underline text-sky-400 hover:text-sky-300;
 }
 
-/* Direction buttons for mini map */
-.dir-btn {
-  @apply btn w-8 h-8 p-0;
-}
-.dir-btn:disabled {
-  @apply opacity-50 cursor-not-allowed;
+/* Movement buttons */
+.move-btn {
+  @apply px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded;
 }
 
 /* Overlay panels */
