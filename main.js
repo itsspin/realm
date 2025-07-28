@@ -148,7 +148,19 @@ function dropLoot(mob) {
   loot.copper = rand(mob.level * 2);
   if (mob.level >= 5) loot.silver = rand(Math.floor(mob.level / 5));
   if (mob.level >= 20) loot.gold = rand(Math.floor(mob.level / 20));
-  if (mob.drops) {
+  if (mob.dropTable) {
+    const total = mob.dropTable.reduce((s, d) => s + d.weight, 0);
+    if (total > 0) {
+      let roll = Math.random() * total;
+      for (const d of mob.dropTable) {
+        roll -= d.weight;
+        if (roll <= 0) {
+          loot.items.push(d.id);
+          break;
+        }
+      }
+    }
+  } else if (mob.drops) {
     mob.drops.forEach((d) => {
       if (Math.random() < d.chance) loot.items.push(d.id);
     });
@@ -210,23 +222,6 @@ function buildMoveControls(loc) {
   });
 }
 
-function updateMovementButtons() {
-  const loc = loader.data.locations[game.player.location];
-  const container = document.getElementById('move-controls');
-  if (!loc || !container) return;
-  container.innerHTML = '';
-  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
-  Object.entries(names).forEach(([dir, label]) => {
-    if (loc.links?.[dir]) {
-      const btn = document.createElement('button');
-      btn.className = 'move-btn';
-      btn.dataset.dir = dir;
-      btn.textContent = label;
-      btn.onclick = () => move(dir);
-      container.append(btn);
-    }
-  });
-}
 
 function addLog(txt) {
   const div = document.createElement('div');
