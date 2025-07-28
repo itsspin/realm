@@ -1,0 +1,21 @@
+{
+  "name": "Rogue Clockwork",
+  "level": 2,
+  "hp": 30,
+  "damage": 4,
+  "description": "A malfunctioning automaton covered in rust.",
+  "drops": [
+    {
+      "id": "iron_ore",
+      "chance": 0.4
+    },
+    {
+      "id": "cloth_scrap",
+      "chance": 0.3
+    },
+    {
+      "id": "rusty_sword",
+      "chance": 0.1
+    }
+  ]
+}

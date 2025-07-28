@@ -1,0 +1,9 @@
+{
+  "name": "Gruk Crusher",
+  "role": "Warrior Trainer",
+  "level": 9,
+  "description": "An imposing orc teaching brutal combat techniques.",
+  "dialogue": [
+    "Show me your swing, little one. Gruk will make you strong!"
+  ]
+}

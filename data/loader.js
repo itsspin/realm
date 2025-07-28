@@ -10,8 +10,7 @@ export const loader = {
       'items',
       'spells',
       'quests',
-      'mobs',
-      'npcs',
+      'locations',
       'crafting'
     ];
     await Promise.all(
@@ -20,17 +19,20 @@ export const loader = {
         this.data[name] = await res.json();
       })
     );
-    this.data.locations = {};
-    this.data.zones = {};
+    this.data.npcs = {};
+    this.data.mobs = {};
   },
-  async loadZone(id) {
-    if (this.loadedZones.has(id)) return;
-    const res = await fetch(`data/zones/${id}.json`);
-    if (!res.ok) return;
-    const zone = await res.json();
-    Object.assign(this.data.locations, zone.locations);
-    this.data.zones[id] = zone;
-    this.loadedZones.add(id);
+  async loadNpc(id) {
+    if (this.data.npcs[id] || this.data.mobs[id]) return;
+    try {
+      const res = await fetch(`data/npcs/${id}.json`);
+      if (!res.ok) return;
+      const npc = await res.json();
+      if (npc.hp) this.data.mobs[id] = npc;
+      else this.data.npcs[id] = npc;
+    } catch {
+      /* failed to load npc */
+    }
   },
   get(type, id) {
     return this.data[type]?.[id];

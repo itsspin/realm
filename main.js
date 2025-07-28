@@ -327,10 +327,10 @@ function renderRoom(loc) {
 }
 
 async function enterRoom(id) {
-  const zone = zoneFromLocation(id);
-  await loader.loadZone(zone);
   const loc = loader.data.locations[id];
   if (!loc) return;
+  const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
+  await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
@@ -946,7 +946,7 @@ function buildCraftPanel() {
   panel.append(div);
 }
 
-function handleInput(text) {
+async function handleInput(text) {
   const cmd = text.trim();
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     move(cmd);
@@ -955,7 +955,7 @@ function handleInput(text) {
     const loc = loader.data.locations[game.player.location];
     const linkDest = Object.values(loc.links || {}).find((v) => v === target);
     const boatDest = (loc.boats || []).find((v) => v === target);
-    if (linkDest || boatDest) enterRoom(target);
+    if (linkDest || boatDest) await enterRoom(target);
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
@@ -1071,7 +1071,7 @@ function showCreateForm() {
   populateSelect('class', loader.data.classes);
   populateSelect('deity', loader.data.deities);
   document.getElementById('create-overlay').classList.remove('hidden');
-  document.getElementById('create-form').onsubmit = (e) => {
+  document.getElementById('create-form').onsubmit = async (e) => {
     e.preventDefault();
     const base = loader.data.attributes.base;
     const stats = {
@@ -1118,7 +1118,7 @@ function showCreateForm() {
       coins: { copper: 0, silver: 0, gold: 0 },
       xp: 0
     };
-    startGame(player);
+    await startGame(player);
   };
 }
 
