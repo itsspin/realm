@@ -250,6 +250,11 @@ function enterRoom(id) {
   updateHUD();
 }
 
+function move(dir) {
+  const dest = loader.data.locations[game.player.location].links[dir];
+  if (dest) enterRoom(dest);
+}
+
 function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
@@ -477,7 +482,7 @@ function buildHotbar() {
 
 function showHelp() {
   addLog('Commands:');
-  addLog(' n,s,e,w - move');
+  addLog(' Use arrow keys, WASD or buttons to move');
   addLog(' /attack - attack a nearby mob');
   addLog(' hail - speak to your target');
   addLog(' /target <name> - target an NPC or object by name');
@@ -665,8 +670,7 @@ function buildCraftPanel() {
 function handleInput(text) {
   const cmd = text.trim();
   if (['n', 's', 'e', 'w'].includes(cmd)) {
-    const dest = loader.data.locations[game.player.location].links[cmd];
-    if (dest) enterRoom(dest);
+    move(cmd);
   } else if (cmd.startsWith('/goto ')) {
     const target = cmd.slice(6);
     const loc = loader.data.locations[game.player.location];
@@ -733,6 +737,31 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
+  document.querySelectorAll('#move-controls button').forEach((btn) => {
+    btn.onclick = () => move(btn.dataset.dir);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    const map = {
+      ArrowUp: 'n',
+      ArrowDown: 's',
+      ArrowLeft: 'w',
+      ArrowRight: 'e',
+      w: 'n',
+      a: 'w',
+      s: 's',
+      d: 'e',
+      W: 'n',
+      A: 'w',
+      S: 's',
+      D: 'e'
+    };
+    const dir = map[e.key];
+    if (dir) {
+      move(dir);
+      e.preventDefault();
+    }
+  });
 }
 
 function populateSelect(id, data) {
