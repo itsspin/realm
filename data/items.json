@@ -3,6 +3,7 @@
     "name": "Rusty Sword",
     "level": 1,
     "damage": 4,
+    "str": 1,
     "slot": "weapon",
     "description": "An old sword with a dull blade."
   },
@@ -10,6 +11,7 @@
     "name": "Leather Armor",
     "level": 1,
     "armor": 2,
+    "dex": 1,
     "slot": "chest",
     "description": "Provides minimal protection."
   },
@@ -36,6 +38,7 @@
     "name": "Hunter Bow",
     "level": 1,
     "damage": 3,
+    "dex": 2,
     "slot": "weapon",
     "description": "Simple bow favored by rangers."
   },
