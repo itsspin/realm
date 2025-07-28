@@ -1,0 +1,12 @@
+{
+  "name": "Mira Greensong",
+  "role": "Quest Giver",
+  "level": 4,
+  "description": "A calm druid collecting herbs for her rituals.",
+  "dialogue": [
+    "The balance of nature must be preserved, even in a place of gears."
+  ],
+  "teaches": [
+    "alchemy"
+  ]
+}

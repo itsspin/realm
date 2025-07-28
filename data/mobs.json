@@ -5,10 +5,10 @@
     "hp": 30,
     "damage": 4,
     "description": "A malfunctioning automaton covered in rust.",
-    "drops": [
-      { "id": "iron_ore", "chance": 0.4 },
-      { "id": "cloth_scrap", "chance": 0.3 },
-      { "id": "rusty_sword", "chance": 0.1 }
+    "dropTable": [
+      { "id": "iron_ore", "weight": 40 },
+      { "id": "cloth_scrap", "weight": 30 },
+      { "id": "rusty_sword", "weight": 10 }
     ]
   },
   "bog_creeper": {
@@ -17,10 +17,10 @@
     "hp": 40,
     "damage": 5,
     "description": "Slimy creature lurking in the bog.",
-    "drops": [
-      { "id": "herb_leaf", "chance": 0.5 },
-      { "id": "cloth_scrap", "chance": 0.2 },
-      { "id": "healing_potion", "chance": 0.1 }
+    "dropTable": [
+      { "id": "herb_leaf", "weight": 50 },
+      { "id": "cloth_scrap", "weight": 20 },
+      { "id": "healing_potion", "weight": 10 }
     ]
   },
   "goblin_raider": {
@@ -29,10 +29,9 @@
     "hp": 25,
     "damage": 3,
     "description": "Sneaky goblin looking for trouble.",
-    "drops": [
-      { "id": "wood_plank", "chance": 0.4 },
-      { "id": "rusty_sword", "chance": 0.2 },
-      { "id": "hunter_bow", "chance": 0.1 }
+    "dropTable": [
+      { "id": "bronze_sword", "weight": 80 },
+      { "id": "rusty_dagger", "weight": 20 }
     ]
   }
 }
