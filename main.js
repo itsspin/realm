@@ -179,18 +179,34 @@ function updateLocationPanel() {
   const loc = loader.data.locations[game.player.location];
   if (!loc) return;
   document.getElementById('location-name').textContent = loc.name;
-  const dirs = { n: 'dir-n', e: 'dir-e', s: 'dir-s', w: 'dir-w' };
-  Object.entries(dirs).forEach(([dir, id]) => {
-    const btn = document.getElementById(id);
+  const container = document.getElementById('location-exits');
+  container.innerHTML = '';
+  const dirs = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(dirs).forEach(([dir, label]) => {
     const dest = loc.links?.[dir];
     if (dest) {
-      btn.disabled = false;
-      btn.dataset.dest = dest;
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.textContent = label;
+      btn.dataset.dir = dir;
       btn.title = loader.data.locations[dest]?.name || dest;
-    } else {
-      btn.disabled = true;
-      btn.dataset.dest = '';
-      btn.title = '';
+      container.append(btn);
+    }
+  });
+  buildMoveControls(loc);
+}
+
+function buildMoveControls(loc) {
+  const mc = document.getElementById('move-controls');
+  mc.innerHTML = '';
+  const dirs = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(dirs).forEach(([dir, label]) => {
+    if (loc.links?.[dir]) {
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.textContent = label;
+      btn.dataset.dir = dir;
+      mc.append(btn);
     }
   });
 }
@@ -333,7 +349,11 @@ function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
-  updateMovementButtons();
+}
+
+function move(dir) {
+  const dest = loader.data.locations[game.player.location].links[dir];
+  if (dest) enterRoom(dest);
 }
 
 function updatePlayersList() {
@@ -1007,6 +1027,10 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
+  document.getElementById('move-controls').addEventListener('click', (e) => {
+    const dir = e.target.dataset.dir;
+    if (dir) move(dir);
+  });
   document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
     const map = {
