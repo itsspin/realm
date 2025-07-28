@@ -1,0 +1,35 @@
+{
+  "locations": {
+    "undead_trail": {
+      "name": "Forsaken Path",
+      "faction": "neutral",
+      "description": "A chilling road lined with the remnants of battles long past.",
+      "exits": [
+        "neutral_crossroads",
+        "undead_necropolis"
+      ],
+      "links": {
+        "crossroads": "neutral_crossroads",
+        "city": "undead_necropolis"
+      },
+      "npcs": [],
+      "spawns": []
+    },
+    "undead_necropolis": {
+      "name": "Undead Necropolis",
+      "faction": "umbra",
+      "description": "Crumbling mausoleums rise from dark soil under a perpetual gloom.",
+      "exits": [
+        "undead_trail"
+      ],
+      "links": {
+        "road": "undead_trail"
+      },
+      "boats": [
+        "dawn_isle_port"
+      ],
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}

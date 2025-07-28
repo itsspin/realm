@@ -35,6 +35,10 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function zoneFromLocation(id) {
+  return id.split('_')[0];
+}
+
 function selectTarget(type, id, btn) {
   if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
   currentTargetBtn = btn || null;
@@ -210,23 +214,6 @@ function buildMoveControls(loc) {
   });
 }
 
-function updateMovementButtons() {
-  const loc = loader.data.locations[game.player.location];
-  const container = document.getElementById('move-controls');
-  if (!loc || !container) return;
-  container.innerHTML = '';
-  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
-  Object.entries(names).forEach(([dir, label]) => {
-    if (loc.links?.[dir]) {
-      const btn = document.createElement('button');
-      btn.className = 'move-btn';
-      btn.dataset.dir = dir;
-      btn.textContent = label;
-      btn.onclick = () => move(dir);
-      container.append(btn);
-    }
-  });
-}
 
 function addLog(txt) {
   const div = document.createElement('div');
@@ -339,7 +326,9 @@ function renderRoom(loc) {
   buildActionsPanel(loc);
 }
 
-function enterRoom(id) {
+async function enterRoom(id) {
+  const zone = zoneFromLocation(id);
+  await loader.loadZone(zone);
   const loc = loader.data.locations[id];
   if (!loc) return;
   game.player.location = id;
@@ -350,9 +339,9 @@ function enterRoom(id) {
   updateLocationPanel();
 }
 
-function move(dir) {
+async function move(dir) {
   const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) enterRoom(dest);
+  if (dest) await enterRoom(dest);
 }
 
 
@@ -1065,7 +1054,7 @@ function populateSelect(id, data) {
   });
 }
 
-function startGame(player) {
+async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
@@ -1074,7 +1063,7 @@ function startGame(player) {
   bindUI();
   buildHotbar();
   const start = location.hash.slice(1) || game.player.location;
-  enterRoom(start);
+  await enterRoom(start);
 }
 
 function showCreateForm() {
@@ -1139,7 +1128,7 @@ export async function init() {
   bindUI();
   const saved = loadCharacter();
   if (saved) {
-    startGame(saved);
+    await startGame(saved);
   } else {
     showCreateForm();
   }
