@@ -1,0 +1,32 @@
+{
+  "locations": {
+    "gnome_burrow_path": {
+      "name": "Gnome Tunnel",
+      "faction": "neutral",
+      "description": "A cramped tunnel lit by flickering lanterns.",
+      "exits": [
+        "neutral_crossroads",
+        "gnome_burrow"
+      ],
+      "links": {
+        "crossroads": "neutral_crossroads",
+        "city": "gnome_burrow"
+      },
+      "npcs": [],
+      "spawns": []
+    },
+    "gnome_burrow": {
+      "name": "Gnome Burrow",
+      "faction": "luminara",
+      "description": "A maze of cozy burrows bustling with tinkering gnomes.",
+      "exits": [
+        "gnome_burrow_path"
+      ],
+      "links": {
+        "road": "gnome_burrow_path"
+      },
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}

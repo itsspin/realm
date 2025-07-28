@@ -1,0 +1,32 @@
+{
+  "locations": {
+    "dwarf_fort_path": {
+      "name": "Stone Tunnel",
+      "faction": "neutral",
+      "description": "A well-carved tunnel slopes downward toward a dwarven stronghold.",
+      "exits": [
+        "neutral_crossroads",
+        "dwarf_fortress"
+      ],
+      "links": {
+        "crossroads": "neutral_crossroads",
+        "city": "dwarf_fortress"
+      },
+      "npcs": [],
+      "spawns": []
+    },
+    "dwarf_fortress": {
+      "name": "Dwarf Fortress",
+      "faction": "luminara",
+      "description": "Massive stone walls guard the halls of the stout folk.",
+      "exits": [
+        "dwarf_fort_path"
+      ],
+      "links": {
+        "road": "dwarf_fort_path"
+      },
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}
