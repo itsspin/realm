@@ -1,0 +1,12 @@
+{
+  "name": "Shadra the Shaman",
+  "role": "Shaman Trainer",
+  "level": 8,
+  "description": "Mystic runes glow faintly across her staff.",
+  "dialogue": [
+    "Spirits whisper of power for those who listen."
+  ],
+  "teaches": [
+    "enchanting"
+  ]
+}

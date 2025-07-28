@@ -1,0 +1,9 @@
+{
+  "name": "Cressa the Bog Hunter",
+  "role": "Quest Giver",
+  "level": 6,
+  "description": "She keeps watch for creatures slinking out of the mists.",
+  "dialogue": [
+    "Those bog creepers are getting bold. Think you could thin them out?"
+  ]
+}

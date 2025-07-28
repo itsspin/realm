@@ -1,0 +1,12 @@
+{
+  "name": "Elora the Ranger",
+  "role": "Quest Giver",
+  "level": 5,
+  "description": "She scouts the wilderness and keeps travelers safe.",
+  "dialogue": [
+    "The goblins are restless. I need fresh eyes on their camp."
+  ],
+  "teaches": [
+    "fletching"
+  ]
+}

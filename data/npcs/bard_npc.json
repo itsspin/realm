@@ -1,0 +1,9 @@
+{
+  "name": "Seren the Bard",
+  "role": "Quest Giver",
+  "level": 4,
+  "description": "A traveling musician who knows every tavern song.",
+  "dialogue": [
+    "Have you seen my lute? I swear I left it right here..."
+  ]
+}
