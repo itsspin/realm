@@ -5,6 +5,7 @@ const game = {
   player: null,
   target: null,
   combatTimer: 0,
+  inCombat: false,
   onlinePlayers: []
 };
 
@@ -147,7 +148,11 @@ function dropLoot(mob) {
   loot.copper = rand(mob.level * 2);
   if (mob.level >= 5) loot.silver = rand(Math.floor(mob.level / 5));
   if (mob.level >= 20) loot.gold = rand(Math.floor(mob.level / 20));
-  if (Math.random() < 0.5) {
+  if (mob.drops) {
+    mob.drops.forEach((d) => {
+      if (Math.random() < d.chance) loot.items.push(d.id);
+    });
+  } else if (Math.random() < 0.5) {
     const list = Object.keys(loader.data.items).filter(
       (id) => loader.data.items[id].level <= mob.level
     );
@@ -173,18 +178,52 @@ function updateLocationPanel() {
   const loc = loader.data.locations[game.player.location];
   if (!loc) return;
   document.getElementById('location-name').textContent = loc.name;
-  const dirs = { n: 'dir-n', e: 'dir-e', s: 'dir-s', w: 'dir-w' };
-  Object.entries(dirs).forEach(([dir, id]) => {
-    const btn = document.getElementById(id);
+  const container = document.getElementById('location-exits');
+  container.innerHTML = '';
+  const dirs = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(dirs).forEach(([dir, label]) => {
     const dest = loc.links?.[dir];
     if (dest) {
-      btn.disabled = false;
-      btn.dataset.dest = dest;
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.textContent = label;
+      btn.dataset.dir = dir;
       btn.title = loader.data.locations[dest]?.name || dest;
-    } else {
-      btn.disabled = true;
-      btn.dataset.dest = '';
-      btn.title = '';
+      container.append(btn);
+    }
+  });
+  buildMoveControls(loc);
+}
+
+function buildMoveControls(loc) {
+  const mc = document.getElementById('move-controls');
+  mc.innerHTML = '';
+  const dirs = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(dirs).forEach(([dir, label]) => {
+    if (loc.links?.[dir]) {
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.textContent = label;
+      btn.dataset.dir = dir;
+      mc.append(btn);
+    }
+  });
+}
+
+function updateMovementButtons() {
+  const loc = loader.data.locations[game.player.location];
+  const container = document.getElementById('move-controls');
+  if (!loc || !container) return;
+  container.innerHTML = '';
+  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(names).forEach(([dir, label]) => {
+    if (loc.links?.[dir]) {
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.dataset.dir = dir;
+      btn.textContent = label;
+      btn.onclick = () => move(dir);
+      container.append(btn);
     }
   });
 }
@@ -200,6 +239,29 @@ function addChat(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
   document.getElementById('chat-panel').append(div);
+}
+
+function showLoot(loot) {
+  const panel = document.getElementById('loot');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Loot</h2>';
+  const list = document.createElement('ul');
+  loot.items.forEach((id) => {
+    const li = document.createElement('li');
+    li.textContent = loader.data.items[id]?.name || id;
+    list.append(li);
+  });
+  if (loot.gold || loot.silver || loot.copper) {
+    const li = document.createElement('li');
+    li.textContent = `${loot.gold}g ${loot.silver}s ${loot.copper}c`;
+    list.append(li);
+  }
+  panel.append(list);
+  const btn = document.createElement('button');
+  btn.className = 'btn mt-2';
+  btn.textContent = 'Close';
+  btn.onclick = () => document.getElementById('overlay').classList.add('hidden');
+  panel.append(btn);
+  showPanel('loot');
 }
 
 function showPanel(name) {
@@ -306,22 +368,30 @@ function updatePlayersList() {
   });
 }
 
-function getWeaponDamage() {
-  const w = game.player.equipped.weapon;
-  return loader.data.items[w]?.damage || 1;
+// --- Turn-based Combat System ---
+function addCombatLog(txt) {
+  const div = document.createElement('div');
+  div.textContent = txt;
+  const log = document.getElementById('combat-log');
+  log.append(div);
+  log.scrollTop = log.scrollHeight;
 }
 
-function attackRound() {
-  const player = game.player;
+function updateCombatUI() {
+  if (!game.inCombat) return;
+  const enemy = game.target;
+  document.getElementById('combat-enemy').textContent = enemy.name;
+  document.getElementById('combat-stats').textContent =
+    `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+}
+
+function endCombat(win) {
   const mob = game.target;
-  if (!mob) return;
-  const pdmg = rand(getWeaponDamage()) + player.stats.str;
-  mob.hp -= pdmg;
-  addLog(`You hit ${mob.name} for ${pdmg}.`);
-  if (mob.hp <= 0) {
+  game.inCombat = false;
+  game.target = null;
+  document.getElementById('combat-overlay').classList.add('hidden');
+  if (win) {
     addLog(`${mob.name} dies.`);
-    clearInterval(game.combatTimer);
-    game.target = null;
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -332,40 +402,77 @@ function attackRound() {
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
-      addLog(
-        `You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`
-      );
+      addLog(`You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`);
     }
+    showLoot(loot);
     checkQuestProgress('kill', mob.id);
-    updateHUD();
-    return;
-  }
-  const mdmg = rand(mob.damage);
-  player.hp -= mdmg;
-  addLog(`${mob.name} hits you for ${mdmg}.`);
-  if (player.hp <= 0) {
+  } else {
     addLog('You have been slain!');
-    clearInterval(game.combatTimer);
-    game.target = null;
   }
   updateHUD();
 }
 
-function startCombat(mobId) {
-  game.target = { ...loader.data.mobs[mobId] };
-  clearInterval(game.combatTimer);
-  game.combatTimer = setInterval(attackRound, 2000);
-  updateHUD();
+function enemyAttack() {
+  const mob = game.target;
+  const dmg = rand(mob.damage);
+  game.player.hp -= dmg;
+  addCombatLog(`${mob.name} hits you for ${dmg}.`);
+  if (game.player.hp <= 0) {
+    addCombatLog('You have been defeated!');
+    endCombat(false);
+  } else {
+    updateCombatUI();
+  }
+}
+
+function useAbility(id) {
+  if (!game.inCombat) return;
+  const spell = loader.data.spells[id];
+  if (!spell) return;
+  addCombatLog(`You use ${spell.name}.`);
+  if (spell.damage) {
+    const dmg = rand(spell.damage);
+    game.target.hp -= dmg;
+    addCombatLog(`You deal ${dmg} damage.`);
+  }
+  if (spell.heal) {
+    game.player.hp = Math.min(game.player.maxHp, game.player.hp + spell.heal);
+    addCombatLog(`You heal ${spell.heal} HP.`);
+  }
+  if (game.target.hp <= 0) {
+    addCombatLog(`${game.target.name} is defeated!`);
+    endCombat(true);
+    return;
+  }
+  updateCombatUI();
+  enemyAttack();
+}
+
+function startCombat(targetId, type = 'mob') {
+  const data = type === 'npc' ? loader.get('npcs', targetId) : loader.data.mobs[targetId];
+  if (!data) return;
+  game.target = { ...data, id: targetId };
+  game.inCombat = true;
+  document.getElementById('combat-log').innerHTML = '';
+  document.getElementById('combat-overlay').classList.remove('hidden');
+  const btns = document.getElementById('combat-buttons');
+  btns.innerHTML = '';
+  const abil = loader.data.classes[game.player.class].starterAbilities;
+  abil.forEach((id) => {
+    const b = document.createElement('button');
+    b.className = 'btn text-xs';
+    b.textContent = loader.data.spells[id].name;
+    b.onclick = () => useAbility(id);
+    btns.append(b);
+  });
+  updateCombatUI();
   document.getElementById('dialogue').classList.add('hidden');
 }
 
 function attackNpc(id) {
   const npc = loader.get('npcs', id);
   if (npc && npc.hp) {
-    game.target = { ...npc };
-    clearInterval(game.combatTimer);
-    game.combatTimer = setInterval(attackRound, 2000);
-    updateHUD();
+    startCombat(id, 'npc');
   } else {
     addLog(`${npc.name} does not seem interested in fighting.`);
   }
@@ -920,8 +1027,9 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
-  document.querySelectorAll('#move-controls button').forEach((btn) => {
-    btn.onclick = () => move(btn.dataset.dir);
+  document.getElementById('move-controls').addEventListener('click', (e) => {
+    const dir = e.target.dataset.dir;
+    if (dir) move(dir);
   });
   document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;

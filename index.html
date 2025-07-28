@@ -46,19 +46,14 @@
       <div id="target" class="hud-box">Target: —</div>
       <div id="party" class="hud-box">Party: —</div>
       <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
+      <div id="zone-panel" class="hud-box">
+        <div id="zone-name" class="font-bold mb-1">Zone</div>
+        <div id="zone-desc" class="text-xs mb-1"></div>
+        <div id="zone-exits" class="text-xs"></div>
+      </div>
       <div id="location-panel" class="hud-box">
         <div id="location-name" class="font-bold mb-1">Location</div>
-        <div class="grid grid-cols-3 gap-1 place-items-center">
-          <div></div>
-          <button id="dir-n" class="dir-btn" disabled>N</button>
-          <div></div>
-          <button id="dir-w" class="dir-btn" disabled>W</button>
-          <div></div>
-          <button id="dir-e" class="dir-btn" disabled>E</button>
-          <div></div>
-          <button id="dir-s" class="dir-btn" disabled>S</button>
-          <div></div>
-        </div>
+        <div id="location-exits" class="flex flex-wrap gap-1"></div>
       </div>
       <div id="players-box" class="hud-box">
         <div class="font-bold mb-1">Nearby Players</div>
@@ -97,12 +92,7 @@
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
 
   <!-- Movement controls -->
-  <div id="move-controls" class="shrink-0 p-2 bg-slate-800 flex gap-1 justify-center">
-    <button data-dir="n" class="move-btn">&#8593;</button>
-    <button data-dir="w" class="move-btn">&#8592;</button>
-    <button data-dir="s" class="move-btn">&#8595;</button>
-    <button data-dir="e" class="move-btn">&#8594;</button>
-  </div>
+  <div id="move-controls" class="shrink-0 p-2 bg-slate-800 flex gap-1 justify-center"></div>
 
   <!-- Character creation overlay -->
   <div id="create-overlay" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center hidden">
