@@ -152,7 +152,19 @@ function dropLoot(mob) {
   loot.copper = rand(mob.level * 2);
   if (mob.level >= 5) loot.silver = rand(Math.floor(mob.level / 5));
   if (mob.level >= 20) loot.gold = rand(Math.floor(mob.level / 20));
-  if (mob.drops) {
+  if (mob.dropTable) {
+    const total = mob.dropTable.reduce((s, d) => s + d.weight, 0);
+    if (total > 0) {
+      let roll = Math.random() * total;
+      for (const d of mob.dropTable) {
+        roll -= d.weight;
+        if (roll <= 0) {
+          loot.items.push(d.id);
+          break;
+        }
+      }
+    }
+  } else if (mob.drops) {
     mob.drops.forEach((d) => {
       if (Math.random() < d.chance) loot.items.push(d.id);
     });
