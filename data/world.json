@@ -1,0 +1,273 @@
+{
+  "continents": [
+    {
+      "id": "veldara",
+      "name": "Veldara",
+      "capital": "ironvale_hold",
+      "description": "Human & Dwarf homelands — medieval‑European vibe.",
+      "connections": [
+        { "to_continent": "zhurakai", "method": "boat", "from_zone": "ironvale_hold", "to_zone": "sandspire" }
+      ],
+      "zones": [
+        {
+          "id": "ironvale_hold",
+          "name": "Ironvale Hold",
+          "type": "city",
+          "level_range": [0, 0],
+          "exits": { "south": "ashmoor_fields", "dock": "boat_ironvale_sandspire" }
+        },
+        {
+          "id": "ashmoor_fields",
+          "name": "Ashmoor Fields",
+          "type": "starter",
+          "level_range": [1, 5],
+          "exits": { "north": "ironvale_hold", "east": "greystone_hills" }
+        },
+        {
+          "id": "greystone_hills",
+          "name": "Greystone Hills",
+          "type": "wildland",
+          "level_range": [5, 10],
+          "exits": { "west": "ashmoor_fields", "south": "howling_caverns", "east": "windfall_pass" }
+        },
+        {
+          "id": "howling_caverns",
+          "name": "Howling Caverns",
+          "type": "dungeon",
+          "level_range": [10, 15],
+          "exits": { "north": "greystone_hills" }
+        },
+        {
+          "id": "windfall_pass",
+          "name": "Windfall Pass",
+          "type": "wildland",
+          "level_range": [10, 20],
+          "exits": { "west": "greystone_hills", "east": "briarcliff_woods" }
+        },
+        {
+          "id": "briarcliff_woods",
+          "name": "Briarcliff Woods",
+          "type": "wildland",
+          "level_range": [15, 25],
+          "exits": { "west": "windfall_pass", "south": "deepgrip_mines" }
+        },
+        {
+          "id": "deepgrip_mines",
+          "name": "Deepgrip Mines",
+          "type": "dungeon",
+          "level_range": [20, 30],
+          "exits": { "north": "briarcliff_woods" }
+        },
+        {
+          "id": "stoneflame_mountains",
+          "name": "Stoneflame Mountains",
+          "type": "wildland",
+          "level_range": [30, 40],
+          "exits": { "west": "briarcliff_woods", "south": "verdan_outlands" }
+        },
+        {
+          "id": "verdan_outlands",
+          "name": "Verdan Outlands",
+          "type": "pvp",
+          "level_range": [40, 50],
+          "exits": { "north": "stoneflame_mountains" }
+        }
+      ]
+    },
+
+    {
+      "id": "zhurakai",
+      "name": "Zhurakai",
+      "capital": "sandspire",
+      "description": "Desert continent of an ancient empire.",
+      "connections": [
+        { "to_continent": "keldrith", "method": "teleporter", "from_zone": "sandspire", "to_zone": "sylvaran_grove" }
+      ],
+      "zones": [
+        {
+          "id": "sandspire",
+          "name": "Sandspire",
+          "type": "city",
+          "level_range": [0, 0],
+          "exits": { "north": "scorched_flats", "dock": "boat_ironvale_sandspire", "teleport_pad": "tele_sandspire_sylvaran" }
+        },
+        {
+          "id": "scorched_flats",
+          "name": "Scorched Flats",
+          "type": "starter",
+          "level_range": [1, 5],
+          "exits": { "south": "sandspire", "east": "rattleshade_canyon" }
+        },
+        {
+          "id": "rattleshade_canyon",
+          "name": "Rattleshade Canyon",
+          "type": "wildland",
+          "level_range": [5, 10],
+          "exits": { "west": "scorched_flats", "south": "dusthold_ruins" }
+        },
+        {
+          "id": "dusthold_ruins",
+          "name": "Dusthold Ruins",
+          "type": "dungeon",
+          "level_range": [10, 20],
+          "exits": { "north": "rattleshade_canyon" }
+        },
+        {
+          "id": "obelisk_ridge",
+          "name": "Obelisk Ridge",
+          "type": "wildland",
+          "level_range": [15, 25],
+          "exits": { "south": "glasswaste_expanse", "north": "dusthold_ruins" }
+        },
+        {
+          "id": "glasswaste_expanse",
+          "name": "Glasswaste Expanse",
+          "type": "wildland",
+          "level_range": [25, 35],
+          "exits": { "north": "obelisk_ridge", "east": "sunken_oasis" }
+        },
+        {
+          "id": "sunken_oasis",
+          "name": "Sunken Oasis",
+          "type": "dungeon",
+          "level_range": [35, 45],
+          "exits": { "west": "glasswaste_expanse" }
+        },
+        {
+          "id": "jadefire_tombs",
+          "name": "Jadefire Tombs",
+          "type": "dungeon",
+          "level_range": [40, 50],
+          "exits": { "north": "glasswaste_expanse" }
+        }
+      ]
+    },
+
+    {
+      "id": "keldrith",
+      "name": "Keldrith",
+      "capital": "sylvaran_grove",
+      "description": "Mystical forest realm of elves and beastfolk.",
+      "connections": [
+        { "to_continent": "vokarn", "method": "ancient_tree_portal", "from_zone": "sylvaran_grove", "to_zone": "stormveil_bastion" }
+      ],
+      "zones": [
+        {
+          "id": "sylvaran_grove",
+          "name": "Sylvaran Grove",
+          "type": "city",
+          "level_range": [0, 0],
+          "exits": { "south": "emerald_copse", "portal": "tele_sandspire_sylvaran", "ancient_tree": "tree_sylvaran_stormveil" }
+        },
+        {
+          "id": "emerald_copse",
+          "name": "Emerald Copse",
+          "type": "starter",
+          "level_range": [1, 5],
+          "exits": { "north": "sylvaran_grove", "east": "moonshade_thicket" }
+        },
+        {
+          "id": "moonshade_thicket",
+          "name": "Moonshade Thicket",
+          "type": "wildland",
+          "level_range": [5, 10],
+          "exits": { "west": "emerald_copse", "south": "webwood_hollow" }
+        },
+        {
+          "id": "webwood_hollow",
+          "name": "Webwood Hollow",
+          "type": "dungeon",
+          "level_range": [10, 20],
+          "exits": { "north": "moonshade_thicket" }
+        },
+        {
+          "id": "rimebrook_falls",
+          "name": "Rimebrook Falls",
+          "type": "wildland",
+          "level_range": [15, 25],
+          "exits": { "south": "faeblight_vale", "north": "webwood_hollow" }
+        },
+        {
+          "id": "faeblight_vale",
+          "name": "Faeblight Vale",
+          "type": "wildland",
+          "level_range": [20, 30],
+          "exits": { "north": "rimebrook_falls", "east": "wyrmroot_caverns" }
+        },
+        {
+          "id": "wyrmroot_caverns",
+          "name": "Wyrmroot Caverns",
+          "type": "dungeon",
+          "level_range": [30, 40],
+          "exits": { "west": "faeblight_vale" }
+        },
+        {
+          "id": "ironfang_bluffs",
+          "name": "Ironfang Bluffs",
+          "type": "wildland",
+          "level_range": [40, 50],
+          "exits": { "west": "faeblight_vale" }
+        }
+      ]
+    },
+
+    {
+      "id": "vokarn",
+      "name": "Vokarn",
+      "capital": "stormveil_bastion",
+      "description": "Frozen and demonic northlands; end‑game content.",
+      "connections": [],
+      "zones": [
+        {
+          "id": "stormveil_bastion",
+          "name": "Stormveil Bastion",
+          "type": "city",
+          "level_range": [0, 0],
+          "exits": { "south": "ashenflow_tundra", "tree_portal": "tree_sylvaran_stormveil" }
+        },
+        {
+          "id": "ashenflow_tundra",
+          "name": "Ashenflow Tundra",
+          "type": "starter/hardmode",
+          "level_range": [1, 10],
+          "exits": { "north": "stormveil_bastion", "east": "frostbite_spires" }
+        },
+        {
+          "id": "frostbite_spires",
+          "name": "Frostbite Spires",
+          "type": "dungeon",
+          "level_range": [20, 30],
+          "exits": { "west": "ashenflow_tundra", "south": "wailing_glacier" }
+        },
+        {
+          "id": "wailing_glacier",
+          "name": "Wailing Glacier",
+          "type": "wildland",
+          "level_range": [30, 40],
+          "exits": { "north": "frostbite_spires", "south": "burnscar_chasm" }
+        },
+        {
+          "id": "burnscar_chasm",
+          "name": "Burnscar Chasm",
+          "type": "wildland",
+          "level_range": [40, 50],
+          "exits": { "north": "wailing_glacier", "down": "dreadhold_depths" }
+        },
+        {
+          "id": "dreadhold_depths",
+          "name": "Dreadhold Depths",
+          "type": "raid",
+          "level_range": [50, 60],
+          "exits": { "up": "burnscar_chasm", "portal": "raid_gate_every_capital" }
+        },
+        {
+          "id": "worldrend_citadel",
+          "name": "Worldrend Citadel",
+          "type": "pvp/endgame",
+          "level_range": [60, 65],
+          "exits": { "north": "burnscar_chasm" }
+        }
+      ]
+    }
+  ]
+}

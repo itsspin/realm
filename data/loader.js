@@ -1,5 +1,6 @@
 export const loader = {
   data: {},
+  loadedZones: new Set(),
   async init() {
     const files = [
       'attributes',

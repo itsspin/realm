@@ -35,6 +35,10 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function zoneFromLocation(id) {
+  return id.split('_')[0];
+}
+
 function selectTarget(type, id, btn) {
   if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
   currentTargetBtn = btn || null;
