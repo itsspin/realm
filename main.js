@@ -21,6 +21,7 @@ function loadCharacter() {
   p.professions ||= [];
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
+  p.xp ||= 0;
   return p;
 }
 let currentTargetBtn = null;
@@ -160,14 +161,12 @@ function dropLoot(mob) {
 
 function updateHUD() {
   const p = game.player;
-  document.getElementById('status').textContent =
-    `HP: ${p.hp}/${p.maxHp}  MP: ${p.mp}/${p.maxMp}`;
-  document.getElementById('target').textContent =
-    game.target ? `Target: ${game.target.name} (${game.target.hp}hp)` : 'Target: —';
-  document.getElementById('party').textContent =
-    `Party: ${p.party.join(', ') || '—'}`;
-  const coins = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
-  document.getElementById('currency').textContent = `Coins: ${coins}`;
+  const nameEl = document.getElementById('player-name');
+  if (nameEl) nameEl.textContent = p.name;
+  const hpEl = document.getElementById('player-hp');
+  if (hpEl) hpEl.textContent = `HP: ${p.hp}/${p.maxHp}`;
+  const xpEl = document.getElementById('player-xp');
+  if (xpEl) xpEl.textContent = `XP: ${p.xp || 0}`;
 }
 
 function updateLocationPanel() {
@@ -294,10 +293,6 @@ function move(dir) {
   if (dest) enterRoom(dest);
 }
 
-function move(dir) {
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) enterRoom(dest);
-}
 
 function updatePlayersList() {
   const list = document.getElementById('player-list');
@@ -1023,7 +1018,8 @@ function showCreateForm() {
       questProgress: {},
       party: [],
       professions: [],
-      coins: { copper: 0, silver: 0, gold: 0 }
+      coins: { copper: 0, silver: 0, gold: 0 },
+      xp: 0
     };
     startGame(player);
   };

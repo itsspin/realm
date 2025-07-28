@@ -14,18 +14,35 @@
     <h1 class="text-xl font-bold">Twilight Realms</h1>
     <nav class="flex gap-2 text-sm">
       <button data-panel="map" class="btn">Map</button>
-      <button data-panel="inv" class="btn">Inventory</button>
       <button data-panel="craft" class="btn">Craft</button>
-      <button data-panel="quests" class="btn">Quests</button>
-      <button data-panel="chat" class="btn">Chat</button>
     </nav>
   </header>
 
+  <!-- Player info bar -->
+  <div id="player-bar" class="shrink-0 p-2 bg-slate-700 flex justify-between text-sm">
+    <span id="player-name">Name: —</span>
+    <span id="player-hp">HP: --/--</span>
+    <span id="player-xp">XP: 0</span>
+  </div>
+
   <!-- Main layout -->
-  <main class="grow grid md:grid-cols-4 gap-2 p-2 overflow-hidden">
-    <section id="log" class="col-span-3 bg-slate-800 p-3 rounded overflow-y-auto"></section>
-    <aside id="hud" class="bg-slate-800 p-3 rounded flex flex-col gap-2">
-      <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
+
+  <main class="grow grid md:grid-cols-[16rem_1fr_16rem] gap-2 p-2 overflow-hidden">
+    <aside id="left-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
+      <div id="inv" class="hud-box"></div>
+      <div id="quests" class="hud-box flex-grow overflow-y-auto"></div>
+    </aside>
+
+    <div class="flex flex-col gap-2 overflow-hidden">
+      <section id="log" class="grow bg-slate-800 p-3 rounded overflow-y-auto"></section>
+      <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
+        <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
+        <button id="send" class="btn">Send</button>
+      </footer>
+    </div>
+
+    <aside id="right-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
+      <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
       <div id="target" class="hud-box">Target: —</div>
       <div id="party" class="hud-box">Party: —</div>
       <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
@@ -64,26 +81,18 @@
         <div id="actions-panel" class="flex flex-wrap gap-1"></div>
       </div>
       <div id="dialogue" class="hud-box hidden"></div>
+      <div id="chat-panel" class="hud-box flex-grow overflow-y-auto"></div>
+      <div id="minimap" class="hud-box h-40"></div>
     </aside>
   </main>
-
   <!-- Overlay panels -->
   <div id="overlay" class="hidden fixed inset-0 bg-black/70 p-4 overflow-auto">
     <div id="map" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
-    <div id="quests" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
-    <div id="chat-panel" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div class="text-center">
       <button id="close-overlay" class="btn">Close</button>
     </div>
-  </div>
-
-  <div id="inv" class="inventory-panel">
-    <div class="text-right mb-2">
-      <button id="close-inv" class="btn">Close</button>
-    </div>
-  </div>
-
+</div>
   <!-- Hotbar for abilities -->
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
 
@@ -94,12 +103,6 @@
     <button data-dir="s" class="move-btn">&#8595;</button>
     <button data-dir="e" class="move-btn">&#8594;</button>
   </div>
-
-  <!-- Command input -->
-  <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
-    <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
-    <button id="send" class="btn">Send</button>
-  </footer>
 
   <!-- Character creation overlay -->
   <div id="create-overlay" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center hidden">
