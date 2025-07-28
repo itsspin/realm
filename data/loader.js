@@ -9,7 +9,6 @@ export const loader = {
       'deities',
       'items',
       'spells',
-      'quests',
       'locations',
       'crafting'
     ];
@@ -19,20 +18,16 @@ export const loader = {
         this.data[name] = await res.json();
       })
     );
-    this.data.npcs = {};
-    this.data.mobs = {};
-  },
-  async loadNpc(id) {
-    if (this.data.npcs[id] || this.data.mobs[id]) return;
-    try {
-      const res = await fetch(`data/npcs/${id}.json`);
-      if (!res.ok) return;
-      const npc = await res.json();
-      if (npc.hp) this.data.mobs[id] = npc;
-      else this.data.npcs[id] = npc;
-    } catch {
-      /* failed to load npc */
-    }
+    // Load quests from individual files in data/quests
+    const idxRes = await fetch('data/quests/index.json');
+    const list = await idxRes.json();
+    this.data.quests = {};
+    await Promise.all(
+      list.map(async (id) => {
+        const qRes = await fetch(`data/quests/${id}.json`);
+        this.data.quests[id] = await qRes.json();
+      })
+    );
   },
   get(type, id) {
     return this.data[type]?.[id];
