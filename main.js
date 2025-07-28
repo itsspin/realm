@@ -195,15 +195,22 @@ function updateLocationPanel() {
   });
 }
 
-function updateZonePanel() {
+function updateMovementButtons() {
   const loc = loader.data.locations[game.player.location];
-  if (!loc) return;
-  document.getElementById('zone-name').textContent = loc.name;
-  document.getElementById('zone-desc').textContent = loc.description || '';
-  const exits = Object.values(loc.links || {})
-    .map((dest) => loader.data.locations[dest]?.name || dest)
-    .join(', ') || 'None';
-  document.getElementById('zone-exits').textContent = `Exits: ${exits}`;
+  const container = document.getElementById('move-controls');
+  if (!loc || !container) return;
+  container.innerHTML = '';
+  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  Object.entries(names).forEach(([dir, label]) => {
+    if (loc.links?.[dir]) {
+      const btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.dataset.dir = dir;
+      btn.textContent = label;
+      btn.onclick = () => move(dir);
+      container.append(btn);
+    }
+  });
 }
 
 function addLog(txt) {
@@ -326,11 +333,7 @@ function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
-}
-
-function move(dir) {
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) enterRoom(dest);
+  updateMovementButtons();
 }
 
 function updatePlayersList() {
@@ -1004,9 +1007,6 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
-  document.querySelectorAll('#move-controls button').forEach((btn) => {
-    btn.onclick = () => move(btn.dataset.dir);
-  });
   document.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
     const map = {
