@@ -14,7 +14,14 @@ function saveCharacter(p) {
 
 function loadCharacter() {
   const data = localStorage.getItem('player');
-  return data ? JSON.parse(data) : null;
+  if (!data) return null;
+  const p = JSON.parse(data);
+  p.completedQuests ||= [];
+  p.questProgress ||= {};
+  p.professions ||= [];
+  p.coins ||= { copper: 0, silver: 0, gold: 0 };
+  p.party ||= [];
+  return p;
 }
 let currentTargetBtn = null;
 
@@ -197,11 +204,20 @@ function addChat(txt) {
 }
 
 function showPanel(name) {
+  if (name === 'inv') {
+    const panel = document.getElementById('inv');
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      buildInventory();
+    } else {
+      panel.classList.add('hidden');
+    }
+    return;
+  }
   const overlay = document.getElementById('overlay');
   overlay.classList.remove('hidden');
   document.querySelectorAll('#overlay .panel').forEach((p) => p.classList.add('hidden'));
   document.getElementById(name).classList.remove('hidden');
-  if (name === 'inv') buildInventory();
   if (name === 'quests') buildQuestList();
   if (name === 'map') buildMap();
   if (name === 'craft') buildCraftPanel();
@@ -268,6 +284,7 @@ function enterRoom(id) {
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
+  checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
 }
@@ -312,12 +329,14 @@ function attackRound() {
     loot.items.forEach((id) => {
       game.player.inventory.push(id);
       addLog(`You loot ${loader.data.items[id].name}.`);
+      checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
       addLog(
         `You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`
       );
     }
+    checkQuestProgress('kill', mob.id);
     updateHUD();
     return;
   }
@@ -358,6 +377,7 @@ function talkToNpc(id) {
   if (!npc) return;
   const line = npc.dialogue?.[0] || '...';
   addLog(`${npc.name} says: "${line}"`);
+  checkQuestProgress('talk', id);
   document.getElementById('dialogue').classList.add('hidden');
 }
 
@@ -387,8 +407,10 @@ function showNpcMenu(id) {
     btn.onclick = () => {
       if (window.confirm(`Accept quest "${q.name}"?`)) {
         game.player.activeQuests.push(qid);
+        game.player.questProgress[qid] = 0;
         addLog(`Quest accepted: ${q.name}`);
         dlg.classList.add('hidden');
+        buildQuestList();
       }
     };
     qdiv.append(btn);
@@ -562,23 +584,91 @@ function showHelp() {
   addLog(' /target <name> - target an NPC or object by name');
   addLog(' /help - show this help');
 }
+function useItem(idx) {
+  const id = game.player.inventory[idx];
+  const item = loader.data.items[id];
+  if (!item) return;
+  if (item.heal) {
+    game.player.hp = Math.min(game.player.maxHp, game.player.hp + item.heal);
+    addLog(`You use ${item.name} and recover ${item.heal} HP.`);
+    game.player.inventory.splice(idx, 1);
+  } else if (item.mana) {
+    game.player.mp = Math.min(game.player.maxMp, game.player.mp + item.mana);
+    addLog(`You use ${item.name} and recover ${item.mana} MP.`);
+    game.player.inventory.splice(idx, 1);
+  } else if (item.slot) {
+    game.player.equipped[item.slot] = id;
+    addLog(`You equip ${item.name}.`);
+  }
+  updateHUD();
+  buildInventory();
+}
+
+function dropItem(idx) {
+  const id = game.player.inventory.splice(idx, 1)[0];
+  if (id) addLog(`You drop ${loader.data.items[id]?.name || id}.`);
+  buildInventory();
+}
+
 function buildInventory() {
   const inv = document.getElementById('inv');
   const coins = `${game.player.coins.gold}g ${game.player.coins.silver}s ${game.player.coins.copper}c`;
   inv.innerHTML = `<h2 class="text-lg mb-2">Inventory</h2><div class="mb-2">Coins: ${coins}</div>`;
   const list = document.createElement('ul');
-  game.player.inventory.forEach((id) => {
+  game.player.inventory.forEach((id, idx) => {
     const li = document.createElement('li');
-    li.textContent = loader.data.items[id]?.name || id;
+    li.className = 'mb-1 flex items-center gap-2';
+    const span = document.createElement('span');
+    span.textContent = loader.data.items[id]?.name || id;
+    if (loader.data.items[id]?.description) span.title = loader.data.items[id].description;
+    li.append(span);
+    const useBtn = document.createElement('button');
+    useBtn.className = 'btn text-xs';
+    useBtn.textContent = 'Use';
+    useBtn.onclick = () => useItem(idx);
+    li.append(useBtn);
+    const dropBtn = document.createElement('button');
+    dropBtn.className = 'btn text-xs';
+    dropBtn.textContent = 'Drop';
+    dropBtn.onclick = () => dropItem(idx);
+    li.append(dropBtn);
     list.append(li);
   });
   inv.append(list);
 }
 
+function completeQuest(qid) {
+  const idx = game.player.activeQuests.indexOf(qid);
+  if (idx === -1) return;
+  game.player.activeQuests.splice(idx, 1);
+  game.player.completedQuests.push(qid);
+  delete game.player.questProgress[qid];
+  addLog(`Quest completed: ${loader.data.quests[qid].name}`);
+  buildQuestList();
+}
+
+function checkQuestProgress(type, id) {
+  game.player.activeQuests.forEach((qid) => {
+    const q = loader.data.quests[qid];
+    if (!q) return;
+    if (type === 'kill' && q.objective.kill === id) {
+      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
+      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
+    } else if (type === 'talk' && q.objective.talk === id) {
+      completeQuest(qid);
+    } else if (type === 'location' && q.objective.location === id) {
+      completeQuest(qid);
+    } else if (type === 'item' && q.objective.item === id) {
+      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
+      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
+    }
+  });
+}
+
 function buildQuestList() {
   const qpanel = document.getElementById('quests');
   qpanel.innerHTML = '<h2 class="text-lg mb-2">Active Quests</h2>';
-  const list = document.createElement('ul');
+  const activeList = document.createElement('ul');
   game.player.activeQuests.forEach((qid) => {
     const q = loader.data.quests[qid];
     if (!q) return;
@@ -588,9 +678,27 @@ function buildQuestList() {
     btn.textContent = q.name;
     btn.onclick = () => showQuestDetails(qid);
     li.append(btn);
-    list.append(li);
+    activeList.append(li);
   });
-  qpanel.append(list);
+  qpanel.append(activeList);
+
+  const compTitle = document.createElement('h2');
+  compTitle.className = 'text-lg mb-2 mt-4';
+  compTitle.textContent = 'Completed Quests';
+  qpanel.append(compTitle);
+  const compList = document.createElement('ul');
+  game.player.completedQuests.forEach((qid) => {
+    const q = loader.data.quests[qid];
+    if (!q) return;
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.className = 'underline text-slate-400 line-through';
+    btn.textContent = q.name;
+    btn.onclick = () => showQuestDetails(qid);
+    li.append(btn);
+    compList.append(li);
+  });
+  qpanel.append(compList);
   const details = document.createElement('div');
   details.id = 'quest-details';
   details.className = 'mt-4 text-sm';
@@ -702,6 +810,7 @@ function craftItem(prof, rid) {
   }
   game.player.inventory.push(recipe.result);
   addLog(`You craft ${loader.data.items[recipe.result].name}.`);
+  checkQuestProgress('item', recipe.result);
   buildInventory();
 }
 
@@ -905,7 +1014,11 @@ function showCreateForm() {
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
       activeQuests: ['welcome_to_realm'],
-      party: []
+      completedQuests: [],
+      questProgress: {},
+      party: [],
+      professions: [],
+      coins: { copper: 0, silver: 0, gold: 0 }
     };
     startGame(player);
   };

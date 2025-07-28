@@ -37,3 +37,8 @@ body {
 .panel {
   @apply w-full md:w-2/3 mx-auto;
 }
+
+/* Inventory sidebar */
+.inventory-panel {
+  @apply fixed right-0 top-0 bottom-0 w-64 p-4 bg-slate-800 overflow-y-auto hidden;
+}
