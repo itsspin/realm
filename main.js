@@ -204,11 +204,20 @@ function addChat(txt) {
 }
 
 function showPanel(name) {
+  if (name === 'inv') {
+    const panel = document.getElementById('inv');
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      buildInventory();
+    } else {
+      panel.classList.add('hidden');
+    }
+    return;
+  }
   const overlay = document.getElementById('overlay');
   overlay.classList.remove('hidden');
   document.querySelectorAll('#overlay .panel').forEach((p) => p.classList.add('hidden'));
   document.getElementById(name).classList.remove('hidden');
-  if (name === 'inv') buildInventory();
   if (name === 'quests') buildQuestList();
   if (name === 'map') buildMap();
   if (name === 'craft') buildCraftPanel();
@@ -570,14 +579,54 @@ function showHelp() {
   addLog(' /target <name> - target an NPC or object by name');
   addLog(' /help - show this help');
 }
+function useItem(idx) {
+  const id = game.player.inventory[idx];
+  const item = loader.data.items[id];
+  if (!item) return;
+  if (item.heal) {
+    game.player.hp = Math.min(game.player.maxHp, game.player.hp + item.heal);
+    addLog(`You use ${item.name} and recover ${item.heal} HP.`);
+    game.player.inventory.splice(idx, 1);
+  } else if (item.mana) {
+    game.player.mp = Math.min(game.player.maxMp, game.player.mp + item.mana);
+    addLog(`You use ${item.name} and recover ${item.mana} MP.`);
+    game.player.inventory.splice(idx, 1);
+  } else if (item.slot) {
+    game.player.equipped[item.slot] = id;
+    addLog(`You equip ${item.name}.`);
+  }
+  updateHUD();
+  buildInventory();
+}
+
+function dropItem(idx) {
+  const id = game.player.inventory.splice(idx, 1)[0];
+  if (id) addLog(`You drop ${loader.data.items[id]?.name || id}.`);
+  buildInventory();
+}
+
 function buildInventory() {
   const inv = document.getElementById('inv');
   const coins = `${game.player.coins.gold}g ${game.player.coins.silver}s ${game.player.coins.copper}c`;
   inv.innerHTML = `<h2 class="text-lg mb-2">Inventory</h2><div class="mb-2">Coins: ${coins}</div>`;
   const list = document.createElement('ul');
-  game.player.inventory.forEach((id) => {
+  game.player.inventory.forEach((id, idx) => {
     const li = document.createElement('li');
-    li.textContent = loader.data.items[id]?.name || id;
+    li.className = 'mb-1 flex items-center gap-2';
+    const span = document.createElement('span');
+    span.textContent = loader.data.items[id]?.name || id;
+    if (loader.data.items[id]?.description) span.title = loader.data.items[id].description;
+    li.append(span);
+    const useBtn = document.createElement('button');
+    useBtn.className = 'btn text-xs';
+    useBtn.textContent = 'Use';
+    useBtn.onclick = () => useItem(idx);
+    li.append(useBtn);
+    const dropBtn = document.createElement('button');
+    dropBtn.className = 'btn text-xs';
+    dropBtn.textContent = 'Drop';
+    dropBtn.onclick = () => dropItem(idx);
+    li.append(dropBtn);
     list.append(li);
   });
   inv.append(list);
@@ -867,14 +916,9 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
-  ['n', 'e', 's', 'w'].forEach((d) => {
-    const btn = document.getElementById(`dir-${d}`);
-    if (btn)
-      btn.onclick = () => {
-        const dest = btn.dataset.dest;
-        if (dest) enterRoom(dest);
-      };
-  });
+  document.getElementById('close-inv').onclick = () => {
+    document.getElementById('inv').classList.add('hidden');
+  };
 }
 
 function populateSelect(id, data) {
