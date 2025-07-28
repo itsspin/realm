@@ -298,7 +298,11 @@ function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
-  updateZonePanel();
+}
+
+function move(dir) {
+  const dest = loader.data.locations[game.player.location].links[dir];
+  if (dest) enterRoom(dest);
 }
 
 function updatePlayersList() {
