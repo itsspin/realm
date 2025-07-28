@@ -163,6 +163,26 @@ function updateHUD() {
   document.getElementById('currency').textContent = `Coins: ${coins}`;
 }
 
+function updateLocationPanel() {
+  const loc = loader.data.locations[game.player.location];
+  if (!loc) return;
+  document.getElementById('location-name').textContent = loc.name;
+  const dirs = { n: 'dir-n', e: 'dir-e', s: 'dir-s', w: 'dir-w' };
+  Object.entries(dirs).forEach(([dir, id]) => {
+    const btn = document.getElementById(id);
+    const dest = loc.links?.[dir];
+    if (dest) {
+      btn.disabled = false;
+      btn.dataset.dest = dest;
+      btn.title = loader.data.locations[dest]?.name || dest;
+    } else {
+      btn.disabled = true;
+      btn.dataset.dest = '';
+      btn.title = '';
+    }
+  });
+}
+
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -248,6 +268,7 @@ function enterRoom(id) {
   location.hash = id;
   renderRoom(loc);
   updateHUD();
+  updateLocationPanel();
 }
 
 function updatePlayersList() {
@@ -733,6 +754,14 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
+  ['n', 'e', 's', 'w'].forEach((d) => {
+    const btn = document.getElementById(`dir-${d}`);
+    if (btn)
+      btn.onclick = () => {
+        const dest = btn.dataset.dest;
+        if (dest) enterRoom(dest);
+      };
+  });
 }
 
 function populateSelect(id, data) {
