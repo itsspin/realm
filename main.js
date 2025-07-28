@@ -294,6 +294,11 @@ function move(dir) {
   if (dest) enterRoom(dest);
 }
 
+function move(dir) {
+  const dest = loader.data.locations[game.player.location].links[dir];
+  if (dest) enterRoom(dest);
+}
+
 function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
