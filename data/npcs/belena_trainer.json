@@ -1,0 +1,9 @@
+{
+  "name": "Belena Lightbringer",
+  "role": "Cleric Trainer",
+  "level": 7,
+  "description": "Her armor gleams with the blessing of Solara.",
+  "dialogue": [
+    "The light guides those with faith. Join me in service to Solara."
+  ]
+}

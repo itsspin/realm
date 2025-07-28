@@ -1,0 +1,16 @@
+{
+  "name": "Scout the Camp",
+  "giver": "ranger_npc",
+  "zones": ["goblin_forest"],
+  "stages": [
+    {
+      "description": "Investigate the goblin camp.",
+      "objective": { "location": "goblin_camp" }
+    },
+    {
+      "description": "Report your findings to the ranger.",
+      "objective": { "talk": "ranger_npc" }
+    }
+  ],
+  "rewards": { "xp": 70 }
+}

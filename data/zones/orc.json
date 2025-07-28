@@ -1,0 +1,32 @@
+{
+  "locations": {
+    "orc_stronghold_path": {
+      "name": "Blasted Trail",
+      "faction": "neutral",
+      "description": "A rough trail littered with bones leading to the orc stronghold.",
+      "exits": [
+        "neutral_crossroads",
+        "orc_stronghold"
+      ],
+      "links": {
+        "crossroads": "neutral_crossroads",
+        "city": "orc_stronghold"
+      },
+      "npcs": [],
+      "spawns": []
+    },
+    "orc_stronghold": {
+      "name": "Orc Stronghold",
+      "faction": "umbra",
+      "description": "A fortified camp echoing with war drums.",
+      "exits": [
+        "orc_stronghold_path"
+      ],
+      "links": {
+        "road": "orc_stronghold_path"
+      },
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}

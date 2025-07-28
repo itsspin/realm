@@ -27,10 +27,9 @@
 
   <!-- Main layout -->
 
-  <main class="grow grid md:grid-cols-[16rem_1fr_16rem] gap-2 p-2 overflow-hidden">
+  <main class="grow grid md:grid-cols-[16rem_1fr_16rem_16rem] gap-2 p-2 overflow-hidden">
     <aside id="left-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
       <div id="inv" class="hud-box"></div>
-      <div id="quests" class="hud-box flex-grow overflow-y-auto"></div>
     </aside>
 
     <div class="flex flex-col gap-2 overflow-hidden">
@@ -78,6 +77,9 @@
       <div id="dialogue" class="hud-box hidden"></div>
       <div id="chat-panel" class="hud-box flex-grow overflow-y-auto"></div>
       <div id="minimap" class="hud-box h-40"></div>
+    </aside>
+    <aside id="quest-sidebar" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
+      <div id="quests" class="hud-box flex-grow overflow-y-auto"></div>
     </aside>
   </main>
   <!-- Overlay panels -->

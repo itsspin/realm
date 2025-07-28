@@ -1,0 +1,16 @@
+{
+  "locations": {
+    "dawn_isle_port": {
+      "name": "Dawn Isle Port",
+      "faction": "luminara",
+      "description": "A small harbor where boats depart for distant lands.",
+      "exits": [],
+      "links": {},
+      "boats": [
+        "undead_necropolis"
+      ],
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}
