@@ -210,23 +210,6 @@ function buildMoveControls(loc) {
   });
 }
 
-function updateMovementButtons() {
-  const loc = loader.data.locations[game.player.location];
-  const container = document.getElementById('move-controls');
-  if (!loc || !container) return;
-  container.innerHTML = '';
-  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
-  Object.entries(names).forEach(([dir, label]) => {
-    if (loc.links?.[dir]) {
-      const btn = document.createElement('button');
-      btn.className = 'move-btn';
-      btn.dataset.dir = dir;
-      btn.textContent = label;
-      btn.onclick = () => move(dir);
-      container.append(btn);
-    }
-  });
-}
 
 function addLog(txt) {
   const div = document.createElement('div');
@@ -514,7 +497,7 @@ function showNpcMenu(id) {
     btn.onclick = () => {
       if (window.confirm(`Accept quest "${q.name}"?`)) {
         game.player.activeQuests.push(qid);
-        game.player.questProgress[qid] = 0;
+        game.player.questProgress[qid] = { stage: 0, count: 0 };
         addLog(`Quest accepted: ${q.name}`);
         dlg.classList.add('hidden');
         buildQuestList();
@@ -754,20 +737,37 @@ function completeQuest(qid) {
   buildQuestList();
 }
 
+function advanceQuestStage(qid) {
+  const q = loader.data.quests[qid];
+  const prog = game.player.questProgress[qid];
+  if (!q || !prog) return;
+  if (prog.stage < q.stages.length - 1) {
+    prog.stage += 1;
+    prog.count = 0;
+    addLog(`Quest updated: ${q.name} - ${q.stages[prog.stage].description}`);
+    buildQuestList();
+  } else {
+    completeQuest(qid);
+  }
+}
+
 function checkQuestProgress(type, id) {
   game.player.activeQuests.forEach((qid) => {
     const q = loader.data.quests[qid];
-    if (!q) return;
-    if (type === 'kill' && q.objective.kill === id) {
-      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
-      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
-    } else if (type === 'talk' && q.objective.talk === id) {
-      completeQuest(qid);
-    } else if (type === 'location' && q.objective.location === id) {
-      completeQuest(qid);
-    } else if (type === 'item' && q.objective.item === id) {
-      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
-      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
+    const prog = game.player.questProgress[qid];
+    if (!q || !prog) return;
+    const stage = q.stages[prog.stage];
+    const obj = stage.objective;
+    if (type === 'kill' && obj.kill === id) {
+      prog.count = (prog.count || 0) + 1;
+      if (prog.count >= (obj.count || 1)) advanceQuestStage(qid);
+    } else if (type === 'talk' && obj.talk === id) {
+      advanceQuestStage(qid);
+    } else if (type === 'location' && obj.location === id) {
+      advanceQuestStage(qid);
+    } else if (type === 'item' && obj.item === id) {
+      prog.count = (prog.count || 0) + 1;
+      if (prog.count >= (obj.count || 1)) advanceQuestStage(qid);
     }
   });
 }
@@ -813,33 +813,45 @@ function buildQuestList() {
   qpanel.append(details);
 }
 
+function formatObjective(obj) {
+  if (obj.item) {
+    const itm = loader.data.items[obj.item]?.name || obj.item;
+    return `Collect ${obj.count || 1} ${itm}`;
+  }
+  if (obj.kill) {
+    const mob = loader.data.mobs[obj.kill]?.name || obj.kill;
+    return `Defeat ${obj.count || 1} ${mob}`;
+  }
+  if (obj.talk) {
+    const npc = loader.get('npcs', obj.talk)?.name || obj.talk;
+    return `Speak with ${npc}`;
+  }
+  if (obj.location) {
+    const loc = loader.data.locations[obj.location]?.name || obj.location;
+    return `Travel to ${loc}`;
+  }
+  return '';
+}
+
 function showQuestDetails(qid) {
   const q = loader.data.quests[qid];
   if (!q) return;
   const giver = loader.get('npcs', q.giver)?.name || q.giver;
-  let objective = '';
-  if (q.objective.item) {
-    const itm = loader.data.items[q.objective.item]?.name || q.objective.item;
-    objective = `Collect ${q.objective.count} ${itm}`;
-  } else if (q.objective.kill) {
-    const mob = loader.data.mobs[q.objective.kill]?.name || q.objective.kill;
-    objective = `Defeat ${q.objective.count} ${mob}`;
-  } else if (q.objective.talk) {
-    const npc = loader.get('npcs', q.objective.talk)?.name || q.objective.talk;
-    objective = `Speak with ${npc}`;
-  } else if (q.objective.location) {
-    const loc =
-      loader.data.locations[q.objective.location]?.name || q.objective.location;
-    objective = `Travel to ${loc}`;
-  }
+  const prog = game.player.questProgress[qid];
+  const stageIdx = game.player.completedQuests.includes(qid)
+    ? q.stages.length - 1
+    : prog?.stage || 0;
+  const stage = q.stages[stageIdx];
+  const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.reward.xp) rewards.push(`${q.reward.xp} XP`);
-  if (q.reward.item)
-    rewards.push(loader.data.items[q.reward.item]?.name || q.reward.item);
+  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+  (q.rewards?.items || []).forEach((i) =>
+    rewards.push(loader.data.items[i]?.name || i)
+  );
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
-    <p class="mb-1">${q.description}</p>
+    <p class="mb-1">${stage.description}</p>
     <p class="mb-1"><strong>Objective:</strong> ${objective}</p>
     <p class="mb-1"><strong>Reward:</strong> ${rewards.join(', ') || 'None'}</p>
     <p class="mb-1"><strong>Turn in:</strong> ${giver}</p>
@@ -1073,6 +1085,12 @@ function startGame(player) {
   updatePlayersList();
   bindUI();
   buildHotbar();
+  game.player.activeQuests.forEach((qid) => {
+    if (!game.player.questProgress[qid]) {
+      game.player.questProgress[qid] = { stage: 0, count: 0 };
+    }
+  });
+  buildQuestList();
   const start = location.hash.slice(1) || game.player.location;
   enterRoom(start);
 }
