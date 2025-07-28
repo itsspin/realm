@@ -146,7 +146,11 @@ function dropLoot(mob) {
   loot.copper = rand(mob.level * 2);
   if (mob.level >= 5) loot.silver = rand(Math.floor(mob.level / 5));
   if (mob.level >= 20) loot.gold = rand(Math.floor(mob.level / 20));
-  if (Math.random() < 0.5) {
+  if (mob.drops) {
+    mob.drops.forEach((d) => {
+      if (Math.random() < d.chance) loot.items.push(d.id);
+    });
+  } else if (Math.random() < 0.5) {
     const list = Object.keys(loader.data.items).filter(
       (id) => loader.data.items[id].level <= mob.level
     );
@@ -201,6 +205,29 @@ function addChat(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
   document.getElementById('chat-panel').append(div);
+}
+
+function showLoot(loot) {
+  const panel = document.getElementById('loot');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Loot</h2>';
+  const list = document.createElement('ul');
+  loot.items.forEach((id) => {
+    const li = document.createElement('li');
+    li.textContent = loader.data.items[id]?.name || id;
+    list.append(li);
+  });
+  if (loot.gold || loot.silver || loot.copper) {
+    const li = document.createElement('li');
+    li.textContent = `${loot.gold}g ${loot.silver}s ${loot.copper}c`;
+    list.append(li);
+  }
+  panel.append(list);
+  const btn = document.createElement('button');
+  btn.className = 'btn mt-2';
+  btn.textContent = 'Close';
+  btn.onclick = () => document.getElementById('overlay').classList.add('hidden');
+  panel.append(btn);
+  showPanel('loot');
 }
 
 function showPanel(name) {
@@ -341,6 +368,7 @@ function attackRound() {
         `You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`
       );
     }
+    showLoot(loot);
     checkQuestProgress('kill', mob.id);
     updateHUD();
     return;
@@ -357,7 +385,7 @@ function attackRound() {
 }
 
 function startCombat(mobId) {
-  game.target = { ...loader.data.mobs[mobId] };
+  game.target = { id: mobId, ...loader.data.mobs[mobId] };
   clearInterval(game.combatTimer);
   game.combatTimer = setInterval(attackRound, 2000);
   updateHUD();
