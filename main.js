@@ -190,6 +190,17 @@ function updateLocationPanel() {
   });
 }
 
+function updateZonePanel() {
+  const loc = loader.data.locations[game.player.location];
+  if (!loc) return;
+  document.getElementById('zone-name').textContent = loc.name;
+  document.getElementById('zone-desc').textContent = loc.description || '';
+  const exits = Object.values(loc.links || {})
+    .map((dest) => loader.data.locations[dest]?.name || dest)
+    .join(', ') || 'None';
+  document.getElementById('zone-exits').textContent = `Exits: ${exits}`;
+}
+
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
