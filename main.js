@@ -163,6 +163,26 @@ function updateHUD() {
   document.getElementById('currency').textContent = `Coins: ${coins}`;
 }
 
+function updateLocationPanel() {
+  const loc = loader.data.locations[game.player.location];
+  if (!loc) return;
+  document.getElementById('location-name').textContent = loc.name;
+  const dirs = { n: 'dir-n', e: 'dir-e', s: 'dir-s', w: 'dir-w' };
+  Object.entries(dirs).forEach(([dir, id]) => {
+    const btn = document.getElementById(id);
+    const dest = loc.links?.[dir];
+    if (dest) {
+      btn.disabled = false;
+      btn.dataset.dest = dest;
+      btn.title = loader.data.locations[dest]?.name || dest;
+    } else {
+      btn.disabled = true;
+      btn.dataset.dest = '';
+      btn.title = '';
+    }
+  });
+}
+
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -239,6 +259,7 @@ function renderRoom(loc) {
   buildNPCList(loc.npcs);
   buildMobList(loc.spawns);
   buildNodeList(loc.nodes);
+  buildActionsPanel(loc);
 }
 
 function enterRoom(id) {
@@ -248,6 +269,7 @@ function enterRoom(id) {
   location.hash = id;
   renderRoom(loc);
   updateHUD();
+  updateLocationPanel();
 }
 
 function move(dir) {
@@ -435,6 +457,58 @@ function buildMobList(mobs) {
     btn.textContent = mob.name;
     btn.onclick = () => startCombat(id);
     list.append(btn);
+  });
+}
+
+function buildActionsPanel(loc) {
+  const panel = document.getElementById('actions-panel');
+  if (!panel) return;
+  panel.innerHTML = '';
+  const actions = [];
+  if ((loc.npcs || []).length) {
+    actions.push('talk');
+    const hasTrader = loc.npcs.some((nid) => {
+      const role = loader.get('npcs', nid)?.role?.toLowerCase() || '';
+      return role.includes('trader') || role.includes('merchant') || role.includes('barkeep');
+    });
+    if (hasTrader) actions.push('trade');
+  }
+  if ((loc.spawns || []).length) actions.push('attack');
+  if ((loc.nodes || []).length) actions.push('search');
+  actions.forEach((act) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn text-xs';
+    btn.textContent = act.charAt(0).toUpperCase() + act.slice(1);
+    if (act === 'talk') {
+      btn.onclick = () => {
+        if (game.target && game.target.type === 'npc') talkToNpc(game.target.id);
+        else addLog('Select an NPC to talk to.');
+      };
+    } else if (act === 'attack') {
+      btn.onclick = () => {
+        if (game.target && game.target.type === 'mob') startCombat(game.target.id);
+        else if (game.target && game.target.type === 'npc') attackNpc(game.target.id);
+        else addLog('Select a valid target first.');
+      };
+    } else if (act === 'search') {
+      btn.onclick = () => {
+        if (game.target && game.target.type === 'node') {
+          addLog(`You search the ${game.target.name}.`);
+        } else {
+          addLog('Nothing to search here.');
+        }
+      };
+    } else if (act === 'trade') {
+      btn.onclick = () => {
+        if (game.target && game.target.type === 'npc') {
+          const npc = loader.get('npcs', game.target.id);
+          addLog(`You trade with ${npc?.name || game.target.id}.`);
+        } else {
+          addLog('Select a trader to trade with.');
+        }
+      };
+    }
+    panel.append(btn);
   });
 }
 
