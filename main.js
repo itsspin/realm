@@ -5,6 +5,7 @@ const game = {
   player: null,
   target: null,
   combatTimer: 0,
+  inCombat: false,
   onlinePlayers: []
 };
 
@@ -344,59 +345,30 @@ function updatePlayersList() {
   });
 }
 
-/**
- * Calculate an attack result using stats, gear and ability modifiers.
- * @param {object} attacker
- * @param {object} defender
- * @param {object} [ability]
- * @returns {{hit:boolean, crit:boolean, damage:number}}
- */
-function calculateAttackResult(attacker, defender, ability = {}) {
-  const atkDex = attacker.stats?.dex ?? attacker.dex ?? attacker.level ?? 0;
-  const defDex = defender.stats?.dex ?? defender.dex ?? defender.level ?? 0;
-  const atkStr = attacker.stats?.str ?? attacker.str ?? attacker.level ?? 0;
-
-  let hitChance = 0.75 + atkDex * 0.01 - defDex * 0.005 + (ability.hitChance || 0);
-  hitChance = Math.min(Math.max(hitChance, 0.05), 0.95);
-  const hit = Math.random() < hitChance;
-
-  if (!hit) return { hit: false, crit: false, damage: 0 };
-
-  let weaponDamage = 1;
-  if (attacker.equipped?.weapon) {
-    weaponDamage = loader.data.items[attacker.equipped.weapon]?.damage || 1;
-  } else if (attacker.damage) {
-    weaponDamage = attacker.damage;
-  }
-
-  let damage = rand(weaponDamage) + atkStr + (ability.damage || 0);
-
-  let critChance = 0.05 + atkDex * 0.005 + (ability.critChance || 0);
-  critChance = Math.min(Math.max(critChance, 0), 0.5);
-  const crit = Math.random() < critChance;
-  if (crit) damage = Math.floor(damage * 1.5);
-
-  return { hit: true, crit, damage };
+// --- Turn-based Combat System ---
+function addCombatLog(txt) {
+  const div = document.createElement('div');
+  div.textContent = txt;
+  const log = document.getElementById('combat-log');
+  log.append(div);
+  log.scrollTop = log.scrollHeight;
 }
 
-function attackRound() {
-  const player = game.player;
+function updateCombatUI() {
+  if (!game.inCombat) return;
+  const enemy = game.target;
+  document.getElementById('combat-enemy').textContent = enemy.name;
+  document.getElementById('combat-stats').textContent =
+    `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+}
+
+function endCombat(win) {
   const mob = game.target;
-  if (!mob) return;
-  const pres = calculateAttackResult(player, mob);
-  if (pres.hit) {
-    mob.hp -= pres.damage;
-    const pmsg = pres.crit
-      ? `Critical! You hit ${mob.name} for ${pres.damage}.`
-      : `You hit ${mob.name} for ${pres.damage}.`;
-    addLog(pmsg);
-  } else {
-    addLog(`You miss ${mob.name}.`);
-  }
-  if (mob.hp <= 0) {
+  game.inCombat = false;
+  game.target = null;
+  document.getElementById('combat-overlay').classList.add('hidden');
+  if (win) {
     addLog(`${mob.name} dies.`);
-    clearInterval(game.combatTimer);
-    game.target = null;
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -407,48 +379,77 @@ function attackRound() {
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
-      addLog(
-        `You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`
-      );
+      addLog(`You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`);
     }
     showLoot(loot);
     checkQuestProgress('kill', mob.id);
-    updateHUD();
-    return;
-  }
-  const mres = calculateAttackResult(mob, player);
-  if (mres.hit) {
-    player.hp -= mres.damage;
-    const mmsg = mres.crit
-      ? `${mob.name} critically hits you for ${mres.damage}.`
-      : `${mob.name} hits you for ${mres.damage}.`;
-    addLog(mmsg);
   } else {
-    addLog(`${mob.name} misses you.`);
-  }
-  if (player.hp <= 0) {
     addLog('You have been slain!');
-    clearInterval(game.combatTimer);
-    game.target = null;
   }
   updateHUD();
 }
 
-function startCombat(mobId) {
-  game.target = { id: mobId, ...loader.data.mobs[mobId] };
-  clearInterval(game.combatTimer);
-  game.combatTimer = setInterval(attackRound, 2000);
-  updateHUD();
+function enemyAttack() {
+  const mob = game.target;
+  const dmg = rand(mob.damage);
+  game.player.hp -= dmg;
+  addCombatLog(`${mob.name} hits you for ${dmg}.`);
+  if (game.player.hp <= 0) {
+    addCombatLog('You have been defeated!');
+    endCombat(false);
+  } else {
+    updateCombatUI();
+  }
+}
+
+function useAbility(id) {
+  if (!game.inCombat) return;
+  const spell = loader.data.spells[id];
+  if (!spell) return;
+  addCombatLog(`You use ${spell.name}.`);
+  if (spell.damage) {
+    const dmg = rand(spell.damage);
+    game.target.hp -= dmg;
+    addCombatLog(`You deal ${dmg} damage.`);
+  }
+  if (spell.heal) {
+    game.player.hp = Math.min(game.player.maxHp, game.player.hp + spell.heal);
+    addCombatLog(`You heal ${spell.heal} HP.`);
+  }
+  if (game.target.hp <= 0) {
+    addCombatLog(`${game.target.name} is defeated!`);
+    endCombat(true);
+    return;
+  }
+  updateCombatUI();
+  enemyAttack();
+}
+
+function startCombat(targetId, type = 'mob') {
+  const data = type === 'npc' ? loader.get('npcs', targetId) : loader.data.mobs[targetId];
+  if (!data) return;
+  game.target = { ...data, id: targetId };
+  game.inCombat = true;
+  document.getElementById('combat-log').innerHTML = '';
+  document.getElementById('combat-overlay').classList.remove('hidden');
+  const btns = document.getElementById('combat-buttons');
+  btns.innerHTML = '';
+  const abil = loader.data.classes[game.player.class].starterAbilities;
+  abil.forEach((id) => {
+    const b = document.createElement('button');
+    b.className = 'btn text-xs';
+    b.textContent = loader.data.spells[id].name;
+    b.onclick = () => useAbility(id);
+    btns.append(b);
+  });
+  updateCombatUI();
   document.getElementById('dialogue').classList.add('hidden');
 }
 
 function attackNpc(id) {
   const npc = loader.get('npcs', id);
   if (npc && npc.hp) {
-    game.target = { ...npc };
-    clearInterval(game.combatTimer);
-    game.combatTimer = setInterval(attackRound, 2000);
-    updateHUD();
+    startCombat(id, 'npc');
   } else {
     addLog(`${npc.name} does not seem interested in fighting.`);
   }
