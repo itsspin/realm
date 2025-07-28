@@ -29,6 +29,11 @@
       <div id="target" class="hud-box">Target: —</div>
       <div id="party" class="hud-box">Party: —</div>
       <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
+      <div id="zone-panel" class="hud-box">
+        <div id="zone-name" class="font-bold mb-1">Zone</div>
+        <div id="zone-desc" class="text-xs mb-1"></div>
+        <div id="zone-exits" class="text-xs"></div>
+      </div>
       <div id="location-panel" class="hud-box">
         <div id="location-name" class="font-bold mb-1">Location</div>
         <div class="grid grid-cols-3 gap-1 place-items-center">
@@ -73,8 +78,19 @@
     <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="quests" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="chat-panel" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="loot" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div class="text-center">
       <button id="close-overlay" class="btn">Close</button>
+    </div>
+  </div>
+
+  <!-- Combat overlay -->
+  <div id="combat-overlay" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4">
+    <div class="bg-slate-800 p-4 rounded w-80 space-y-2">
+      <div id="combat-enemy" class="text-center font-bold"></div>
+      <div id="combat-stats" class="text-center text-sm"></div>
+      <div id="combat-buttons" class="flex flex-wrap gap-2 justify-center"></div>
+      <div id="combat-log" class="bg-slate-700 rounded p-2 h-32 overflow-y-auto text-sm"></div>
     </div>
   </div>
 
