@@ -5,6 +5,7 @@ const game = {
   player: null,
   target: null,
   combatTimer: 0,
+  inCombat: false,
   onlinePlayers: []
 };
 
@@ -294,11 +295,6 @@ function move(dir) {
   if (dest) enterRoom(dest);
 }
 
-function move(dir) {
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) enterRoom(dest);
-}
-
 function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
@@ -311,22 +307,30 @@ function updatePlayersList() {
   });
 }
 
-function getWeaponDamage() {
-  const w = game.player.equipped.weapon;
-  return loader.data.items[w]?.damage || 1;
+// --- Turn-based Combat System ---
+function addCombatLog(txt) {
+  const div = document.createElement('div');
+  div.textContent = txt;
+  const log = document.getElementById('combat-log');
+  log.append(div);
+  log.scrollTop = log.scrollHeight;
 }
 
-function attackRound() {
-  const player = game.player;
+function updateCombatUI() {
+  if (!game.inCombat) return;
+  const enemy = game.target;
+  document.getElementById('combat-enemy').textContent = enemy.name;
+  document.getElementById('combat-stats').textContent =
+    `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+}
+
+function endCombat(win) {
   const mob = game.target;
-  if (!mob) return;
-  const pdmg = rand(getWeaponDamage()) + player.stats.str;
-  mob.hp -= pdmg;
-  addLog(`You hit ${mob.name} for ${pdmg}.`);
-  if (mob.hp <= 0) {
+  game.inCombat = false;
+  game.target = null;
+  document.getElementById('combat-overlay').classList.add('hidden');
+  if (win) {
     addLog(`${mob.name} dies.`);
-    clearInterval(game.combatTimer);
-    game.target = null;
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -337,40 +341,76 @@ function attackRound() {
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
-      addLog(
-        `You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`
-      );
+      addLog(`You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`);
     }
     checkQuestProgress('kill', mob.id);
-    updateHUD();
-    return;
-  }
-  const mdmg = rand(mob.damage);
-  player.hp -= mdmg;
-  addLog(`${mob.name} hits you for ${mdmg}.`);
-  if (player.hp <= 0) {
+  } else {
     addLog('You have been slain!');
-    clearInterval(game.combatTimer);
-    game.target = null;
   }
   updateHUD();
 }
 
-function startCombat(mobId) {
-  game.target = { ...loader.data.mobs[mobId] };
-  clearInterval(game.combatTimer);
-  game.combatTimer = setInterval(attackRound, 2000);
-  updateHUD();
+function enemyAttack() {
+  const mob = game.target;
+  const dmg = rand(mob.damage);
+  game.player.hp -= dmg;
+  addCombatLog(`${mob.name} hits you for ${dmg}.`);
+  if (game.player.hp <= 0) {
+    addCombatLog('You have been defeated!');
+    endCombat(false);
+  } else {
+    updateCombatUI();
+  }
+}
+
+function useAbility(id) {
+  if (!game.inCombat) return;
+  const spell = loader.data.spells[id];
+  if (!spell) return;
+  addCombatLog(`You use ${spell.name}.`);
+  if (spell.damage) {
+    const dmg = rand(spell.damage);
+    game.target.hp -= dmg;
+    addCombatLog(`You deal ${dmg} damage.`);
+  }
+  if (spell.heal) {
+    game.player.hp = Math.min(game.player.maxHp, game.player.hp + spell.heal);
+    addCombatLog(`You heal ${spell.heal} HP.`);
+  }
+  if (game.target.hp <= 0) {
+    addCombatLog(`${game.target.name} is defeated!`);
+    endCombat(true);
+    return;
+  }
+  updateCombatUI();
+  enemyAttack();
+}
+
+function startCombat(targetId, type = 'mob') {
+  const data = type === 'npc' ? loader.get('npcs', targetId) : loader.data.mobs[targetId];
+  if (!data) return;
+  game.target = { ...data, id: targetId };
+  game.inCombat = true;
+  document.getElementById('combat-log').innerHTML = '';
+  document.getElementById('combat-overlay').classList.remove('hidden');
+  const btns = document.getElementById('combat-buttons');
+  btns.innerHTML = '';
+  const abil = loader.data.classes[game.player.class].starterAbilities;
+  abil.forEach((id) => {
+    const b = document.createElement('button');
+    b.className = 'btn text-xs';
+    b.textContent = loader.data.spells[id].name;
+    b.onclick = () => useAbility(id);
+    btns.append(b);
+  });
+  updateCombatUI();
   document.getElementById('dialogue').classList.add('hidden');
 }
 
 function attackNpc(id) {
   const npc = loader.get('npcs', id);
   if (npc && npc.hp) {
-    game.target = { ...npc };
-    clearInterval(game.combatTimer);
-    game.combatTimer = setInterval(attackRound, 2000);
-    updateHUD();
+    startCombat(id, 'npc');
   } else {
     addLog(`${npc.name} does not seem interested in fighting.`);
   }
