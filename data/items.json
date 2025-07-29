@@ -2,6 +2,7 @@
   "rusty_sword": {
     "name": "Rusty Sword",
     "level": 1,
+    "rarity": "common",
     "damage": 4,
     "str": 1,
     "slot": "weapon",
@@ -10,6 +11,7 @@
   "bronze_sword": {
     "name": "Bronze Sword",
     "level": 1,
+    "rarity": "common",
     "damage": 5,
     "slot": "weapon",
     "description": "A basic sword made of bronze."
@@ -17,6 +19,7 @@
   "rusty_dagger": {
     "name": "Rusty Dagger",
     "level": 1,
+    "rarity": "common",
     "damage": 3,
     "slot": "weapon",
     "description": "A worn dagger showing signs of age."
@@ -24,6 +27,7 @@
   "leather_armor": {
     "name": "Leather Armor",
     "level": 1,
+    "rarity": "common",
     "armor": 2,
     "dex": 1,
     "slot": "chest",
@@ -32,18 +36,21 @@
   "healing_potion": {
     "name": "Healing Potion",
     "level": 1,
+    "rarity": "common",
     "heal": 20,
     "description": "Restores a small amount of HP."
   },
   "mana_potion": {
     "name": "Mana Potion",
     "level": 1,
+    "rarity": "common",
     "mana": 20,
     "description": "Restores a small amount of MP."
   },
   "wooden_shield": {
     "name": "Wooden Shield",
     "level": 1,
+    "rarity": "common",
     "armor": 1,
     "slot": "offhand",
     "description": "A basic wooden shield."
@@ -51,6 +58,7 @@
   "hunter_bow": {
     "name": "Hunter Bow",
     "level": 1,
+    "rarity": "common",
     "damage": 3,
     "dex": 2,
     "slot": "weapon",
@@ -59,13 +67,16 @@
   "druid_staff": {
     "name": "Druid Staff",
     "level": 1,
+    "rarity": "uncommon",
     "damage": 2,
     "slot": "weapon",
-    "description": "Carved from an ancient tree."
+    "description": "Carved from an ancient tree.",
+    "relic": true
   },
   "shadow_dagger": {
     "name": "Shadow Dagger",
     "level": 1,
+    "rarity": "rare",
     "damage": 5,
     "slot": "weapon",
     "description": "A blade that seems to drink the light."
@@ -73,6 +84,7 @@
   "bard_lute": {
     "name": "Bard's Lute",
     "level": 1,
+    "rarity": "uncommon",
     "damage": 1,
     "slot": "weapon",
     "description": "Plays enchanting melodies."
@@ -80,42 +92,50 @@
   "torch": {
     "name": "Torch",
     "level": 1,
+    "rarity": "common",
     "slot": "offhand",
     "description": "Lights the way in dark places."
   },
   "iron_ore": {
     "name": "Iron Ore",
     "level": 1,
+    "rarity": "common",
     "description": "Ore used in basic smithing."
   },
   "wood_plank": {
     "name": "Wood Plank",
     "level": 1,
+    "rarity": "common",
     "description": "A sturdy piece of wood for crafting."
   },
   "cloth_scrap": {
     "name": "Cloth Scrap",
     "level": 1,
+    "rarity": "common",
     "description": "Bits of cloth useful for tailoring."
   },
   "herb_leaf": {
     "name": "Herb Leaf",
     "level": 1,
+    "rarity": "common",
     "description": "A common herb used in alchemy."
   },
   "arcane_dust": {
     "name": "Arcane Dust",
     "level": 1,
+    "rarity": "common",
     "description": "Residue left from disenchanted items."
   },
   "feather": {
     "name": "Feather",
     "level": 1,
+    "rarity": "common",
     "description": "Useful for fletching arrows."
   },
   "water": {
     "name": "Water Flask",
     "level": 1,
+    "rarity": "common",
     "description": "Used in many recipes."
   },
   "clockwork_gauntlet": {

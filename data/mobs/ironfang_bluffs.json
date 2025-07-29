@@ -1,0 +1,35 @@
+{
+  "zone": "ironfang_bluffs",
+  "recommended_level_range": [
+    42,
+    48
+  ],
+  "mobs": [
+    {
+      "id": "ironfang_savage",
+      "name": "Ironfang Savage",
+      "type": "beastfolk",
+      "level_range": [
+        42,
+        45
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "savage_pelt"
+      ]
+    },
+    {
+      "id": "bluff_shaman",
+      "name": "Bluff Shaman",
+      "type": "beastfolk",
+      "level_range": [
+        45,
+        48
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "totem_piece"
+      ]
+    }
+  ]
+}

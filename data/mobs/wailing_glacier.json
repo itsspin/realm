@@ -1,0 +1,35 @@
+{
+  "zone": "wailing_glacier",
+  "recommended_level_range": [
+    35,
+    40
+  ],
+  "mobs": [
+    {
+      "id": "wailing_banshee",
+      "name": "Wailing Banshee",
+      "type": "undead",
+      "level_range": [
+        35,
+        38
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "banshee_wail"
+      ]
+    },
+    {
+      "id": "glacier_mammoth",
+      "name": "Glacier Mammoth",
+      "type": "beast",
+      "level_range": [
+        38,
+        40
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "mammoth_hide"
+      ]
+    }
+  ]
+}

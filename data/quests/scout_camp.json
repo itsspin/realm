@@ -2,6 +2,7 @@
   "name": "Scout the Camp",
   "giver": "ranger_npc",
   "zones": ["goblin_forest"],
+  "faction": "neutral",
   "stages": [
     {
       "description": "Investigate the goblin camp.",

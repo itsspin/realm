@@ -1,0 +1,35 @@
+{
+  "zone": "webwood_hollow",
+  "recommended_level_range": [
+    10,
+    14
+  ],
+  "mobs": [
+    {
+      "id": "webspinner_widow",
+      "name": "Webspinner Widow",
+      "type": "beast",
+      "level_range": [
+        10,
+        12
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "silk_thread"
+      ]
+    },
+    {
+      "id": "hollow_shrieker",
+      "name": "Hollow Shrieker",
+      "type": "beast",
+      "level_range": [
+        12,
+        14
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "shrieker_talon"
+      ]
+    }
+  ]
+}
