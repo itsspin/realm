@@ -1,0 +1,35 @@
+{
+  "zone": "worldrend_citadel",
+  "recommended_level_range": [
+    60,
+    60
+  ],
+  "mobs": [
+    {
+      "id": "void_champion",
+      "name": "Void Champion",
+      "type": "demon",
+      "level_range": [
+        60,
+        60
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "void_sigil"
+      ]
+    },
+    {
+      "id": "citadel_ravager",
+      "name": "Citadel Ravager",
+      "type": "demon",
+      "level_range": [
+        60,
+        60
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "ravager_claw"
+      ]
+    }
+  ]
+}

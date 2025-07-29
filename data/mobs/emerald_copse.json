@@ -1,0 +1,49 @@
+{
+  "zone": "emerald_copse",
+  "recommended_level_range": [
+    1,
+    4
+  ],
+  "mobs": [
+    {
+      "id": "copse_fox",
+      "name": "Copse Fox",
+      "type": "beast",
+      "level_range": [
+        1,
+        2
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "fox_tail",
+        "fur_pelt"
+      ]
+    },
+    {
+      "id": "wandering_sprout",
+      "name": "Wandering Sprout",
+      "type": "plant",
+      "level_range": [
+        2,
+        3
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "leafy_vine"
+      ]
+    },
+    {
+      "id": "sapling_snatcher",
+      "name": "Sapling Snatcher",
+      "type": "humanoid",
+      "level_range": [
+        3,
+        4
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "root_club"
+      ]
+    }
+  ]
+}

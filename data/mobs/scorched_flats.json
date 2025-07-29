@@ -1,0 +1,35 @@
+{
+  "zone": "scorched_flats",
+  "recommended_level_range": [
+    1,
+    4
+  ],
+  "mobs": [
+    {
+      "id": "scorched_lizard",
+      "name": "Scorched Lizard",
+      "type": "beast",
+      "level_range": [
+        1,
+        2
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "lizard_scale"
+      ]
+    },
+    {
+      "id": "flame_beetle",
+      "name": "Flame Beetle",
+      "type": "insect",
+      "level_range": [
+        2,
+        4
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "flame_carapace"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { initEvents } from './events.js';
+import { worldState } from './worldState.js';
 /* global d3 */
 
 const game = {
@@ -7,11 +9,21 @@ const game = {
   target: null,
   combatTimer: 0,
   inCombat: false,
-  onlinePlayers: []
+  onlinePlayers: [],
+  players: {}
 };
 
 function saveCharacter(p) {
   localStorage.setItem('player', JSON.stringify(p));
+}
+
+function saveGuilds() {
+  localStorage.setItem('guilds', JSON.stringify(loader.data.guilds));
+}
+
+function loadGuilds() {
+  const data = localStorage.getItem('guilds');
+  if (data) loader.data.guilds = JSON.parse(data);
 }
 
 function loadCharacter() {
@@ -21,8 +33,15 @@ function loadCharacter() {
   p.completedQuests ||= [];
   p.questProgress ||= {};
   p.professions ||= [];
+  p.crafting ||= {};
+  Object.keys(loader.data.professions || {}).forEach((id) => {
+    p.crafting[id] ||= 0;
+  });
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
+  p.friends ||= [];
+  p.guild ||= null;
+  p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
@@ -35,6 +54,18 @@ function isQuestGiver(id) {
 
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function opposingFaction(fac) {
+  if (fac === 'luminara') return 'umbra';
+  if (fac === 'umbra') return 'luminara';
+  return null;
+}
+
+function adjustReputation(faction, amount) {
+  if (!faction || !game.player) return;
+  game.player.reputation[faction] =
+    (game.player.reputation[faction] || 0) + amount;
 }
 
 function getPlayerLevel() {
@@ -239,6 +270,19 @@ function dropLoot(mob) {
   return loot;
 }
 
+function grantRewards(rewards) {
+  if (!rewards) return;
+  if (rewards.xp) {
+    game.player.xp += rewards.xp;
+    addLog(`You gain ${rewards.xp} XP.`);
+  }
+  (rewards.items || []).forEach((id) => {
+    game.player.inventory.push(id);
+    addLog(`You receive ${loader.data.items[id]?.name || id}.`);
+  });
+  updateHUD();
+}
+
 function updateHUD() {
   const p = game.player;
   const nameEl = document.getElementById('player-name');
@@ -295,6 +339,13 @@ function addLog(txt) {
   div.scrollIntoView();
 }
 
+function addHtmlLog(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.getElementById('log').append(div);
+  div.scrollIntoView();
+}
+
 function addChat(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -343,6 +394,7 @@ function showPanel(name) {
   if (name === 'map') buildMap();
   if (name === 'graph') buildGraph();
   if (name === 'craft') buildCraftPanel();
+  if (name === 'codex') buildCodexPanel();
 }
 
 function renderRoom(loc) {
@@ -401,6 +453,7 @@ function renderRoom(loc) {
 }
 
 async function enterRoom(id) {
+  console.log('Entering room', id);
   const loc = loader.data.locations[id];
   if (!loc) return;
   const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
@@ -411,9 +464,11 @@ async function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
+  discoverZone(id);
 }
 
 async function move(dir) {
+  console.log('Move', dir);
   const dest = loader.data.locations[game.player.location].links[dir];
   if (dest) await enterRoom(dest);
 }
@@ -423,12 +478,79 @@ function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
   list.innerHTML = '';
-  game.onlinePlayers.forEach((p) => {
+  worldState.getPlayerNames().forEach((p) => {
     const btn = document.createElement('button');
     btn.className = 'npc-btn text-xs';
     btn.textContent = p;
+    btn.onclick = () => showPlayerActions(p);
     list.append(btn);
   });
+}
+
+function showPlayerActions(name) {
+  const log = document.getElementById('log');
+  const div = document.createElement('div');
+  div.innerHTML = `Actions for <strong>${name}</strong>:
+    <button class="underline text-sky-400" data-act="inspect">Inspect</button>
+    <button class="underline text-sky-400" data-act="trade">Trade</button>
+    <button class="underline text-sky-400" data-act="msg">Message</button>
+    <button class="underline text-sky-400" data-act="invite">Invite</button>`;
+  log.append(div);
+  div.querySelector('[data-act="inspect"]').onclick = () => handleInput(`/inspect ${name}`);
+  div.querySelector('[data-act="trade"]').onclick = () => addLog(`You offer to trade with ${name}.`);
+  div.querySelector('[data-act="msg"]').onclick = () => addLog(`You send a private message to ${name}.`);
+  div.querySelector('[data-act="invite"]').onclick = () => addLog(`You invite ${name} to your party.`);
+  div.scrollIntoView();
+}
+
+function rarityColorClass(rarity) {
+  return {
+    common: 'text-slate-200',
+    uncommon: 'text-green-400',
+    rare: 'text-blue-400',
+    epic: 'text-purple-400',
+    legendary: 'text-orange-400'
+  }[rarity] || 'text-slate-200';
+}
+
+function gearScore(player) {
+  return Object.values(player.equipped || {}).reduce(
+    (sum, id) => sum + (loader.data.items[id]?.level || 0),
+    0
+  );
+}
+
+function zoneOf(loc) {
+  return (loc || '').split('_')[0];
+}
+
+function inspectPlayer(name) {
+  const p = game.players[name];
+  if (!p) {
+    addLog('No such player.');
+    return;
+  }
+  if (zoneOf(p.location) !== zoneOf(game.player.location)) {
+    addLog(`${name} is not in this zone.`);
+    return;
+  }
+  const gs = gearScore(p);
+  addHtmlLog(`<strong>${name}'s Gear (Score: ${gs})</strong>`);
+  Object.entries(p.equipped || {}).forEach(([slot, id]) => {
+    const item = loader.data.items[id];
+    if (!item) return;
+    const color = rarityColorClass(item.rarity || 'common');
+    addHtmlLog(`${slot}: <span class="${color}">${item.name} (${item.rarity || 'common'})</span>`);
+  });
+}
+function updatePartyPanel() {
+  const panel = document.getElementById('party');
+  if (!panel) return;
+  if (!game.player.party.length) {
+    panel.textContent = 'Party: —';
+  } else {
+    panel.textContent = `Party: ${game.player.party.join(', ')}`;
+  }
 }
 
 // --- Turn-based Combat System ---
@@ -455,6 +577,7 @@ function endCombat(win) {
   document.getElementById('combat-overlay').classList.add('hidden');
   if (win) {
     addLog(`${mob.name} dies.`);
+    if (mob.boss) discoverBoss(mob.id);
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -462,10 +585,16 @@ function endCombat(win) {
     loot.items.forEach((id) => {
       game.player.inventory.push(id);
       addLog(`You loot ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
       addLog(`You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`);
+    }
+    if (mob.faction) {
+      adjustReputation(mob.faction, -5);
+      const opp = opposingFaction(mob.faction);
+      if (opp) adjustReputation(opp, 5);
     }
     showLoot(loot);
     checkQuestProgress('kill', mob.id);
@@ -562,7 +691,19 @@ function attackNpc(id) {
 function talkToNpc(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
-  const line = npc.dialogue?.[0] || '...';
+  let line = npc.dialogue?.[0] || '...';
+  Object.entries(loader.data.quests).forEach(([qid, q]) => {
+    if (q.giver !== id) return;
+    if (game.player.activeQuests.includes(qid)) {
+      const stage = q.stages[game.player.questProgress[qid].stage];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (game.player.completedQuests.includes(qid)) {
+      const stage = q.stages[q.stages.length - 1];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (q.stages[0].dialogue) {
+      line = q.stages[0].dialogue;
+    }
+  });
   addLog(`${npc.name} says: "${line}"`);
   checkQuestProgress('talk', id);
   document.getElementById('dialogue').classList.add('hidden');
@@ -571,6 +712,12 @@ function talkToNpc(id) {
 function showNpcMenu(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
+  const loc = loader.data.locations[game.player.location];
+  const fac = loc?.faction;
+  if (fac && game.player.reputation[fac] <= -10) {
+    addLog(`${npc.name} refuses to deal with you due to your reputation with ${fac}.`);
+    return;
+  }
   const dlg = document.getElementById('dialogue');
   dlg.innerHTML = `
     <div class="font-bold mb-1">${npc.name}</div>
@@ -607,10 +754,10 @@ function showNpcMenu(id) {
     if (game.player.professions.includes(prof)) return;
     const btn = document.createElement('button');
     btn.className = 'btn text-xs';
-    btn.textContent = `Learn ${loader.data.crafting[prof].name}`;
+    btn.textContent = `Learn ${loader.data.professions[prof].name}`;
     btn.onclick = () => {
       game.player.professions.push(prof);
-      addLog(`You learn ${loader.data.crafting[prof].name}.`);
+      addLog(`You learn ${loader.data.professions[prof].name}.`);
       dlg.classList.add('hidden');
     };
     tdiv.append(btn);
@@ -770,7 +917,21 @@ function showHelp() {
   addLog(' /attack - attack a nearby mob');
   addLog(' hail - speak to your target');
   addLog(' /target <name> - target an NPC or object by name');
+  addLog(' /group invite <name> - invite player to party');
+  addLog(' /leave - leave your party');
+  addLog(' /kick <name> - remove member from party');
+  addLog(' /friends list - list your friends');
+  addLog(' /guild create <name> - create a guild');
+  addLog(' /guild members - list members of your guild');
+  addLog(' /g <msg> - guild chat');
   addLog(' /help - show this help');
+}
+
+function showFactions() {
+  addLog('Faction Standings:');
+  Object.entries(game.player.reputation).forEach(([f, v]) => {
+    addLog(` ${f}: ${v}`);
+  });
 }
 function useItem(idx) {
   const id = game.player.inventory[idx];
@@ -831,6 +992,12 @@ function completeQuest(qid) {
   game.player.activeQuests.splice(idx, 1);
   game.player.completedQuests.push(qid);
   delete game.player.questProgress[qid];
+  const q = loader.data.quests[qid];
+  if (q?.faction) {
+    adjustReputation(q.faction, 10);
+    const opp = opposingFaction(q.faction);
+    if (opp) adjustReputation(opp, -5);
+  }
   addLog(`Quest completed: ${loader.data.quests[qid].name}`);
   if (game.player.completedQuests.length === 1) {
     unlockAchievement('first_dungeon_clear');
@@ -842,6 +1009,8 @@ function advanceQuestStage(qid) {
   const q = loader.data.quests[qid];
   const prog = game.player.questProgress[qid];
   if (!q || !prog) return;
+  const stage = q.stages[prog.stage];
+  grantRewards(stage.rewards);
   if (prog.stage < q.stages.length - 1) {
     prog.stage += 1;
     prog.count = 0;
@@ -945,10 +1114,15 @@ function showQuestDetails(qid) {
   const stage = q.stages[stageIdx];
   const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
-  (q.rewards?.items || []).forEach((i) =>
-    rewards.push(loader.data.items[i]?.name || i)
-  );
+  const sr = stage.rewards || {};
+  if (sr.xp) rewards.push(`${sr.xp} XP`);
+  (sr.items || []).forEach((i) => rewards.push(loader.data.items[i]?.name || i));
+  if (stageIdx === q.stages.length - 1) {
+    if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+    (q.rewards?.items || []).forEach((i) =>
+      rewards.push(loader.data.items[i]?.name || i)
+    );
+  }
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
@@ -957,6 +1131,60 @@ function showQuestDetails(qid) {
     <p class="mb-1"><strong>Reward:</strong> ${rewards.join(', ') || 'None'}</p>
     <p class="mb-1"><strong>Turn in:</strong> ${giver}</p>
   `;
+}
+
+function getLoreTitle(key) {
+  const [type, id] = key.split('-', 2);
+  const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+  return loader.data.lore?.[map[type]]?.[id]?.title || '';
+}
+
+function unlockLore(key) {
+  if (!game.player.codex.includes(key)) {
+    game.player.codex.push(key);
+    saveCharacter(game.player);
+    const title = getLoreTitle(key);
+    if (title) addLog(`Codex updated: ${title}`);
+  }
+}
+
+function discoverZone(locId) {
+  const zone = locId.split('_')[0];
+  if (loader.data.lore?.zones?.[zone]) unlockLore(`zone-${zone}`);
+}
+
+function discoverBoss(mobId) {
+  if (loader.data.lore?.bosses?.[mobId]) unlockLore(`boss-${mobId}`);
+}
+
+function discoverRelic(itemId) {
+  if (loader.data.lore?.relics?.[itemId]) unlockLore(`relic-${itemId}`);
+}
+
+function buildCodexPanel() {
+  const panel = document.getElementById('codex');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Codex</h2>';
+  const book = document.createElement('div');
+  book.className = 'codex-book space-y-4 overflow-y-auto max-h-[70vh]';
+  if (!game.player.codex.length) {
+    book.textContent = 'You have not discovered any lore yet.';
+  } else {
+    game.player.codex.forEach((key) => {
+      const [type, id] = key.split('-', 2);
+      const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+      const entry = loader.data.lore?.[map[type]]?.[id];
+      if (!entry) return;
+      const art = document.createElement('article');
+      const h3 = document.createElement('h3');
+      h3.className = 'font-bold text-lg mb-1';
+      h3.textContent = entry.title;
+      const p = document.createElement('p');
+      p.textContent = entry.text;
+      art.append(h3, p);
+      book.append(art);
+    });
+  }
+  panel.append(book);
 }
 
 function findPath(start, end) {
@@ -1072,12 +1300,14 @@ async function buildGraph() {
   });
 }
 
-function craftItem(prof, rid) {
+function craftItem(rid) {
+  const recipe = loader.data.recipes[rid];
+  if (!recipe) return;
+  const prof = recipe.profession;
   if (!game.player.professions.includes(prof)) {
     addLog('You have not learned that profession.');
     return;
   }
-  const recipe = loader.data.crafting[prof].recipes[rid];
   const mats = recipe.materials;
   for (const [mat, qty] of Object.entries(mats)) {
     const count = game.player.inventory.filter((i) => i === mat).length;
@@ -1095,33 +1325,58 @@ function craftItem(prof, rid) {
       }
     }
   }
-  game.player.inventory.push(recipe.result);
-  addLog(`You craft ${loader.data.items[recipe.result].name}.`);
-  checkQuestProgress('item', recipe.result);
+
+  const skill = game.player.crafting[prof] || 0;
+  const successChance = Math.min(0.95, Math.max(0.05, 0.5 + (skill - recipe.difficulty) / 100));
+  const critChance = Math.max(0, Math.min(0.3, 0.05 + (skill - recipe.difficulty) / 200));
+  const success = Math.random() < successChance;
+  let resultId = recipe.result;
+  if (success) {
+    if (Math.random() < critChance) {
+      const base = loader.data.items[resultId];
+      const uid = `crit_${resultId}_${Date.now()}_${rand(1000)}`;
+      loader.data.items[uid] = { ...base };
+      loader.data.items[uid].name = `Masterwork ${base.name}`;
+      if (base.damage) loader.data.items[uid].damage = Math.ceil(base.damage * 1.2);
+      if (base.armor) loader.data.items[uid].armor = Math.ceil(base.armor * 1.2);
+      resultId = uid;
+      addLog('Critical success!');
+    }
+    game.player.inventory.push(resultId);
+    addLog(`You craft ${loader.data.items[resultId].name}.`);
+    game.player.crafting[prof] += recipe.xp;
+    checkQuestProgress('item', resultId);
+  } else {
+    addLog('Crafting failed.');
+    game.player.crafting[prof] += Math.floor(recipe.xp / 2);
+  }
   buildInventory();
 }
 
 function showRecipes(prof) {
   const div = document.getElementById('recipe-list');
-  div.innerHTML = `<h3 class="font-bold mb-1">${loader.data.crafting[prof].name}</h3>`;
-  Object.entries(loader.data.crafting[prof].recipes).forEach(([rid, r]) => {
-    const btn = document.createElement('button');
-    const req = Object.entries(r.materials)
-      .map(([m, q]) => `${q} ${loader.data.items[m].name}`)
-      .join(', ');
-    btn.className = 'btn text-xs mt-1';
-    btn.textContent = `Craft ${loader.data.items[r.result].name} (${req})`;
-    if (!game.player.professions.includes(prof)) btn.disabled = true;
-    btn.onclick = () => craftItem(prof, rid);
-    div.append(btn);
-  });
+  const xp = game.player.crafting[prof] || 0;
+  div.innerHTML = `<h3 class="font-bold mb-1">${loader.data.professions[prof].name} (XP ${xp})</h3>`;
+  Object.entries(loader.data.recipes)
+    .filter(([, r]) => r.profession === prof)
+    .forEach(([rid, r]) => {
+      const btn = document.createElement('button');
+      const req = Object.entries(r.materials)
+        .map(([m, q]) => `${q} ${loader.data.items[m].name}`)
+        .join(', ');
+      btn.className = 'btn text-xs mt-1';
+      btn.textContent = `Craft ${loader.data.items[r.result].name} (${req})`;
+      if (!game.player.professions.includes(prof)) btn.disabled = true;
+      btn.onclick = () => craftItem(rid);
+      div.append(btn);
+    });
 }
 
 function buildCraftPanel() {
   const panel = document.getElementById('craft');
   panel.innerHTML = '<h2 class="text-lg mb-2">Crafting</h2>';
   const list = document.createElement('ul');
-  Object.entries(loader.data.crafting).forEach(([pid, prof]) => {
+  Object.entries(loader.data.professions).forEach(([pid, prof]) => {
     const li = document.createElement('li');
     const btn = document.createElement('button');
     btn.className = 'underline text-sky-400';
@@ -1139,6 +1394,7 @@ function buildCraftPanel() {
 
 async function handleInput(text) {
   const cmd = text.trim();
+  console.log('Input:', cmd);
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     move(cmd);
   } else if (cmd.startsWith('/goto ')) {
@@ -1153,6 +1409,12 @@ async function handleInput(text) {
   } else if (cmd.startsWith('/target')) {
     const name = cmd.slice(7).trim();
     if (!targetByName(name)) addLog('No such target here.');
+  } else if (cmd.startsWith('/inspect')) {
+    const name = cmd.split(' ')[1];
+    inspectPlayer(name || game.player.name);
+  } else if (cmd.startsWith('/gear')) {
+    const name = cmd.split(' ')[1];
+    inspectPlayer(name || game.player.name);
   } else if (cmd === 'hail') {
     if (!game.target) {
       addLog('You have no target.');
@@ -1167,12 +1429,15 @@ async function handleInput(text) {
     showHelp();
   } else if (cmd === '/who') {
     addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+  } else if (cmd === '/factions') {
+    showFactions();
   } else if (cmd.startsWith('/random')) {
     const [, type] = cmd.split(' ');
     if (type === 'item') {
       const id = generateRandomItem(game.player.level);
       game.player.inventory.push(id);
       addLog(`You receive ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
     } else if (type === 'mob') {
       const mobId = generateRandomMob(game.player.level);
       startCombat(mobId);
@@ -1182,6 +1447,69 @@ async function handleInput(text) {
       addLog(`New quest added: ${loader.data.quests[qid].name}`);
     } else {
       addLog('Usage: /random item|mob|quest');
+    }
+  } else if (cmd.startsWith('/group invite')) {
+    const name = cmd.slice(13).trim();
+    if (!name) {
+      addLog('Usage: /group invite <player>');
+    } else if (game.player.party.length >= 6) {
+      addLog('Your party is full.');
+    } else if (!game.player.party.includes(name)) {
+      game.player.party.push(name);
+      addLog(`You invite ${name} to your party.`);
+      updatePartyPanel();
+      saveCharacter(game.player);
+    }
+  } else if (cmd === '/leave') {
+    if (game.player.party.length) {
+      game.player.party = [];
+      addLog('You leave the party.');
+      updatePartyPanel();
+      saveCharacter(game.player);
+    } else {
+      addLog('You are not in a party.');
+    }
+  } else if (cmd.startsWith('/kick ')) {
+    const name = cmd.slice(6).trim();
+    const idx = game.player.party.indexOf(name);
+    if (idx !== -1) {
+      game.player.party.splice(idx, 1);
+      addLog(`${name} has been removed from the party.`);
+      updatePartyPanel();
+      saveCharacter(game.player);
+    } else {
+      addLog('No such party member.');
+    }
+  } else if (cmd === '/friends list') {
+    const list = game.player.friends;
+    if (list.length) addLog(`Friends: ${list.join(', ')}`);
+    else addLog('You have no friends.');
+  } else if (cmd.startsWith('/guild create')) {
+    const name = cmd.slice(14).trim();
+    if (!name) {
+      addLog('Usage: /guild create <name>');
+    } else if (loader.data.guilds[name]) {
+      addLog('Guild already exists.');
+    } else {
+      loader.data.guilds[name] = { name, members: [game.player.name] };
+      game.player.guild = name;
+      saveGuilds();
+      saveCharacter(game.player);
+      addLog(`Guild ${name} created.`);
+    }
+  } else if (cmd === '/guild members') {
+    const gname = game.player.guild;
+    if (gname && loader.data.guilds[gname]) {
+      addLog(`Guild members: ${loader.data.guilds[gname].members.join(', ')}`);
+    } else {
+      addLog('You are not in a guild.');
+    }
+  } else if (cmd.startsWith('/g ')) {
+    const msg = cmd.slice(3);
+    if (!game.player.guild) {
+      addLog('You are not in a guild.');
+    } else {
+      ws.send('chat', { channel: 'guild', msg: `${game.player.name}: ${msg}` });
     }
   } else if (cmd.startsWith('/title')) {
     const [, title] = cmd.split(' ', 2);
@@ -1199,6 +1527,7 @@ async function handleInput(text) {
 }
 
 function bindUI() {
+  console.log('Binding UI events');
   document.getElementById('send').onclick = () => {
     const inp = document.getElementById('cmd');
     handleInput(inp.value);
@@ -1256,11 +1585,49 @@ function populateSelect(id, data) {
 }
 
 async function startGame(player) {
+  console.log('Starting game for', player.name);
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
-  game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];
+  game.players = {};
+  game.players[player.name] = player;
+  game.onlinePlayers = [player.name, 'Hero', 'Adventurer', 'Mystic'];
+  // create dummy player data for other names
+  ['Hero', 'Adventurer', 'Mystic'].forEach((n) => {
+    const equipped = {};
+    ['weapon', 'chest', 'offhand'].forEach((slot) => {
+      const items = Object.entries(loader.data.items).filter(([, it]) => it.slot === slot);
+      if (items.length) equipped[slot] = items[Math.floor(Math.random() * items.length)][0];
+    });
+    game.players[n] = { name: n, location: player.location, equipped };
+  });
+
+  worldState.addPlayer(player);
+  worldState.addPlayer({
+    name: 'Hero',
+    class: 'warrior',
+    level: 5,
+    location: 'greystone_hills',
+    equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Adventurer',
+    class: 'ranger',
+    level: 3,
+    location: 'gearhaven_plaza',
+    equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Mystic',
+    class: 'mage',
+    level: 8,
+    location: 'howling_caverns',
+    equipped: { weapon: 'druid_staff' }
+  });
+
+  game.onlinePlayers = worldState.getPlayerNames();
   updatePlayersList();
+  updatePartyPanel();
   bindUI();
   buildHotbar();
   game.player.activeQuests.forEach((qid) => {
@@ -1282,6 +1649,7 @@ async function startGame(player) {
 }
 
 function showCreateForm() {
+  console.log('Showing character creation form');
   populateSelect('race', loader.data.races);
   populateSelect('class', loader.data.classes);
   populateSelect('deity', loader.data.deities);
@@ -1333,6 +1701,11 @@ function showCreateForm() {
       questProgress: {},
       party: [],
       professions: [],
+      friends: [],
+      guild: null,
+      crafting: Object.fromEntries(
+        Object.keys(loader.data.professions).map((p) => [p, 0])
+      ),
       coins: { copper: 0, silver: 0, gold: 0 },
       xp: 0,
       achievements: { unlocked: [], titles: [], title: '', playTime: 0 }
@@ -1342,15 +1715,23 @@ function showCreateForm() {
 }
 
 export async function init() {
+  console.log('Initializing game...');
   await loader.init();
+  console.log('Data loaded');
+  await initEvents();
+  loadGuilds();
   generateItems();
   bindUI();
   const saved = loadCharacter();
   if (saved) {
     await startGame(saved);
+    console.log('Loaded saved character');
   } else {
+    console.log('No saved character found, showing create form');
     showCreateForm();
   }
 }
 
-init();
+if (typeof window !== 'undefined') {
+  init();
+}
