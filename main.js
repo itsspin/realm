@@ -295,10 +295,21 @@ function updateHUD() {
     const title = p.achievements.title ? ` ${p.achievements.title}` : '';
     nameEl.textContent = p.name + title;
   }
-  const hpEl = document.getElementById('player-hp');
-  if (hpEl) hpEl.textContent = `HP: ${p.hp}/${p.maxHp}`;
-  const xpEl = document.getElementById('player-xp');
-  if (xpEl) xpEl.textContent = `XP: ${p.xp || 0}`;
+  const clsEl = document.getElementById('player-class');
+  if (clsEl) clsEl.textContent = p.class;
+  const lvlEl = document.getElementById('player-level');
+  if (lvlEl) lvlEl.textContent = `Lv ${getPlayerLevel()}`;
+  const hpText = document.getElementById('player-hp-text');
+  if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
+  const hpFill = document.getElementById('hp-fill');
+  if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
+  const xpText = document.getElementById('player-xp-text');
+  if (xpText) xpText.textContent = p.xp || 0;
+  const xpFill = document.getElementById('xp-fill');
+  if (xpFill) xpFill.style.width = `${(p.xp % 100)}%`;
+  const goldEl = document.getElementById('player-gold');
+  if (goldEl)
+    goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
 }
 
 function updateLocationPanel() {
@@ -1605,6 +1616,16 @@ function bindUI() {
   document.querySelectorAll('button[data-panel]').forEach((btn) => {
     btn.onclick = () => showPanel(btn.dataset.panel);
   });
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.remove('hidden');
+    };
+  });
+  const firstTab = document.querySelector('.tab-btn');
+  if (firstTab) firstTab.click();
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };

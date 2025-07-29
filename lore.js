@@ -1,4 +1,4 @@
-// Lore generation module for Twilight realm
+// Lore generation module for REALM
 
 /**
  * Pick a random element from an array.
@@ -37,7 +37,7 @@ function hauntedLine(region) {
     'silently stalks the unwary'
   ];
   const endings = [
-    'in service to the Twilight realm.',
+    'in service to the Realm.',
     'seeking vengeance from ages past.',
     'bound to secrets best left untouched.',
     'watching over ruins swallowed by gloom.',
@@ -74,7 +74,7 @@ function desertLine(region) {
     'guard secrets in scorched stone'
   ];
   const endings = [
-    'bound forever to the Twilight realm.',
+    'bound forever to the Realm.',
     'holding relics no mortal remembers.',
     'speaking in silence to those who listen.',
     'offering riches and curses alike.',
@@ -111,7 +111,7 @@ function tundraLine(region) {
     'sing mournful dirges'
   ];
   const endings = [
-    'remembering the Twilight realm.',
+    'remembering the Realm.',
     'waiting for the thaw that never comes.',
     'echoing through endless winter.',
     'guarding pathways to other worlds.',
@@ -148,7 +148,7 @@ function volcanicLine(region) {
     'illuminate secrets below'
   ];
   const endings = [
-    'at the heart of the Twilight realm.',
+    'at the heart of the Realm.',
     'as warnings to heedless travelers.',
     'revealing passages of power.',
     'in honor of forgotten fire gods.',
