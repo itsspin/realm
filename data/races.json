@@ -2,46 +2,46 @@
   "human": {
     "name": "Human",
     "faction": "luminara",
-    "startLocation": "gearhaven_plaza"
+    "startLocation": "ashmoor_fields"
   },
   "high_elf": {
     "name": "High Elf",
     "faction": "luminara",
-    "startLocation": "elven_glade"
+    "startLocation": "emerald_copse"
   },
   "dwarf": {
     "name": "Dwarf",
     "faction": "luminara",
-    "startLocation": "dwarf_fortress"
+    "startLocation": "ashmoor_fields"
   },
   "gnome": {
     "name": "Gnome",
     "faction": "luminara",
-    "startLocation": "gnome_burrow"
+    "startLocation": "ashmoor_fields"
   },
   "orc": {
     "name": "Orc",
     "faction": "umbra",
-    "startLocation": "orc_stronghold"
+    "startLocation": "scorched_flats"
   },
   "dark_elf": {
     "name": "Dark Elf",
     "faction": "umbra",
-    "startLocation": "orc_stronghold"
+    "startLocation": "scorched_flats"
   },
   "troll": {
     "name": "Troll",
     "faction": "umbra",
-    "startLocation": "orc_stronghold"
+    "startLocation": "scorched_flats"
   },
   "undead": {
     "name": "Undead",
     "faction": "umbra",
-    "startLocation": "undead_necropolis"
+    "startLocation": "dusthold_ruins"
   },
   "goblin": {
     "name": "Goblin",
     "faction": "umbra",
-    "startLocation": "orc_stronghold"
+    "startLocation": "scorched_flats"
   }
 }

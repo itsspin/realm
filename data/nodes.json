@@ -1,10 +1,4 @@
 {
-  "gearhaven_sign": {
-    "name": "Town Sign",
-    "description": "A weathered sign welcoming visitors to Gearhaven.",
-    "dialogue": ["Welcome to Gearhaven!"],
-    "color": "text-cyan-400"
-  },
   "workshop_anvil": {
     "name": "Sturdy Anvil",
     "description": "Blacksmiths shape metal here.",
