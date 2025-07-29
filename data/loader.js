@@ -10,7 +10,8 @@ export const loader = {
       'items',
       'quests',
       'locations',
-      'crafting'
+      'crafting',
+      'guilds'
     ];
     await Promise.all(
       files.map(async (name) => {
@@ -27,6 +28,11 @@ export const loader = {
         Object.assign(this.data.abilities, await res.json());
       })
     );
+
+    const savedGuilds = localStorage.getItem('guilds');
+    if (savedGuilds) {
+      this.data.guilds = JSON.parse(savedGuilds);
+    }
   },
   get(type, id) {
     return this.data[type]?.[id];
