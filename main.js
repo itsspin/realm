@@ -35,8 +35,67 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
-function zoneFromLocation(id) {
-  return id.split('_')[0];
+function getEffectiveStats(ent) {
+  const stats = { str: 0, dex: 0, int: 0 };
+  if (ent.stats) {
+    stats.str += ent.stats.str || 0;
+    stats.dex += ent.stats.dex || 0;
+    stats.int += ent.stats.int || 0;
+  }
+  if (ent.equipped) {
+    Object.values(ent.equipped).forEach((id) => {
+      const item = loader.data.items[id];
+      if (item) {
+        stats.str += item.str || 0;
+        stats.dex += item.dex || 0;
+        stats.int += item.int || 0;
+      }
+    });
+  }
+  return stats;
+}
+
+function getArmor(ent) {
+  let armor = ent.armor || 0;
+  if (ent.equipped) {
+    Object.values(ent.equipped).forEach((id) => {
+      const item = loader.data.items[id];
+      if (item && item.armor) armor += item.armor;
+    });
+  }
+  return armor;
+}
+
+function getWeaponDamage(ent) {
+  if (ent.damage) return ent.damage;
+  let dmg = 1;
+  if (ent.equipped && ent.equipped.weapon) {
+    dmg += loader.data.items[ent.equipped.weapon]?.damage || 0;
+  }
+  return dmg;
+}
+
+function resolveAttack(attacker, defender, ability = {}) {
+  const atk = getEffectiveStats(attacker);
+  const def = getEffectiveStats(defender);
+
+  const dodgeChance = Math.min(30, def.dex * 0.5);
+  if (Math.random() * 100 < dodgeChance) return { dodge: true };
+
+  const hitChance = 70 + (atk.dex - def.dex);
+  if (Math.random() * 100 >= hitChance) return { miss: true };
+
+  const critChance = 5 + atk.dex * 0.2;
+  const crit = Math.random() * 100 < critChance;
+
+  let dmg = getWeaponDamage(attacker);
+  if (ability.damage) dmg += ability.damage + Math.floor(atk.int / 2);
+  dmg += Math.floor(atk.str / 2);
+  if (crit) dmg *= 1.5;
+  dmg -= getArmor(defender);
+  if (dmg < 0) dmg = 0;
+
+  return { damage: Math.floor(dmg), crit };
 }
 
 function selectTarget(type, id, btn) {
@@ -415,9 +474,16 @@ function endCombat(win) {
 
 function enemyAttack() {
   const mob = game.target;
-  const dmg = rand(mob.damage);
-  game.player.hp -= dmg;
-  addCombatLog(`${mob.name} hits you for ${dmg}.`);
+  const res = resolveAttack(mob, game.player);
+  if (res.dodge) {
+    addCombatLog('You dodge the attack.');
+  } else if (res.miss) {
+    addCombatLog(`${mob.name} misses.`);
+  } else {
+    game.player.hp -= res.damage;
+    const crit = res.crit ? ' CRIT!' : '';
+    addCombatLog(`${mob.name} hits you for ${res.damage}.${crit}`);
+  }
   if (game.player.hp <= 0) {
     addCombatLog('You have been defeated!');
     endCombat(false);
@@ -432,9 +498,16 @@ function useAbility(id) {
   if (!spell) return;
   addCombatLog(`You use ${spell.name}.`);
   if (spell.damage) {
-    const dmg = rand(spell.damage);
-    game.target.hp -= dmg;
-    addCombatLog(`You deal ${dmg} damage.`);
+    const res = resolveAttack(game.player, game.target, spell);
+    if (res.dodge) {
+      addCombatLog(`${game.target.name} dodges your attack.`);
+    } else if (res.miss) {
+      addCombatLog('You miss.');
+    } else {
+      game.target.hp -= res.damage;
+      const crit = res.crit ? ' CRIT!' : '';
+      addCombatLog(`You deal ${res.damage} damage.${crit}`);
+    }
   }
   if (spell.heal) {
     game.player.hp = Math.min(game.player.maxHp, game.player.hp + spell.heal);

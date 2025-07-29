@@ -4,6 +4,9 @@
     "level": 2,
     "hp": 30,
     "damage": 4,
+    "str": 6,
+    "dex": 4,
+    "int": 2,
     "description": "A malfunctioning automaton covered in rust.",
     "dropTable": [
       { "id": "iron_ore", "weight": 40 },
@@ -16,6 +19,9 @@
     "level": 3,
     "hp": 40,
     "damage": 5,
+    "str": 7,
+    "dex": 5,
+    "int": 2,
     "description": "Slimy creature lurking in the bog.",
     "dropTable": [
       { "id": "herb_leaf", "weight": 50 },
@@ -28,6 +34,9 @@
     "level": 2,
     "hp": 25,
     "damage": 3,
+    "str": 5,
+    "dex": 6,
+    "int": 2,
     "description": "Sneaky goblin looking for trouble.",
     "dropTable": [
       { "id": "bronze_sword", "weight": 80 },
