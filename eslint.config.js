@@ -13,7 +13,8 @@ export default [
         location: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
-        localStorage: 'readonly'
+        localStorage: 'readonly',
+        console: 'readonly'
       }
     },
     rules: {}

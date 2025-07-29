@@ -1,15 +1,26 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+let nodeFS;
+let nodePath;
+let fileURLToPathFn;
+let rootDir;
 
 async function fetchJson(rel) {
   if (typeof window === 'undefined') {
-    const full = path.join(rootDir, rel);
-    return JSON.parse(await fs.readFile(full, 'utf8'));
+    if (!nodeFS) {
+      nodeFS = (await import('fs/promises')).default;
+      nodePath = await import('path');
+      ({ fileURLToPath: fileURLToPathFn } = await import('url'));
+      rootDir = nodePath.resolve(
+        nodePath.dirname(fileURLToPathFn(import.meta.url)),
+        '..'
+      );
+    }
+    const full = nodePath.join(rootDir, rel);
+    return JSON.parse(await nodeFS.readFile(full, 'utf8'));
   }
   const res = await fetch(rel);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${rel}: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -17,6 +28,7 @@ export const loader = {
   data: {},
   loadedZones: new Set(),
   async init() {
+    console.log('Loader initializing');
     const files = [
       'attributes',
       'races',
@@ -28,11 +40,24 @@ export const loader = {
       'crafting',
       'events',
       'guilds',
-      'achievements'
+      'achievements',
+      'npcs',
+      'mobs',
+      'nodes',
+      'professions',
+      'materials',
+      'recipes',
+      'skill_progression',
+      'world'
     ];
     await Promise.all(
       files.map(async (name) => {
-        this.data[name] = await fetchJson(`data/${name}.json`);
+        try {
+          this.data[name] = await fetchJson(`data/${name}.json`);
+        } catch (err) {
+          console.warn('Failed loading data file', name, err);
+          this.data[name] = {};
+        }
       })
     );
 
@@ -62,5 +87,17 @@ export const loader = {
   },
   get(type, id) {
     return this.data[type]?.[id];
+  },
+
+  async loadNpc(id) {
+    if (this.data.npcs?.[id]) return;
+    this.data.npcs ||= {};
+    try {
+      const npc = await fetchJson(`data/npcs/${id}.json`);
+      this.data.npcs[id] = npc;
+      console.log('Loaded NPC', id);
+    } catch (err) {
+      console.warn('Failed to load NPC', id, err);
+    }
   }
 };
