@@ -2,6 +2,7 @@ let nodeFS;
 let nodePath;
 let fileURLToPathFn;
 let rootDir;
+let browserRoot;
 
 async function fetchJson(rel) {
 let browserRoot;
@@ -20,7 +21,10 @@ export async function fetchJson(rel) {
     const full = nodePath.join(rootDir, rel);
     return JSON.parse(await nodeFS.readFile(full, 'utf8'));
   }
-  const res = await fetch(rel);
+  if (!browserRoot) {
+    browserRoot = new URL('..', import.meta.url);
+  }
+  const res = await fetch(new URL(rel, browserRoot));
   if (!res.ok) {
     throw new Error(`Failed to fetch ${rel}: ${res.status}`);
   }
@@ -83,9 +87,11 @@ export const loader = {
       })
     );
 
-    const savedGuilds = localStorage.getItem('guilds');
-    if (savedGuilds) {
-      this.data.guilds = JSON.parse(savedGuilds);
+    if (typeof localStorage !== 'undefined') {
+      const savedGuilds = localStorage.getItem('guilds');
+      if (savedGuilds) {
+        this.data.guilds = JSON.parse(savedGuilds);
+      }
     }
     const loreFiles = await fetchJson('data/lore/index.json');
     this.data.lore = {};
