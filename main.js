@@ -8,7 +8,8 @@ const game = {
   target: null,
   combatTimer: 0,
   inCombat: false,
-  onlinePlayers: []
+  onlinePlayers: [],
+  players: {}
 };
 
 function saveCharacter(p) {
@@ -337,6 +338,7 @@ function addLog(txt) {
   div.scrollIntoView();
 }
 
+function addHtmlLog(html) {
 function addLogHTML(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
@@ -478,10 +480,66 @@ function updatePlayersList() {
     const btn = document.createElement('button');
     btn.className = 'npc-btn text-xs';
     btn.textContent = p;
+    btn.onclick = () => showPlayerActions(p);
     list.append(btn);
   });
 }
 
+function showPlayerActions(name) {
+  const log = document.getElementById('log');
+  const div = document.createElement('div');
+  div.innerHTML = `Actions for <strong>${name}</strong>:
+    <button class="underline text-sky-400" data-act="inspect">Inspect</button>
+    <button class="underline text-sky-400" data-act="trade">Trade</button>
+    <button class="underline text-sky-400" data-act="msg">Message</button>
+    <button class="underline text-sky-400" data-act="invite">Invite</button>`;
+  log.append(div);
+  div.querySelector('[data-act="inspect"]').onclick = () => handleInput(`/inspect ${name}`);
+  div.querySelector('[data-act="trade"]').onclick = () => addLog(`You offer to trade with ${name}.`);
+  div.querySelector('[data-act="msg"]').onclick = () => addLog(`You send a private message to ${name}.`);
+  div.querySelector('[data-act="invite"]').onclick = () => addLog(`You invite ${name} to your party.`);
+  div.scrollIntoView();
+}
+
+function rarityColorClass(rarity) {
+  return {
+    common: 'text-slate-200',
+    uncommon: 'text-green-400',
+    rare: 'text-blue-400',
+    epic: 'text-purple-400',
+    legendary: 'text-orange-400'
+  }[rarity] || 'text-slate-200';
+}
+
+function gearScore(player) {
+  return Object.values(player.equipped || {}).reduce(
+    (sum, id) => sum + (loader.data.items[id]?.level || 0),
+    0
+  );
+}
+
+function zoneOf(loc) {
+  return (loc || '').split('_')[0];
+}
+
+function inspectPlayer(name) {
+  const p = game.players[name];
+  if (!p) {
+    addLog('No such player.');
+    return;
+  }
+  if (zoneOf(p.location) !== zoneOf(game.player.location)) {
+    addLog(`${name} is not in this zone.`);
+    return;
+  }
+  const gs = gearScore(p);
+  addHtmlLog(`<strong>${name}'s Gear (Score: ${gs})</strong>`);
+  Object.entries(p.equipped || {}).forEach(([slot, id]) => {
+    const item = loader.data.items[id];
+    if (!item) return;
+    const color = rarityColorClass(item.rarity || 'common');
+    addHtmlLog(`${slot}: <span class="${color}">${item.name} (${item.rarity || 'common'})</span>`);
+  });
 function updatePartyPanel() {
   const panel = document.getElementById('party');
   if (!panel) return;
@@ -1347,6 +1405,12 @@ async function handleInput(text) {
   } else if (cmd.startsWith('/target')) {
     const name = cmd.slice(7).trim();
     if (!targetByName(name)) addLog('No such target here.');
+  } else if (cmd.startsWith('/inspect')) {
+    const name = cmd.split(' ')[1];
+    inspectPlayer(name || game.player.name);
+  } else if (cmd.startsWith('/gear')) {
+    const name = cmd.split(' ')[1];
+    inspectPlayer(name || game.player.name);
   } else if (cmd === 'hail') {
     if (!game.target) {
       addLog('You have no target.');
@@ -1518,6 +1582,18 @@ async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
+  game.players = {};
+  game.players[player.name] = player;
+  game.onlinePlayers = [player.name, 'Hero', 'Adventurer', 'Mystic'];
+  // create dummy player data for other names
+  ['Hero', 'Adventurer', 'Mystic'].forEach((n) => {
+    const equipped = {};
+    ['weapon', 'chest', 'offhand'].forEach((slot) => {
+      const items = Object.entries(loader.data.items).filter(([, it]) => it.slot === slot);
+      if (items.length) equipped[slot] = items[Math.floor(Math.random() * items.length)][0];
+    });
+    game.players[n] = { name: n, location: player.location, equipped };
+  });
 
   worldState.addPlayer(player);
   worldState.addPlayer({
@@ -1644,4 +1720,6 @@ export async function init() {
   }
 }
 
-init();
+if (typeof window !== 'undefined') {
+  init();
+}
