@@ -223,6 +223,19 @@ function dropLoot(mob) {
   return loot;
 }
 
+function grantRewards(rewards) {
+  if (!rewards) return;
+  if (rewards.xp) {
+    game.player.xp += rewards.xp;
+    addLog(`You gain ${rewards.xp} XP.`);
+  }
+  (rewards.items || []).forEach((id) => {
+    game.player.inventory.push(id);
+    addLog(`You receive ${loader.data.items[id]?.name || id}.`);
+  });
+  updateHUD();
+}
+
 function updateHUD() {
   const p = game.player;
   const nameEl = document.getElementById('player-name');
@@ -548,7 +561,19 @@ function attackNpc(id) {
 function talkToNpc(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
-  const line = npc.dialogue?.[0] || '...';
+  let line = npc.dialogue?.[0] || '...';
+  Object.entries(loader.data.quests).forEach(([qid, q]) => {
+    if (q.giver !== id) return;
+    if (game.player.activeQuests.includes(qid)) {
+      const stage = q.stages[game.player.questProgress[qid].stage];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (game.player.completedQuests.includes(qid)) {
+      const stage = q.stages[q.stages.length - 1];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (q.stages[0].dialogue) {
+      line = q.stages[0].dialogue;
+    }
+  });
   addLog(`${npc.name} says: "${line}"`);
   checkQuestProgress('talk', id);
   document.getElementById('dialogue').classList.add('hidden');
@@ -817,6 +842,7 @@ function completeQuest(qid) {
   game.player.activeQuests.splice(idx, 1);
   game.player.completedQuests.push(qid);
   delete game.player.questProgress[qid];
+  grantRewards(loader.data.quests[qid].rewards);
   addLog(`Quest completed: ${loader.data.quests[qid].name}`);
   buildQuestList();
 }
@@ -825,6 +851,8 @@ function advanceQuestStage(qid) {
   const q = loader.data.quests[qid];
   const prog = game.player.questProgress[qid];
   if (!q || !prog) return;
+  const stage = q.stages[prog.stage];
+  grantRewards(stage.rewards);
   if (prog.stage < q.stages.length - 1) {
     prog.stage += 1;
     prog.count = 0;
@@ -928,10 +956,15 @@ function showQuestDetails(qid) {
   const stage = q.stages[stageIdx];
   const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
-  (q.rewards?.items || []).forEach((i) =>
-    rewards.push(loader.data.items[i]?.name || i)
-  );
+  const sr = stage.rewards || {};
+  if (sr.xp) rewards.push(`${sr.xp} XP`);
+  (sr.items || []).forEach((i) => rewards.push(loader.data.items[i]?.name || i));
+  if (stageIdx === q.stages.length - 1) {
+    if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+    (q.rewards?.items || []).forEach((i) =>
+      rewards.push(loader.data.items[i]?.name || i)
+    );
+  }
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
