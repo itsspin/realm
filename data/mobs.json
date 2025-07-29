@@ -1,6 +1,7 @@
 {
   "rogue_clockwork": {
     "name": "Rogue Clockwork",
+    "faction": "luminara",
     "level": 2,
     "hp": 30,
     "damage": 4,
@@ -16,6 +17,7 @@
   },
   "bog_creeper": {
     "name": "Bog Creeper",
+    "faction": "umbra",
     "level": 3,
     "boss": true,
     "hp": 40,
@@ -32,6 +34,7 @@
   },
   "goblin_raider": {
     "name": "Goblin Raider",
+    "faction": "umbra",
     "level": 2,
     "hp": 25,
     "damage": 3,

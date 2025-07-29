@@ -2,6 +2,7 @@
   "name": "Lost Lute",
   "giver": "bard_npc",
   "zones": ["gearhaven"],
+  "faction": "luminara",
   "stages": [
     {
       "description": "Retrieve the bard's lost lute from goblin raiders.",

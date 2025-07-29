@@ -2,6 +2,7 @@
   "name": "Clear the Bog",
   "giver": "bog_hunter",
   "zones": ["shadowfen"],
+  "faction": "umbra",
   "triggers": [],
   "stages": [
     {
