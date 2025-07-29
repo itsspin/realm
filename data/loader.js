@@ -1,15 +1,26 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+let nodeFS;
+let nodePath;
+let fileURLToPathFn;
+let rootDir;
 
 async function fetchJson(rel) {
   if (typeof window === 'undefined') {
-    const full = path.join(rootDir, rel);
-    return JSON.parse(await fs.readFile(full, 'utf8'));
+    if (!nodeFS) {
+      nodeFS = (await import('fs/promises')).default;
+      nodePath = await import('path');
+      ({ fileURLToPath: fileURLToPathFn } = await import('url'));
+      rootDir = nodePath.resolve(
+        nodePath.dirname(fileURLToPathFn(import.meta.url)),
+        '..'
+      );
+    }
+    const full = nodePath.join(rootDir, rel);
+    return JSON.parse(await nodeFS.readFile(full, 'utf8'));
   }
   const res = await fetch(rel);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${rel}: ${res.status}`);
+  }
   return res.json();
 }
 
