@@ -1392,4 +1392,6 @@ export async function init() {
   }
 }
 
-init();
+if (typeof window !== 'undefined') {
+  init();
+}
