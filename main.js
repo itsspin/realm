@@ -453,6 +453,7 @@ function renderRoom(loc) {
 }
 
 async function enterRoom(id) {
+  console.log('Entering room', id);
   const loc = loader.data.locations[id];
   if (!loc) return;
   const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
@@ -467,6 +468,7 @@ async function enterRoom(id) {
 }
 
 async function move(dir) {
+  console.log('Move', dir);
   const dest = loader.data.locations[game.player.location].links[dir];
   if (dest) await enterRoom(dest);
 }
@@ -1392,6 +1394,7 @@ function buildCraftPanel() {
 
 async function handleInput(text) {
   const cmd = text.trim();
+  console.log('Input:', cmd);
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     move(cmd);
   } else if (cmd.startsWith('/goto ')) {
@@ -1524,6 +1527,7 @@ async function handleInput(text) {
 }
 
 function bindUI() {
+  console.log('Binding UI events');
   document.getElementById('send').onclick = () => {
     const inp = document.getElementById('cmd');
     handleInput(inp.value);
@@ -1581,6 +1585,7 @@ function populateSelect(id, data) {
 }
 
 async function startGame(player) {
+  console.log('Starting game for', player.name);
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
@@ -1644,6 +1649,7 @@ async function startGame(player) {
 }
 
 function showCreateForm() {
+  console.log('Showing character creation form');
   populateSelect('race', loader.data.races);
   populateSelect('class', loader.data.classes);
   populateSelect('deity', loader.data.deities);
@@ -1709,7 +1715,9 @@ function showCreateForm() {
 }
 
 export async function init() {
+  console.log('Initializing game...');
   await loader.init();
+  console.log('Data loaded');
   await initEvents();
   loadGuilds();
   generateItems();
@@ -1717,7 +1725,9 @@ export async function init() {
   const saved = loadCharacter();
   if (saved) {
     await startGame(saved);
+    console.log('Loaded saved character');
   } else {
+    console.log('No saved character found, showing create form');
     showCreateForm();
   }
 }
