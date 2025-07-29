@@ -22,6 +22,7 @@ function loadCharacter() {
   p.professions ||= [];
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
+  p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   return p;
 }
@@ -33,6 +34,18 @@ function isQuestGiver(id) {
 
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function opposingFaction(fac) {
+  if (fac === 'luminara') return 'umbra';
+  if (fac === 'umbra') return 'luminara';
+  return null;
+}
+
+function adjustReputation(faction, amount) {
+  if (!faction || !game.player) return;
+  game.player.reputation[faction] =
+    (game.player.reputation[faction] || 0) + amount;
 }
 
 function getPlayerLevel() {
@@ -447,6 +460,11 @@ function endCombat(win) {
     if (loot.copper || loot.silver || loot.gold) {
       addLog(`You loot ${loot.gold}g ${loot.silver}s ${loot.copper}c.`);
     }
+    if (mob.faction) {
+      adjustReputation(mob.faction, -5);
+      const opp = opposingFaction(mob.faction);
+      if (opp) adjustReputation(opp, 5);
+    }
     showLoot(loot);
     checkQuestProgress('kill', mob.id);
   } else {
@@ -549,6 +567,12 @@ function talkToNpc(id) {
 function showNpcMenu(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
+  const loc = loader.data.locations[game.player.location];
+  const fac = loc?.faction;
+  if (fac && game.player.reputation[fac] <= -10) {
+    addLog(`${npc.name} refuses to deal with you due to your reputation with ${fac}.`);
+    return;
+  }
   const dlg = document.getElementById('dialogue');
   dlg.innerHTML = `
     <div class="font-bold mb-1">${npc.name}</div>
@@ -750,6 +774,13 @@ function showHelp() {
   addLog(' /target <name> - target an NPC or object by name');
   addLog(' /help - show this help');
 }
+
+function showFactions() {
+  addLog('Faction Standings:');
+  Object.entries(game.player.reputation).forEach(([f, v]) => {
+    addLog(` ${f}: ${v}`);
+  });
+}
 function useItem(idx) {
   const id = game.player.inventory[idx];
   const item = loader.data.items[id];
@@ -809,6 +840,12 @@ function completeQuest(qid) {
   game.player.activeQuests.splice(idx, 1);
   game.player.completedQuests.push(qid);
   delete game.player.questProgress[qid];
+  const q = loader.data.quests[qid];
+  if (q?.faction) {
+    adjustReputation(q.faction, 10);
+    const opp = opposingFaction(q.faction);
+    if (opp) adjustReputation(opp, -5);
+  }
   addLog(`Quest completed: ${loader.data.quests[qid].name}`);
   buildQuestList();
 }
@@ -1142,6 +1179,8 @@ async function handleInput(text) {
     showHelp();
   } else if (cmd === '/who') {
     addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+  } else if (cmd === '/factions') {
+    showFactions();
   } else if (cmd.startsWith('/random')) {
     const [, type] = cmd.split(' ');
     if (type === 'item') {
@@ -1291,6 +1330,7 @@ function showCreateForm() {
       party: [],
       professions: [],
       coins: { copper: 0, silver: 0, gold: 0 },
+      reputation: { luminara: 0, umbra: 0, neutral: 0 },
       xp: 0
     };
     await startGame(player);
