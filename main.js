@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { initEvents } from './events.js';
 /* global d3 */
 
 const game = {
@@ -1631,6 +1632,7 @@ function showCreateForm() {
 
 export async function init() {
   await loader.init();
+  await initEvents();
   loadGuilds();
   generateItems();
   bindUI();

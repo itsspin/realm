@@ -10,6 +10,7 @@ export const loader = {
       'items',
       'locations',
       'crafting',
+      'events'
       'guilds'
       'achievements'
     ];
