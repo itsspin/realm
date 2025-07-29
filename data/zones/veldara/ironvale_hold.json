@@ -1,0 +1,27 @@
+{
+  "id": "ironvale_hold",
+  "name": "Ironvale Hold",
+  "description": "This is a placeholder description for Ironvale Hold.",
+  "level_range": [
+    0,
+    0
+  ],
+  "type": "city",
+  "exits": {
+    "south": "ashmoor_fields",
+    "dock": "boat_ironvale_sandspire"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 0,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

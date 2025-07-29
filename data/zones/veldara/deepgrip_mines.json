@@ -1,0 +1,26 @@
+{
+  "id": "deepgrip_mines",
+  "name": "Deepgrip Mines",
+  "description": "This is a placeholder description for Deepgrip Mines.",
+  "level_range": [
+    20,
+    30
+  ],
+  "type": "dungeon",
+  "exits": {
+    "north": "briarcliff_woods"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 20,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

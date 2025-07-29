@@ -1,0 +1,27 @@
+{
+  "id": "rimebrook_falls",
+  "name": "Rimebrook Falls",
+  "description": "This is a placeholder description for Rimebrook Falls.",
+  "level_range": [
+    15,
+    25
+  ],
+  "type": "wildland",
+  "exits": {
+    "south": "faeblight_vale",
+    "north": "webwood_hollow"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 15,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

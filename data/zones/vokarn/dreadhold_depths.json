@@ -1,0 +1,27 @@
+{
+  "id": "dreadhold_depths",
+  "name": "Dreadhold Depths",
+  "description": "This is a placeholder description for Dreadhold Depths.",
+  "level_range": [
+    50,
+    60
+  ],
+  "type": "raid",
+  "exits": {
+    "up": "burnscar_chasm",
+    "portal": "raid_gate_every_capital"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 50,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "sandspire",
+  "name": "Sandspire",
+  "description": "This is a placeholder description for Sandspire.",
+  "level_range": [
+    0,
+    0
+  ],
+  "type": "city",
+  "exits": {
+    "north": "scorched_flats",
+    "dock": "boat_ironvale_sandspire",
+    "teleport_pad": "tele_sandspire_sylvaran"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 0,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

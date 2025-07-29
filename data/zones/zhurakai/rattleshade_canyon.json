@@ -1,0 +1,27 @@
+{
+  "id": "rattleshade_canyon",
+  "name": "Rattleshade Canyon",
+  "description": "This is a placeholder description for Rattleshade Canyon.",
+  "level_range": [
+    5,
+    10
+  ],
+  "type": "wildland",
+  "exits": {
+    "west": "scorched_flats",
+    "south": "dusthold_ruins"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 5,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}
