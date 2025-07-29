@@ -32,14 +32,8 @@ export const loader = {
       })
     );
 
-    // Load item data from individual files
-    this.data.items = {};
-    const itemFiles = await fetchJson('data/items/index.json');
-    await Promise.all(
-      itemFiles.map(async (f) => {
-        Object.assign(this.data.items, await fetchJson(`data/items/${f}.json`));
-      })
-    );
+    // Load items from single JSON file
+    this.data.items = await fetchJson('data/items.json');
     const abilityFiles = await fetchJson('data/abilities/index.json');
     this.data.abilities = {};
     await Promise.all(
