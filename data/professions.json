@@ -1,0 +1,5 @@
+{
+  "blacksmithing": { "name": "Blacksmithing" },
+  "alchemy": { "name": "Alchemy" },
+  "tinkering": { "name": "Tinkering" }
+}

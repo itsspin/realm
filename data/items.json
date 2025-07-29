@@ -117,5 +117,12 @@
     "name": "Water Flask",
     "level": 1,
     "description": "Used in many recipes."
+  },
+  "clockwork_gauntlet": {
+    "name": "Clockwork Gauntlet",
+    "level": 1,
+    "damage": 4,
+    "slot": "weapon",
+    "description": "A crude mechanical glove packed with gears."
   }
 }
