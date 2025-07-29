@@ -35,6 +35,25 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function getPlayerLevel() {
+  return Math.floor((game.player?.xp || 0) / 100) + 1;
+}
+
+function getAvailableAbilities() {
+  const cls = loader.data.classes[game.player.class];
+  if (!cls) return [];
+  const lvl = getPlayerLevel();
+  let list = [];
+  Object.entries(cls.abilities).forEach(([req, ab]) => {
+    if (lvl >= Number(req)) list = list.concat(ab);
+  });
+  return list;
+}
+
+function abilityAllowed(id) {
+  return getAvailableAbilities().includes(id);
+}
+
 function selectTarget(type, id, btn) {
   if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
   currentTargetBtn = btn || null;
@@ -210,23 +229,6 @@ function buildMoveControls(loc) {
   });
 }
 
-function updateMovementButtons() {
-  const loc = loader.data.locations[game.player.location];
-  const container = document.getElementById('move-controls');
-  if (!loc || !container) return;
-  container.innerHTML = '';
-  const names = { n: 'North', e: 'East', s: 'South', w: 'West' };
-  Object.entries(names).forEach(([dir, label]) => {
-    if (loc.links?.[dir]) {
-      const btn = document.createElement('button');
-      btn.className = 'move-btn';
-      btn.dataset.dir = dir;
-      btn.textContent = label;
-      btn.onclick = () => move(dir);
-      container.append(btn);
-    }
-  });
-}
 
 function addLog(txt) {
   const div = document.createElement('div');
@@ -427,7 +429,8 @@ function enemyAttack() {
 
 function useAbility(id) {
   if (!game.inCombat) return;
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addCombatLog(`You use ${spell.name}.`);
   if (spell.damage) {
@@ -457,11 +460,11 @@ function startCombat(targetId, type = 'mob') {
   document.getElementById('combat-overlay').classList.remove('hidden');
   const btns = document.getElementById('combat-buttons');
   btns.innerHTML = '';
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   abil.forEach((id) => {
     const b = document.createElement('button');
     b.className = 'btn text-xs';
-    b.textContent = loader.data.spells[id].name;
+    b.textContent = loader.data.abilities[id].name;
     b.onclick = () => useAbility(id);
     btns.append(b);
   });
@@ -665,19 +668,20 @@ function targetByName(name) {
 
 
 function castSpell(id) {
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addLog(`You cast ${spell.name}.`);
 }
 
 function buildHotbar() {
   const bar = document.getElementById('hotbar');
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   bar.innerHTML = '';
   abil.slice(0, 10).forEach((id) => {
     const btn = document.createElement('button');
     btn.className = 'btn text-xs';
-    btn.textContent = loader.data.spells[id].name;
+    btn.textContent = loader.data.abilities[id].name;
     btn.onclick = () => castSpell(id);
     bar.append(btn);
   });
@@ -1105,12 +1109,14 @@ function showCreateForm() {
       return;
     }
     const race = document.getElementById('race').value;
+    const clsId = document.getElementById('class').value;
+    const clsDef = loader.data.classes[clsId];
     const player = {
       name:
         document.getElementById('first-name').value +
         ' ' +
         document.getElementById('last-name').value,
-      class: document.getElementById('class').value,
+      class: clsId,
       race,
       deity: document.getElementById('deity').value,
       stats,
@@ -1121,6 +1127,7 @@ function showCreateForm() {
       location: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
+      gearTypes: clsDef.gear || [],
       activeQuests: ['welcome_to_realm'],
       completedQuests: [],
       questProgress: {},
