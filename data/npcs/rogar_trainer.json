@@ -1,0 +1,9 @@
+{
+  "name": "Rogar Ironfist",
+  "role": "Warrior Trainer",
+  "level": 8,
+  "description": "A burly veteran who has fought in countless battles.",
+  "dialogue": [
+    "Strength and honor! Show me your stance if you seek training."
+  ]
+}

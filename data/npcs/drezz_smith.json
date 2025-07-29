@@ -1,0 +1,12 @@
+{
+  "name": "Drezz Smith",
+  "role": "Crafting Trainer",
+  "level": 5,
+  "description": "A gruff blacksmith pounding out crude but effective weapons.",
+  "dialogue": [
+    "If you bring the ore, I'll show you how to shape it."
+  ],
+  "teaches": [
+    "blacksmithing"
+  ]
+}

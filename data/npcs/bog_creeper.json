@@ -1,0 +1,21 @@
+{
+  "name": "Bog Creeper",
+  "level": 3,
+  "hp": 40,
+  "damage": 5,
+  "description": "Slimy creature lurking in the bog.",
+  "drops": [
+    {
+      "id": "herb_leaf",
+      "chance": 0.5
+    },
+    {
+      "id": "cloth_scrap",
+      "chance": 0.2
+    },
+    {
+      "id": "healing_potion",
+      "chance": 0.1
+    }
+  ]
+}

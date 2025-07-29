@@ -1,0 +1,13 @@
+{
+  "name": "Joran Barkeep",
+  "role": "Innkeeper",
+  "level": 2,
+  "description": "He polishes mugs while sharing gossip of far lands.",
+  "dialogue": [
+    "Pull up a stool! Nothing chases away road dust like my stout."
+  ],
+  "teaches": [
+    "brewing",
+    "baking"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "locations": {
+    "shadowfen_camp": {
+      "name": "Shadowfen Camp",
+      "faction": "umbra",
+      "description": "A dark encampment surrounded by murky waters where warriors of Umbra sharpen their blades.",
+      "exits": [
+        "n",
+        "e"
+      ],
+      "links": {
+        "n": "gearhaven_plaza",
+        "e": "shadowfen_bog"
+      },
+      "npcs": [
+        "bog_hunter",
+        "shadra_shaman",
+        "gruk_trainer",
+        "morga_shadow",
+        "drezz_smith"
+      ],
+      "spawns": [
+        "goblin_raider"
+      ]
+    },
+    "shadowfen_bog": {
+      "name": "Shadowfen Bog",
+      "faction": "umbra",
+      "description": "Thick mist blankets the soggy ground and the croak of unseen creatures echoes all around.",
+      "exits": [
+        "w"
+      ],
+      "links": {
+        "w": "shadowfen_camp"
+      },
+      "npcs": [],
+      "spawns": [
+        "bog_creeper"
+      ],
+      "nodes": [
+        "bog_stone"
+      ]
+    }
+  }
+}

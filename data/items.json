@@ -3,13 +3,29 @@
     "name": "Rusty Sword",
     "level": 1,
     "damage": 4,
+    "str": 1,
     "slot": "weapon",
     "description": "An old sword with a dull blade."
+  },
+  "bronze_sword": {
+    "name": "Bronze Sword",
+    "level": 1,
+    "damage": 5,
+    "slot": "weapon",
+    "description": "A basic sword made of bronze."
+  },
+  "rusty_dagger": {
+    "name": "Rusty Dagger",
+    "level": 1,
+    "damage": 3,
+    "slot": "weapon",
+    "description": "A worn dagger showing signs of age."
   },
   "leather_armor": {
     "name": "Leather Armor",
     "level": 1,
     "armor": 2,
+    "dex": 1,
     "slot": "chest",
     "description": "Provides minimal protection."
   },
@@ -36,6 +52,7 @@
     "name": "Hunter Bow",
     "level": 1,
     "damage": 3,
+    "dex": 2,
     "slot": "weapon",
     "description": "Simple bow favored by rangers."
   },

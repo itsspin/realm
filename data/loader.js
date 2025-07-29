@@ -1,5 +1,6 @@
 export const loader = {
   data: {},
+  loadedZones: new Set(),
   async init() {
     const files = [
       'attributes',
@@ -9,8 +10,6 @@ export const loader = {
       'items',
       'quests',
       'locations',
-      'mobs',
-      'npcs',
       'crafting'
     ];
     await Promise.all(
