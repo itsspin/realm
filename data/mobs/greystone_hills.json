@@ -1,0 +1,63 @@
+{
+  "zone": "greystone_hills",
+  "recommended_level_range": [
+    5,
+    11
+  ],
+  "mobs": [
+    {
+      "id": "greystone_wolf",
+      "name": "Greystone Wolf",
+      "type": "beast",
+      "level_range": [
+        5,
+        7
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "wolf_pelt",
+        "sharp_tooth"
+      ]
+    },
+    {
+      "id": "hill_recluse",
+      "name": "Hill Recluse",
+      "type": "humanoid",
+      "level_range": [
+        6,
+        9
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "rusty_blade",
+        "cloak_piece"
+      ]
+    },
+    {
+      "id": "marbled_rockbeetle",
+      "name": "Marbled Rockbeetle",
+      "type": "insect",
+      "level_range": [
+        7,
+        10
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "rock_carapace"
+      ]
+    },
+    {
+      "id": "wandering_guardian",
+      "name": "Wandering Guardian",
+      "type": "elemental",
+      "level_range": [
+        9,
+        11
+      ],
+      "spawn_rate": 0.1,
+      "loot_table": [
+        "glowing_stone"
+      ]
+    }
+  ]
+}
