@@ -2,6 +2,8 @@ let nodeFS;
 let nodePath;
 let fileURLToPathFn;
 let rootDir;
+
+async function fetchJson(rel) {
 let browserRoot;
 
 export async function fetchJson(rel) {
@@ -17,6 +19,11 @@ export async function fetchJson(rel) {
     }
     const full = nodePath.join(rootDir, rel);
     return JSON.parse(await nodeFS.readFile(full, 'utf8'));
+  }
+  const res = await fetch(rel);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${rel}: ${res.status}`);
+  }
   }
   if (!browserRoot) {
     browserRoot = new URL('..', import.meta.url);
