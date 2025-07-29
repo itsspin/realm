@@ -2,8 +2,9 @@ let nodeFS;
 let nodePath;
 let fileURLToPathFn;
 let rootDir;
+let browserRoot;
 
-async function fetchJson(rel) {
+export async function fetchJson(rel) {
   if (typeof window === 'undefined') {
     if (!nodeFS) {
       nodeFS = (await import('fs/promises')).default;
@@ -17,7 +18,10 @@ async function fetchJson(rel) {
     const full = nodePath.join(rootDir, rel);
     return JSON.parse(await nodeFS.readFile(full, 'utf8'));
   }
-  const res = await fetch(rel);
+  if (!browserRoot) {
+    browserRoot = new URL('..', import.meta.url);
+  }
+  const res = await fetch(new URL(rel, browserRoot));
   if (!res.ok) {
     throw new Error(`Failed to fetch ${rel}: ${res.status}`);
   }
@@ -76,13 +80,11 @@ export const loader = {
     if (savedGuilds) {
       this.data.guilds = JSON.parse(savedGuilds);
     }
-    const loreIdx = await fetch('data/lore/index.json');
-    const loreFiles = await loreIdx.json();
+    const loreFiles = await fetchJson('data/lore/index.json');
     this.data.lore = {};
     await Promise.all(
       loreFiles.map(async (f) => {
-        const res = await fetch(`data/lore/${f}.json`);
-        this.data.lore[f] = await res.json();
+        this.data.lore[f] = await fetchJson(`data/lore/${f}.json`);
       })
     );
   },
