@@ -76,9 +76,11 @@ export const loader = {
       })
     );
 
-    const savedGuilds = localStorage.getItem('guilds');
-    if (savedGuilds) {
-      this.data.guilds = JSON.parse(savedGuilds);
+    if (typeof localStorage !== 'undefined') {
+      const savedGuilds = localStorage.getItem('guilds');
+      if (savedGuilds) {
+        this.data.guilds = JSON.parse(savedGuilds);
+      }
     }
     const loreFiles = await fetchJson('data/lore/index.json');
     this.data.lore = {};
