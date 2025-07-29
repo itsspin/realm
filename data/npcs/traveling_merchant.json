@@ -1,0 +1,13 @@
+{
+  "name": "Lira the Merchant",
+  "role": "Trader",
+  "level": 3,
+  "description": "Her wagon overflows with wares from distant realms.",
+  "dialogue": [
+    "Coins jingle sweetest when they're leaving your purse and entering mine."
+  ],
+  "teaches": [
+    "pottery",
+    "jewelry"
+  ]
+}

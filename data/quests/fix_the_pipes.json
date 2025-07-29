@@ -1,0 +1,17 @@
+{
+  "name": "Fix the Pipes",
+  "giver": "thaldo_tinkerer",
+  "zones": ["gearhaven"],
+  "triggers": ["collect_parts"],
+  "stages": [
+    {
+      "description": "Collect 3 pipe parts from rogue clockworks.",
+      "objective": { "item": "pipe_part", "count": 3 }
+    },
+    {
+      "description": "Return to Thaldo.",
+      "objective": { "talk": "thaldo_tinkerer" }
+    }
+  ],
+  "rewards": { "xp": 100, "items": ["healing_potion"] }
+}

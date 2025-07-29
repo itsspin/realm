@@ -35,6 +35,25 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
+function getPlayerLevel() {
+  return Math.floor((game.player?.xp || 0) / 100) + 1;
+}
+
+function getAvailableAbilities() {
+  const cls = loader.data.classes[game.player.class];
+  if (!cls) return [];
+  const lvl = getPlayerLevel();
+  let list = [];
+  Object.entries(cls.abilities).forEach(([req, ab]) => {
+    if (lvl >= Number(req)) list = list.concat(ab);
+  });
+  return list;
+}
+
+function abilityAllowed(id) {
+  return getAvailableAbilities().includes(id);
+}
+
 function selectTarget(type, id, btn) {
   if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
   currentTargetBtn = btn || null;
@@ -175,7 +194,19 @@ function dropLoot(mob) {
   loot.copper = rand(mob.level * 2);
   if (mob.level >= 5) loot.silver = rand(Math.floor(mob.level / 5));
   if (mob.level >= 20) loot.gold = rand(Math.floor(mob.level / 20));
-  if (mob.drops) {
+  if (mob.dropTable) {
+    const total = mob.dropTable.reduce((s, d) => s + d.weight, 0);
+    if (total > 0) {
+      let roll = Math.random() * total;
+      for (const d of mob.dropTable) {
+        roll -= d.weight;
+        if (roll <= 0) {
+          loot.items.push(d.id);
+          break;
+        }
+      }
+    }
+  } else if (mob.drops) {
     mob.drops.forEach((d) => {
       if (Math.random() < d.chance) loot.items.push(d.id);
     });
@@ -348,9 +379,11 @@ function renderRoom(loc) {
   buildActionsPanel(loc);
 }
 
-function enterRoom(id) {
+async function enterRoom(id) {
   const loc = loader.data.locations[id];
   if (!loc) return;
+  const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
+  await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
@@ -359,9 +392,9 @@ function enterRoom(id) {
   updateLocationPanel();
 }
 
-function move(dir) {
+async function move(dir) {
   const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) enterRoom(dest);
+  if (dest) await enterRoom(dest);
 }
 
 
@@ -423,9 +456,16 @@ function endCombat(win) {
 
 function enemyAttack() {
   const mob = game.target;
-  const dmg = rand(mob.damage);
-  game.player.hp -= dmg;
-  addCombatLog(`${mob.name} hits you for ${dmg}.`);
+  const res = resolveAttack(mob, game.player);
+  if (res.dodge) {
+    addCombatLog('You dodge the attack.');
+  } else if (res.miss) {
+    addCombatLog(`${mob.name} misses.`);
+  } else {
+    game.player.hp -= res.damage;
+    const crit = res.crit ? ' CRIT!' : '';
+    addCombatLog(`${mob.name} hits you for ${res.damage}.${crit}`);
+  }
   if (game.player.hp <= 0) {
     addCombatLog('You have been defeated!');
     endCombat(false);
@@ -436,13 +476,21 @@ function enemyAttack() {
 
 function useAbility(id) {
   if (!game.inCombat) return;
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addCombatLog(`You use ${spell.name}.`);
   if (spell.damage) {
-    const dmg = rand(spell.damage);
-    game.target.hp -= dmg;
-    addCombatLog(`You deal ${dmg} damage.`);
+    const res = resolveAttack(game.player, game.target, spell);
+    if (res.dodge) {
+      addCombatLog(`${game.target.name} dodges your attack.`);
+    } else if (res.miss) {
+      addCombatLog('You miss.');
+    } else {
+      game.target.hp -= res.damage;
+      const crit = res.crit ? ' CRIT!' : '';
+      addCombatLog(`You deal ${res.damage} damage.${crit}`);
+    }
   }
   if (spell.heal) {
     game.player.hp = Math.min(game.player.maxHp, game.player.hp + spell.heal);
@@ -466,11 +514,11 @@ function startCombat(targetId, type = 'mob') {
   document.getElementById('combat-overlay').classList.remove('hidden');
   const btns = document.getElementById('combat-buttons');
   btns.innerHTML = '';
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   abil.forEach((id) => {
     const b = document.createElement('button');
     b.className = 'btn text-xs';
-    b.textContent = loader.data.spells[id].name;
+    b.textContent = loader.data.abilities[id].name;
     b.onclick = () => useAbility(id);
     btns.append(b);
   });
@@ -523,7 +571,7 @@ function showNpcMenu(id) {
     btn.onclick = () => {
       if (window.confirm(`Accept quest "${q.name}"?`)) {
         game.player.activeQuests.push(qid);
-        game.player.questProgress[qid] = 0;
+        game.player.questProgress[qid] = { stage: 0, count: 0 };
         addLog(`Quest accepted: ${q.name}`);
         dlg.classList.add('hidden');
         buildQuestList();
@@ -674,19 +722,20 @@ function targetByName(name) {
 
 
 function castSpell(id) {
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addLog(`You cast ${spell.name}.`);
 }
 
 function buildHotbar() {
   const bar = document.getElementById('hotbar');
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   bar.innerHTML = '';
   abil.slice(0, 10).forEach((id) => {
     const btn = document.createElement('button');
     btn.className = 'btn text-xs';
-    btn.textContent = loader.data.spells[id].name;
+    btn.textContent = loader.data.abilities[id].name;
     btn.onclick = () => castSpell(id);
     bar.append(btn);
   });
@@ -763,20 +812,37 @@ function completeQuest(qid) {
   buildQuestList();
 }
 
+function advanceQuestStage(qid) {
+  const q = loader.data.quests[qid];
+  const prog = game.player.questProgress[qid];
+  if (!q || !prog) return;
+  if (prog.stage < q.stages.length - 1) {
+    prog.stage += 1;
+    prog.count = 0;
+    addLog(`Quest updated: ${q.name} - ${q.stages[prog.stage].description}`);
+    buildQuestList();
+  } else {
+    completeQuest(qid);
+  }
+}
+
 function checkQuestProgress(type, id) {
   game.player.activeQuests.forEach((qid) => {
     const q = loader.data.quests[qid];
-    if (!q) return;
-    if (type === 'kill' && q.objective.kill === id) {
-      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
-      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
-    } else if (type === 'talk' && q.objective.talk === id) {
-      completeQuest(qid);
-    } else if (type === 'location' && q.objective.location === id) {
-      completeQuest(qid);
-    } else if (type === 'item' && q.objective.item === id) {
-      game.player.questProgress[qid] = (game.player.questProgress[qid] || 0) + 1;
-      if (game.player.questProgress[qid] >= q.objective.count) completeQuest(qid);
+    const prog = game.player.questProgress[qid];
+    if (!q || !prog) return;
+    const stage = q.stages[prog.stage];
+    const obj = stage.objective;
+    if (type === 'kill' && obj.kill === id) {
+      prog.count = (prog.count || 0) + 1;
+      if (prog.count >= (obj.count || 1)) advanceQuestStage(qid);
+    } else if (type === 'talk' && obj.talk === id) {
+      advanceQuestStage(qid);
+    } else if (type === 'location' && obj.location === id) {
+      advanceQuestStage(qid);
+    } else if (type === 'item' && obj.item === id) {
+      prog.count = (prog.count || 0) + 1;
+      if (prog.count >= (obj.count || 1)) advanceQuestStage(qid);
     }
   });
 }
@@ -822,33 +888,45 @@ function buildQuestList() {
   qpanel.append(details);
 }
 
+function formatObjective(obj) {
+  if (obj.item) {
+    const itm = loader.data.items[obj.item]?.name || obj.item;
+    return `Collect ${obj.count || 1} ${itm}`;
+  }
+  if (obj.kill) {
+    const mob = loader.data.mobs[obj.kill]?.name || obj.kill;
+    return `Defeat ${obj.count || 1} ${mob}`;
+  }
+  if (obj.talk) {
+    const npc = loader.get('npcs', obj.talk)?.name || obj.talk;
+    return `Speak with ${npc}`;
+  }
+  if (obj.location) {
+    const loc = loader.data.locations[obj.location]?.name || obj.location;
+    return `Travel to ${loc}`;
+  }
+  return '';
+}
+
 function showQuestDetails(qid) {
   const q = loader.data.quests[qid];
   if (!q) return;
   const giver = loader.get('npcs', q.giver)?.name || q.giver;
-  let objective = '';
-  if (q.objective.item) {
-    const itm = loader.data.items[q.objective.item]?.name || q.objective.item;
-    objective = `Collect ${q.objective.count} ${itm}`;
-  } else if (q.objective.kill) {
-    const mob = loader.data.mobs[q.objective.kill]?.name || q.objective.kill;
-    objective = `Defeat ${q.objective.count} ${mob}`;
-  } else if (q.objective.talk) {
-    const npc = loader.get('npcs', q.objective.talk)?.name || q.objective.talk;
-    objective = `Speak with ${npc}`;
-  } else if (q.objective.location) {
-    const loc =
-      loader.data.locations[q.objective.location]?.name || q.objective.location;
-    objective = `Travel to ${loc}`;
-  }
+  const prog = game.player.questProgress[qid];
+  const stageIdx = game.player.completedQuests.includes(qid)
+    ? q.stages.length - 1
+    : prog?.stage || 0;
+  const stage = q.stages[stageIdx];
+  const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.reward.xp) rewards.push(`${q.reward.xp} XP`);
-  if (q.reward.item)
-    rewards.push(loader.data.items[q.reward.item]?.name || q.reward.item);
+  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+  (q.rewards?.items || []).forEach((i) =>
+    rewards.push(loader.data.items[i]?.name || i)
+  );
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
-    <p class="mb-1">${q.description}</p>
+    <p class="mb-1">${stage.description}</p>
     <p class="mb-1"><strong>Objective:</strong> ${objective}</p>
     <p class="mb-1"><strong>Reward:</strong> ${rewards.join(', ') || 'None'}</p>
     <p class="mb-1"><strong>Turn in:</strong> ${giver}</p>
@@ -966,7 +1044,7 @@ function buildCraftPanel() {
   panel.append(div);
 }
 
-function handleInput(text) {
+async function handleInput(text) {
   const cmd = text.trim();
   if (['n', 's', 'e', 'w'].includes(cmd)) {
     move(cmd);
@@ -975,7 +1053,7 @@ function handleInput(text) {
     const loc = loader.data.locations[game.player.location];
     const linkDest = Object.values(loc.links || {}).find((v) => v === target);
     const boatDest = (loc.boats || []).find((v) => v === target);
-    if (linkDest || boatDest) enterRoom(target);
+    if (linkDest || boatDest) await enterRoom(target);
   } else if (cmd.startsWith('/attack')) {
     const mob = loader.data.locations[game.player.location].spawns[0];
     if (mob) startCombat(mob);
@@ -1074,7 +1152,7 @@ function populateSelect(id, data) {
   });
 }
 
-function startGame(player) {
+async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
@@ -1082,8 +1160,14 @@ function startGame(player) {
   updatePlayersList();
   bindUI();
   buildHotbar();
+  game.player.activeQuests.forEach((qid) => {
+    if (!game.player.questProgress[qid]) {
+      game.player.questProgress[qid] = { stage: 0, count: 0 };
+    }
+  });
+  buildQuestList();
   const start = location.hash.slice(1) || game.player.location;
-  enterRoom(start);
+  await enterRoom(start);
 }
 
 function showCreateForm() {
@@ -1091,7 +1175,7 @@ function showCreateForm() {
   populateSelect('class', loader.data.classes);
   populateSelect('deity', loader.data.deities);
   document.getElementById('create-overlay').classList.remove('hidden');
-  document.getElementById('create-form').onsubmit = (e) => {
+  document.getElementById('create-form').onsubmit = async (e) => {
     e.preventDefault();
     const base = loader.data.attributes.base;
     const stats = {
@@ -1114,12 +1198,14 @@ function showCreateForm() {
       return;
     }
     const race = document.getElementById('race').value;
+    const clsId = document.getElementById('class').value;
+    const clsDef = loader.data.classes[clsId];
     const player = {
       name:
         document.getElementById('first-name').value +
         ' ' +
         document.getElementById('last-name').value,
-      class: document.getElementById('class').value,
+      class: clsId,
       race,
       deity: document.getElementById('deity').value,
       stats,
@@ -1130,6 +1216,7 @@ function showCreateForm() {
       location: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
+      gearTypes: clsDef.gear || [],
       activeQuests: ['welcome_to_realm'],
       completedQuests: [],
       questProgress: {},
@@ -1138,7 +1225,7 @@ function showCreateForm() {
       coins: { copper: 0, silver: 0, gold: 0 },
       xp: 0
     };
-    startGame(player);
+    await startGame(player);
   };
 }
 
@@ -1148,7 +1235,7 @@ export async function init() {
   bindUI();
   const saved = loadCharacter();
   if (saved) {
-    startGame(saved);
+    await startGame(saved);
   } else {
     showCreateForm();
   }

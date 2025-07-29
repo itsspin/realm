@@ -1,0 +1,13 @@
+{
+  "name": "Gilda Gearsmith",
+  "role": "Crafting Trainer",
+  "level": 3,
+  "description": "She hammers away at metal plates, teaching apprentices the trade.",
+  "dialogue": [
+    "Need to learn crafting? My workshop is open to all diligent hands."
+  ],
+  "teaches": [
+    "blacksmithing",
+    "tailoring"
+  ]
+}

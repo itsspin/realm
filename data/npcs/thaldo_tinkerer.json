@@ -1,0 +1,9 @@
+{
+  "name": "Thaldo the Tinkerer",
+  "role": "Quest Giver",
+  "level": 5,
+  "description": "A gnome engineer with grease-smeared goggles always seeking new parts.",
+  "dialogue": [
+    "Welcome to Gearhaven! I've got gadgets aplenty if you've the curiosity."
+  ]
+}

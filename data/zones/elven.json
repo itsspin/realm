@@ -1,0 +1,32 @@
+{
+  "locations": {
+    "elven_glade_path": {
+      "name": "Elven Forest Road",
+      "faction": "neutral",
+      "description": "A serene path lined with ancient trees leading to the high elf city.",
+      "exits": [
+        "neutral_crossroads",
+        "elven_glade"
+      ],
+      "links": {
+        "crossroads": "neutral_crossroads",
+        "city": "elven_glade"
+      },
+      "npcs": [],
+      "spawns": []
+    },
+    "elven_glade": {
+      "name": "Elven Glade",
+      "faction": "luminara",
+      "description": "Homes built high in the trees sparkle with arcane light.",
+      "exits": [
+        "elven_glade_path"
+      ],
+      "links": {
+        "road": "elven_glade_path"
+      },
+      "npcs": [],
+      "spawns": []
+    }
+  }
+}
