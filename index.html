@@ -3,52 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Twilight Realms</title>
+  <title>REALM</title>
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="h-full bg-slate-900 text-slate-200 flex flex-col">
-  <!-- Header -->
-  <header class="shrink-0 p-2 bg-slate-800 flex items-center gap-4">
-    <h1 class="text-xl font-bold">Twilight Realms</h1>
+<body class="h-full bg-slate-900 text-slate-200 grid grid-rows-[auto_1fr_auto]">
+  <!-- Top HUD Bar -->
+  <header id="top-bar" class="p-2 bg-slate-800 flex flex-wrap justify-between items-center gap-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-xl font-bold">REALM</h1>
+      <span id="player-name" class="font-semibold"></span>
+      <span id="player-class"></span>
+      <span id="player-level"></span>
+      <div class="flex items-center gap-1">
+        <span class="text-xs">HP</span>
+        <div class="progress w-24"><div id="hp-fill" class="progress-fill"></div></div>
+        <span id="player-hp-text" class="w-14 text-right"></span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="text-xs">XP</span>
+        <div class="progress w-24"><div id="xp-fill" class="progress-fill bg-blue-600"></div></div>
+        <span id="player-xp-text" class="w-14 text-right"></span>
+      </div>
+      <span id="player-gold"></span>
+    </div>
     <nav class="flex gap-2 text-sm">
+      <button data-tab="tab-inventory" class="btn tab-btn">Inventory</button>
+      <button data-tab="tab-quests" class="btn tab-btn">Quests</button>
       <button data-panel="map" class="btn">Map</button>
-      <button data-panel="graph" class="btn">Graph</button>
-      <button data-panel="craft" class="btn">Craft</button>
-      <a href="profile.html" class="btn">Profile</a>
-      <button data-panel="codex" class="btn">Codex</button>
+      <a href="profile.html" class="btn">Settings</a>
     </nav>
   </header>
 
-  <!-- Player info bar -->
-  <div id="player-bar" class="shrink-0 p-2 bg-slate-700 flex justify-between text-sm">
-    <span id="player-name">Name: —</span>
-    <span id="player-hp">HP: --/--</span>
-    <span id="player-xp">XP: 0</span>
-  </div>
-
   <!-- Main layout -->
 
-  <main class="grow grid md:grid-cols-[16rem_1fr_16rem_16rem] gap-2 p-2 overflow-hidden">
+  <main class="grow grid md:grid-cols-[16rem_1fr_16rem] gap-2 p-2 overflow-hidden">
     <aside id="left-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
-      <div id="inv" class="hud-box"></div>
-    </aside>
-
-    <div class="flex flex-col gap-2 overflow-hidden">
-      <section id="log" class="grow bg-slate-800 p-3 rounded overflow-y-auto"></section>
-      <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
-        <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
-        <button id="send" class="btn">Send</button>
-      </footer>
-    </div>
-
-    <aside id="right-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
-      <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
-      <div id="target" class="hud-box">Target: —</div>
-      <div id="party" class="hud-box">Party: —</div>
-      <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
       <div id="zone-panel" class="hud-box">
         <div id="zone-name" class="font-bold mb-1">Zone</div>
         <div id="zone-desc" class="text-xs mb-1"></div>
@@ -78,12 +70,40 @@
         <div class="font-bold mb-1">Actions</div>
         <div id="actions-panel" class="flex flex-wrap gap-1"></div>
       </div>
-      <div id="dialogue" class="hud-box hidden"></div>
-      <div id="chat-panel" class="hud-box flex-grow overflow-y-auto"></div>
       <div id="minimap" class="hud-box h-40"></div>
     </aside>
-    <aside id="quest-sidebar" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
-      <div id="quests" class="hud-box flex-grow overflow-y-auto"></div>
+
+    <div class="flex flex-col gap-2 overflow-hidden">
+      <section id="log" class="grow bg-slate-800 p-3 rounded overflow-y-auto"></section>
+      <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
+        <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
+        <button id="send" class="btn">Send</button>
+      </footer>
+    </div>
+
+    <aside id="right-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
+      <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
+      <div id="target" class="hud-box">Target: —</div>
+      <div id="party" class="hud-box">Party: —</div>
+      <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
+      <div class="tabs flex gap-1 mb-2">
+        <button data-tab="tab-inventory" class="btn tab-btn text-xs">Inventory</button>
+        <button data-tab="tab-quests" class="btn tab-btn text-xs">Quests</button>
+        <button data-tab="tab-mob" class="btn tab-btn text-xs">Mob Info</button>
+        <button data-tab="tab-lore" class="btn tab-btn text-xs">Lore</button>
+      </div>
+      <div class="tab-content flex-grow overflow-y-auto">
+        <div id="tab-inventory" class="tab-panel">
+          <div id="inv" class="hud-box"></div>
+        </div>
+        <div id="tab-quests" class="tab-panel hidden">
+          <div id="quests" class="hud-box"></div>
+        </div>
+        <div id="tab-mob" class="tab-panel hidden">
+          <div id="dialogue" class="hud-box hidden"></div>
+        </div>
+        <div id="tab-lore" class="tab-panel hidden"></div>
+      </div>
     </aside>
   </main>
   <!-- Overlay panels -->
@@ -106,6 +126,9 @@
   </div>
   <!-- Hotbar for abilities -->
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
+
+  <!-- Chat dock -->
+  <div id="chat-panel" class="shrink-0 bg-slate-800 p-2 h-32 overflow-y-auto"></div>
 
   <!-- Movement controls -->
   <div id="move-controls" class="shrink-0 p-2 bg-slate-800 flex gap-1 justify-center"></div>

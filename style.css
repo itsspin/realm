@@ -47,3 +47,19 @@ body {
 .codex-book {
   @apply bg-amber-100 text-slate-800 p-4 rounded shadow-inner font-serif;
 }
+
+/* Progress bars */
+.progress {
+  @apply w-full h-2 bg-slate-700 rounded overflow-hidden;
+}
+.progress-fill {
+  @apply h-full bg-green-600;
+}
+
+/* Tabs */
+.tab-btn.active {
+  @apply bg-indigo-500;
+}
+.tab-panel {
+  @apply w-full;
+}
