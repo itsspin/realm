@@ -1,0 +1,27 @@
+{
+  "id": "ashmoor_fields",
+  "name": "Ashmoor Fields",
+  "description": "This is a placeholder description for Ashmoor Fields.",
+  "level_range": [
+    1,
+    5
+  ],
+  "type": "starter",
+  "exits": {
+    "north": "ironvale_hold",
+    "east": "greystone_hills"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 1,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

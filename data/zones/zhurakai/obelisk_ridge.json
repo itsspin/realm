@@ -1,0 +1,27 @@
+{
+  "id": "obelisk_ridge",
+  "name": "Obelisk Ridge",
+  "description": "This is a placeholder description for Obelisk Ridge.",
+  "level_range": [
+    15,
+    25
+  ],
+  "type": "wildland",
+  "exits": {
+    "south": "glasswaste_expanse",
+    "north": "dusthold_ruins"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 15,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}
