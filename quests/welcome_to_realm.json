@@ -2,12 +2,12 @@
   "name": "Welcome to Twilight Realms",
   "giver": "thaldo_tinkerer",
   "zones": ["gearhaven"],
-  "faction": "luminara",
   "stages": [
     {
       "description": "Speak with Thaldo to learn the basics.",
-      "objective": { "talk": "thaldo_tinkerer" }
+      "objective": { "talk": "thaldo_tinkerer" },
+      "dialogue": "Welcome, adventurer! Let's get you equipped.",
+      "rewards": { "xp": 50, "items": ["rusty_sword"] }
     }
-  ],
-  "rewards": { "xp": 50, "items": ["rusty_sword"] }
+  ]
 }

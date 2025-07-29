@@ -23,8 +23,12 @@ export const loader = {
       'classes',
       'deities',
       'quests',
+      'items',
       'locations',
-      'crafting'
+      'crafting',
+      'events'
+      'guilds'
+      'achievements'
     ];
     await Promise.all(
       files.map(async (name) => {
@@ -39,6 +43,20 @@ export const loader = {
     await Promise.all(
       abilityFiles.map(async (f) => {
         Object.assign(this.data.abilities, await fetchJson(`data/abilities/${f}.json`));
+      })
+    );
+
+    const savedGuilds = localStorage.getItem('guilds');
+    if (savedGuilds) {
+      this.data.guilds = JSON.parse(savedGuilds);
+    }
+    const loreIdx = await fetch('data/lore/index.json');
+    const loreFiles = await loreIdx.json();
+    this.data.lore = {};
+    await Promise.all(
+      loreFiles.map(async (f) => {
+        const res = await fetch(`data/lore/${f}.json`);
+        this.data.lore[f] = await res.json();
       })
     );
   },
