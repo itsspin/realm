@@ -8,7 +8,7 @@ export const loader = {
       'classes',
       'deities',
       'items',
-      'spells',
+      'quests',
       'locations',
       'crafting'
     ];
@@ -18,14 +18,13 @@ export const loader = {
         this.data[name] = await res.json();
       })
     );
-    // Load quests from individual files in data/quests
-    const idxRes = await fetch('data/quests/index.json');
-    const list = await idxRes.json();
-    this.data.quests = {};
+    const idxRes = await fetch('data/abilities/index.json');
+    const abilityFiles = await idxRes.json();
+    this.data.abilities = {};
     await Promise.all(
-      list.map(async (id) => {
-        const qRes = await fetch(`data/quests/${id}.json`);
-        this.data.quests[id] = await qRes.json();
+      abilityFiles.map(async (f) => {
+        const res = await fetch(`data/abilities/${f}.json`);
+        Object.assign(this.data.abilities, await res.json());
       })
     );
   },

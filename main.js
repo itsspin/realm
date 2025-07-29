@@ -35,67 +35,23 @@ function rand(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
-function getEffectiveStats(ent) {
-  const stats = { str: 0, dex: 0, int: 0 };
-  if (ent.stats) {
-    stats.str += ent.stats.str || 0;
-    stats.dex += ent.stats.dex || 0;
-    stats.int += ent.stats.int || 0;
-  }
-  if (ent.equipped) {
-    Object.values(ent.equipped).forEach((id) => {
-      const item = loader.data.items[id];
-      if (item) {
-        stats.str += item.str || 0;
-        stats.dex += item.dex || 0;
-        stats.int += item.int || 0;
-      }
-    });
-  }
-  return stats;
+function getPlayerLevel() {
+  return Math.floor((game.player?.xp || 0) / 100) + 1;
 }
 
-function getArmor(ent) {
-  let armor = ent.armor || 0;
-  if (ent.equipped) {
-    Object.values(ent.equipped).forEach((id) => {
-      const item = loader.data.items[id];
-      if (item && item.armor) armor += item.armor;
-    });
-  }
-  return armor;
+function getAvailableAbilities() {
+  const cls = loader.data.classes[game.player.class];
+  if (!cls) return [];
+  const lvl = getPlayerLevel();
+  let list = [];
+  Object.entries(cls.abilities).forEach(([req, ab]) => {
+    if (lvl >= Number(req)) list = list.concat(ab);
+  });
+  return list;
 }
 
-function getWeaponDamage(ent) {
-  if (ent.damage) return ent.damage;
-  let dmg = 1;
-  if (ent.equipped && ent.equipped.weapon) {
-    dmg += loader.data.items[ent.equipped.weapon]?.damage || 0;
-  }
-  return dmg;
-}
-
-function resolveAttack(attacker, defender, ability = {}) {
-  const atk = getEffectiveStats(attacker);
-  const def = getEffectiveStats(defender);
-
-  const dodgeChance = Math.min(30, def.dex * 0.5);
-  if (Math.random() * 100 < dodgeChance) return { dodge: true };
-
-  const hitChance = 70 + (atk.dex - def.dex);
-  if (Math.random() * 100 >= hitChance) return { miss: true };
-
-  const critChance = 5 + atk.dex * 0.2;
-  const crit = Math.random() * 100 < critChance;
-
-  let dmg = getWeaponDamage(attacker);
-  if (ability.damage) dmg += ability.damage + Math.floor(atk.int / 2);
-  dmg += Math.floor(atk.str / 2);
-  if (crit) dmg *= 1.5;
-  dmg -= getArmor(defender);
-  if (dmg < 0) dmg = 0;
-
-  return { damage: Math.floor(dmg), crit };
+function abilityAllowed(id) {
+  return getAvailableAbilities().includes(id);
 }
 
 function selectTarget(type, id, btn) {
@@ -494,7 +450,8 @@ function enemyAttack() {
 
 function useAbility(id) {
   if (!game.inCombat) return;
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addCombatLog(`You use ${spell.name}.`);
   if (spell.damage) {
@@ -531,11 +488,11 @@ function startCombat(targetId, type = 'mob') {
   document.getElementById('combat-overlay').classList.remove('hidden');
   const btns = document.getElementById('combat-buttons');
   btns.innerHTML = '';
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   abil.forEach((id) => {
     const b = document.createElement('button');
     b.className = 'btn text-xs';
-    b.textContent = loader.data.spells[id].name;
+    b.textContent = loader.data.abilities[id].name;
     b.onclick = () => useAbility(id);
     btns.append(b);
   });
@@ -739,19 +696,20 @@ function targetByName(name) {
 
 
 function castSpell(id) {
-  const spell = loader.data.spells[id];
+  if (!abilityAllowed(id)) return;
+  const spell = loader.data.abilities[id];
   if (!spell) return;
   addLog(`You cast ${spell.name}.`);
 }
 
 function buildHotbar() {
   const bar = document.getElementById('hotbar');
-  const abil = loader.data.classes[game.player.class].starterAbilities;
+  const abil = getAvailableAbilities();
   bar.innerHTML = '';
   abil.slice(0, 10).forEach((id) => {
     const btn = document.createElement('button');
     btn.className = 'btn text-xs';
-    btn.textContent = loader.data.spells[id].name;
+    btn.textContent = loader.data.abilities[id].name;
     btn.onclick = () => castSpell(id);
     bar.append(btn);
   });
@@ -1214,12 +1172,14 @@ function showCreateForm() {
       return;
     }
     const race = document.getElementById('race').value;
+    const clsId = document.getElementById('class').value;
+    const clsDef = loader.data.classes[clsId];
     const player = {
       name:
         document.getElementById('first-name').value +
         ' ' +
         document.getElementById('last-name').value,
-      class: document.getElementById('class').value,
+      class: clsId,
       race,
       deity: document.getElementById('deity').value,
       stats,
@@ -1230,6 +1190,7 @@ function showCreateForm() {
       location: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
+      gearTypes: clsDef.gear || [],
       activeQuests: ['welcome_to_realm'],
       completedQuests: [],
       questProgress: {},
