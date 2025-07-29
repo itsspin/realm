@@ -1,0 +1,48 @@
+{
+  "zone": "moonshade_thicket",
+  "recommended_level_range": [
+    5,
+    9
+  ],
+  "mobs": [
+    {
+      "id": "thicket_snake",
+      "name": "Thicket Snake",
+      "type": "beast",
+      "level_range": [
+        5,
+        6
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "snake_skin"
+      ]
+    },
+    {
+      "id": "moonshard_pixie",
+      "name": "Moonshard Pixie",
+      "type": "fae",
+      "level_range": [
+        6,
+        8
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "pixie_dust"
+      ]
+    },
+    {
+      "id": "thicket_spirit",
+      "name": "Thicket Spirit",
+      "type": "spirit",
+      "level_range": [
+        7,
+        9
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "ethereal_leaf"
+      ]
+    }
+  ]
+}

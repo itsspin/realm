@@ -1,0 +1,35 @@
+{
+  "zone": "wyrmroot_caverns",
+  "recommended_level_range": [
+    34,
+    39
+  ],
+  "mobs": [
+    {
+      "id": "cavern_wyrmling",
+      "name": "Cavern Wyrmling",
+      "type": "dragonkin",
+      "level_range": [
+        34,
+        36
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "wyrmling_scale"
+      ]
+    },
+    {
+      "id": "stonegnaw_basilisk",
+      "name": "Stonegnaw Basilisk",
+      "type": "reptile",
+      "level_range": [
+        36,
+        39
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "basilisk_eye"
+      ]
+    }
+  ]
+}

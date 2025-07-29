@@ -1,0 +1,35 @@
+{
+  "zone": "frostbite_spires",
+  "recommended_level_range": [
+    25,
+    30
+  ],
+  "mobs": [
+    {
+      "id": "spires_howler",
+      "name": "Spires Howler",
+      "type": "beast",
+      "level_range": [
+        25,
+        28
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "howler_tooth"
+      ]
+    },
+    {
+      "id": "shard_wraith",
+      "name": "Shard Wraith",
+      "type": "undead",
+      "level_range": [
+        28,
+        30
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "shard_fragment"
+      ]
+    }
+  ]
+}

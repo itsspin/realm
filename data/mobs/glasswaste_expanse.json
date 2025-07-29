@@ -1,0 +1,35 @@
+{
+  "zone": "glasswaste_expanse",
+  "recommended_level_range": [
+    28,
+    32
+  ],
+  "mobs": [
+    {
+      "id": "glassback_scorpion",
+      "name": "Glassback Scorpion",
+      "type": "beast",
+      "level_range": [
+        28,
+        31
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "scorpion_carapace"
+      ]
+    },
+    {
+      "id": "hallucinated_warrior",
+      "name": "Hallucinated Warrior",
+      "type": "humanoid",
+      "level_range": [
+        30,
+        32
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "phantom_blade"
+      ]
+    }
+  ]
+}

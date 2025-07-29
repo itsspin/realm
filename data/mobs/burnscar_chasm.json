@@ -1,0 +1,35 @@
+{
+  "zone": "burnscar_chasm",
+  "recommended_level_range": [
+    44,
+    50
+  ],
+  "mobs": [
+    {
+      "id": "ash_titan",
+      "name": "Ash Titan",
+      "type": "elemental",
+      "level_range": [
+        44,
+        47
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "ash_core"
+      ]
+    },
+    {
+      "id": "chasm_reaver",
+      "name": "Chasm Reaver",
+      "type": "humanoid",
+      "level_range": [
+        47,
+        50
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "reaver_blade"
+      ]
+    }
+  ]
+}
