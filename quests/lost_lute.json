@@ -1,0 +1,19 @@
+{
+  "name": "Lost Lute",
+  "giver": "bard_npc",
+  "zones": ["gearhaven"],
+  "stages": [
+    {
+      "description": "Retrieve the bard's lost lute from goblin raiders.",
+      "objective": { "item": "bard_lute", "count": 1 },
+      "dialogue": "My precious lute! Those goblins ran off with it.",
+      "rewards": { "xp": 75 }
+    },
+    {
+      "description": "Return the lute to the bard.",
+      "objective": { "talk": "bard_npc" },
+      "dialogue": "You've found it! I can perform once more.",
+      "rewards": { "xp": 75, "items": ["bard_lute"] }
+    }
+  ]
+}

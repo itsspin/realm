@@ -1,0 +1,20 @@
+{
+  "name": "Clear the Bog",
+  "giver": "bog_hunter",
+  "zones": ["shadowfen"],
+  "triggers": [],
+  "stages": [
+    {
+      "description": "Slay 2 bog creepers in Shadowfen.",
+      "objective": { "kill": "bog_creeper", "count": 2 },
+      "dialogue": "The mists hide many dangers. Bring me proof of two slain creepers.",
+      "rewards": { "xp": 60 }
+    },
+    {
+      "description": "Report back to the hunter.",
+      "objective": { "talk": "bog_hunter" },
+      "dialogue": "You've thinned their numbers? Good work, friend.",
+      "rewards": { "xp": 60, "items": ["mana_potion"] }
+    }
+  ]
+}

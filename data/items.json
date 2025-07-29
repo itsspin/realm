@@ -61,7 +61,8 @@
     "level": 1,
     "damage": 2,
     "slot": "weapon",
-    "description": "Carved from an ancient tree."
+    "description": "Carved from an ancient tree.",
+    "relic": true
   },
   "shadow_dagger": {
     "name": "Shadow Dagger",
