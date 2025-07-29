@@ -1,21 +1,24 @@
 [
   {
-    "id": "gearhaven_invasion",
-    "name": "Gearhaven Invasion",
+    "id": "ashmoor_invasion",
+    "name": "Ashmoor Invasion",
     "type": "elite_mob",
     "mob": "rogue_clockwork",
-    "location": "gearhaven_plaza",
+    "location": "ashmoor_fields",
     "levelBoost": 3,
     "start": "2023-01-01T00:00:00Z",
     "end": "2099-01-01T00:00:00Z",
-    "message": "Elite clockwork machines storm Gearhaven Plaza!"
+    "message": "Elite clockwork machines storm Ashmoor Fields!"
   },
   {
     "id": "treasure_hunt",
     "name": "Treasure Hunt",
     "type": "rare_loot",
     "mob": "goblin_raider",
-    "drop": { "id": "rusty_sword", "weight": 5 },
+    "drop": {
+      "id": "rusty_sword",
+      "weight": 5
+    },
     "start": "2023-01-01T00:00:00Z",
     "end": "2099-01-01T00:00:00Z",
     "message": "Rumors of hidden treasure spread among the goblins!"

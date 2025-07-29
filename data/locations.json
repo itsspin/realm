@@ -1,53 +1,4 @@
 {
-  "gearhaven_plaza": {
-    "name": "Cogwheel Plaza",
-    "faction": "luminara",
-    "description": "Steam hisses from pipes and gears grind beneath your feet. Merchants shout over the clatter while travelers mingle in the plaza.",
-    "exits": [
-      "n",
-      "e",
-      "s"
-    ],
-    "links": {
-      "n": "gearhaven_workshop",
-      "e": "neutral_crossroads",
-      "s": "shadowfen_camp"
-    },
-    "npcs": [
-      "thaldo_tinkerer",
-      "gilda_crafter",
-      "rogar_trainer",
-      "belena_trainer",
-      "bard_npc",
-      "druid_npc",
-      "joran_barkeep"
-    ],
-    "spawns": [
-      "rogue_clockwork"
-    ],
-    "nodes": [
-      "gearhaven_sign"
-    ]
-  },
-  "gearhaven_workshop": {
-    "name": "Gearhaven Workshop",
-    "faction": "luminara",
-    "description": "Inventors toil with strange contraptions here, the air thick with the scent of oil and magic.",
-    "exits": [
-      "s"
-    ],
-    "links": {
-      "s": "gearhaven_plaza"
-    },
-    "npcs": [
-      "thaldo_tinkerer",
-      "gilda_crafter"
-    ],
-    "spawns": [],
-    "nodes": [
-      "workshop_anvil"
-    ]
-  },
   "shadowfen_camp": {
     "name": "Shadowfen Camp",
     "faction": "umbra",
@@ -57,7 +8,6 @@
       "e"
     ],
     "links": {
-      "n": "gearhaven_plaza",
       "e": "shadowfen_bog"
     },
     "npcs": [
@@ -94,7 +44,6 @@
     "faction": "neutral",
     "description": "A dusty intersection where caravans pause and news from all factions is traded.",
     "exits": [
-      "gearhaven_plaza",
       "elven_glade_path",
       "dwarf_fort_path",
       "gnome_burrow_path",
@@ -102,7 +51,6 @@
       "undead_trail"
     ],
     "links": {
-      "west": "gearhaven_plaza",
       "elven_path": "elven_glade_path",
       "dwarf_path": "dwarf_fort_path",
       "gnome_path": "gnome_burrow_path",

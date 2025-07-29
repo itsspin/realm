@@ -1,7 +1,7 @@
 {
   "name": "Fix the Pipes",
   "giver": "thaldo_tinkerer",
-  "zones": ["gearhaven"],
+  "zones": ["ashmoor_fields"],
   "faction": "luminara",
   "triggers": ["collect_parts"],
   "stages": [

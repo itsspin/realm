@@ -1,4 +1,4 @@
-import { loader } from './data/loader.js';
+import { loader, fetchJson } from './data/loader.js';
 import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
 import { worldState } from './worldState.js';
@@ -539,15 +539,14 @@ function gearScore(player) {
 }
 
 function zoneOf(loc) {
-  return (loc || '').split('_')[0];
+  return loc || '';
 }
 
 async function loadZoneMobs(zoneId) {
   if (game.currentZone.id === zoneId) return;
   game.currentZone = { id: zoneId, mobs: [] };
   try {
-    const res = await fetch(`data/mobs/${zoneId}.json`);
-    const data = await res.json();
+    const data = await fetchJson(`data/mobs/${zoneId}.json`);
     if (Array.isArray(data.mobs)) {
       game.currentZone.mobs = data.mobs;
     } else {
@@ -1309,8 +1308,7 @@ function buildMap() {
 async function buildGraph() {
   const panel = document.getElementById('graph');
   panel.innerHTML = '<h2 class="text-lg mb-2">World Graph</h2><svg width="600" height="600"></svg>';
-  const res = await fetch('data/map.json');
-  const graph = await res.json();
+  const graph = await fetchJson('data/map.json');
   const nodes = Object.keys(graph).map((id) => ({ id, name: loader.data.locations[id]?.name || id }));
   const links = [];
   Object.entries(graph).forEach(([src, exits]) => {
@@ -1697,7 +1695,7 @@ async function startGame(player) {
     name: 'Adventurer',
     class: 'ranger',
     level: 3,
-    location: 'gearhaven_plaza',
+    location: 'ashmoor_fields',
     equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
   });
   worldState.addPlayer({
