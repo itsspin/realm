@@ -1,0 +1,36 @@
+{
+  "zone": "windfall_pass",
+  "recommended_level_range": [
+    12,
+    18
+  ],
+  "mobs": [
+    {
+      "id": "mountain_screecher",
+      "name": "Mountain Screecher",
+      "type": "avian",
+      "level_range": [
+        12,
+        15
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "screecher_feather"
+      ]
+    },
+    {
+      "id": "pass_raider",
+      "name": "Pass Raider",
+      "type": "humanoid",
+      "level_range": [
+        14,
+        18
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "stolen_supplies",
+        "rough_boots"
+      ]
+    }
+  ]
+}

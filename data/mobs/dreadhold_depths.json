@@ -1,0 +1,35 @@
+{
+  "zone": "dreadhold_depths",
+  "recommended_level_range": [
+    52,
+    58
+  ],
+  "mobs": [
+    {
+      "id": "dread_warden",
+      "name": "Dread Warden",
+      "type": "undead",
+      "level_range": [
+        52,
+        55
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "warden_chain"
+      ]
+    },
+    {
+      "id": "soul_chanter",
+      "name": "Soul Chanter",
+      "type": "undead",
+      "level_range": [
+        55,
+        58
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "soulstone"
+      ]
+    }
+  ]
+}

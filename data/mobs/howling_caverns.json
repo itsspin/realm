@@ -1,0 +1,51 @@
+{
+  "zone": "howling_caverns",
+  "recommended_level_range": [
+    10,
+    16
+  ],
+  "mobs": [
+    {
+      "id": "cave_lurker",
+      "name": "Cave Lurker",
+      "type": "beast",
+      "level_range": [
+        10,
+        12
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "lurker_fang",
+        "damp_hide"
+      ]
+    },
+    {
+      "id": "echo_wraith",
+      "name": "Echo Wraith",
+      "type": "undead",
+      "level_range": [
+        12,
+        14
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "wraith_essence",
+        "phantom_cloak"
+      ]
+    },
+    {
+      "id": "bonegnasher",
+      "name": "Bonegnasher",
+      "type": "beast",
+      "level_range": [
+        14,
+        16
+      ],
+      "spawn_rate": 0.1,
+      "loot_table": [
+        "gnashed_bone",
+        "cracked_tooth"
+      ]
+    }
+  ]
+}

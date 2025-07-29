@@ -1,0 +1,36 @@
+{
+  "zone": "rimebrook_falls",
+  "recommended_level_range": [
+    20,
+    25
+  ],
+  "mobs": [
+    {
+      "id": "mist_elk",
+      "name": "Mist Elk",
+      "type": "beast",
+      "level_range": [
+        20,
+        22
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "antlers",
+        "soft_hide"
+      ]
+    },
+    {
+      "id": "watercaller",
+      "name": "Watercaller",
+      "type": "elemental",
+      "level_range": [
+        22,
+        25
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "water_core"
+      ]
+    }
+  ]
+}

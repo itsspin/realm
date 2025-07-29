@@ -1,0 +1,35 @@
+{
+  "zone": "dusthold_ruins",
+  "recommended_level_range": [
+    12,
+    16
+  ],
+  "mobs": [
+    {
+      "id": "dust_wraith",
+      "name": "Dust Wraith",
+      "type": "undead",
+      "level_range": [
+        12,
+        14
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "wraith_dust"
+      ]
+    },
+    {
+      "id": "crypt_guardian",
+      "name": "Crypt Guardian",
+      "type": "undead",
+      "level_range": [
+        14,
+        16
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "guardian_shield"
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { loader } from './data/loader.js';
+import { loader, fetchJson } from './data/loader.js';
 import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
 import { worldState } from './worldState.js';
@@ -10,7 +10,8 @@ const game = {
   combatTimer: 0,
   inCombat: false,
   onlinePlayers: [],
-  players: {}
+  players: {},
+  currentZone: { id: null, mobs: [] }
 };
 
 function saveCharacter(p) {
@@ -54,6 +55,10 @@ function isQuestGiver(id) {
 
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function randRange(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function opposingFaction(fac) {
@@ -290,10 +295,21 @@ function updateHUD() {
     const title = p.achievements.title ? ` ${p.achievements.title}` : '';
     nameEl.textContent = p.name + title;
   }
-  const hpEl = document.getElementById('player-hp');
-  if (hpEl) hpEl.textContent = `HP: ${p.hp}/${p.maxHp}`;
-  const xpEl = document.getElementById('player-xp');
-  if (xpEl) xpEl.textContent = `XP: ${p.xp || 0}`;
+  const clsEl = document.getElementById('player-class');
+  if (clsEl) clsEl.textContent = p.class;
+  const lvlEl = document.getElementById('player-level');
+  if (lvlEl) lvlEl.textContent = `Lv ${getPlayerLevel()}`;
+  const hpText = document.getElementById('player-hp-text');
+  if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
+  const hpFill = document.getElementById('hp-fill');
+  if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
+  const xpText = document.getElementById('player-xp-text');
+  if (xpText) xpText.textContent = p.xp || 0;
+  const xpFill = document.getElementById('xp-fill');
+  if (xpFill) xpFill.style.width = `${(p.xp % 100)}%`;
+  const goldEl = document.getElementById('player-gold');
+  if (goldEl)
+    goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
 }
 
 function updateLocationPanel() {
@@ -456,8 +472,10 @@ async function enterRoom(id) {
   console.log('Entering room', id);
   const loc = loader.data.locations[id];
   if (!loc) return;
+  await loadZoneMobs(zoneOf(id));
   const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
+  spawnMobsForLocation(loc);
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
@@ -522,6 +540,60 @@ function gearScore(player) {
 
 function zoneOf(loc) {
   return (loc || '').split('_')[0];
+}
+
+async function loadZoneMobs(zoneId) {
+  if (game.currentZone.id === zoneId) return;
+  game.currentZone = { id: zoneId, mobs: [] };
+  try {
+    const data = await fetchJson(`data/mobs/${zoneId}.json`);
+    if (Array.isArray(data.mobs)) {
+      game.currentZone.mobs = data.mobs;
+    } else {
+      console.warn('Invalid mob data for zone', zoneId);
+    }
+  } catch (err) {
+    console.warn('Failed to load mobs for zone', zoneId, err);
+  }
+}
+
+function createZoneMob(tpl) {
+  const level = randRange(tpl.level_range[0], tpl.level_range[1]);
+  const id = `zone_${game.currentZone.id}_${tpl.id}_${Date.now()}_${rand(1000)}`;
+  loader.data.mobs[id] = {
+    name: tpl.name,
+    level,
+    hp: 10 + level * 10,
+    damage: Math.max(1, Math.floor(level * 1.5)),
+    dropTable: (tpl.loot_table || []).map((lid) => ({ id: lid, weight: 1 }))
+  };
+  return id;
+}
+
+function spawnMobsForLocation(loc) {
+  if (!loc._baseSpawns) loc._baseSpawns = [...(loc.spawns || [])];
+  loc.spawns = loc._baseSpawns.slice();
+  if (!game.currentZone.mobs.length) return;
+  game.currentZone.mobs.forEach((tpl) => {
+    if (Math.random() < tpl.spawn_rate) {
+      const id = createZoneMob(tpl);
+      loc.spawns.push(id);
+    }
+  });
+}
+
+function getRandomMobForZone() {
+  if (!game.currentZone.mobs.length) return null;
+  const total = game.currentZone.mobs.reduce((s, m) => s + m.spawn_rate, 0);
+  let roll = Math.random() * total;
+  for (const tpl of game.currentZone.mobs) {
+    roll -= tpl.spawn_rate;
+    if (roll <= 0) {
+      const id = createZoneMob(tpl);
+      return { id, ...loader.data.mobs[id] };
+    }
+  }
+  return null;
 }
 
 function inspectPlayer(name) {
@@ -1236,8 +1308,7 @@ function buildMap() {
 async function buildGraph() {
   const panel = document.getElementById('graph');
   panel.innerHTML = '<h2 class="text-lg mb-2">World Graph</h2><svg width="600" height="600"></svg>';
-  const res = await fetch('data/map.json');
-  const graph = await res.json();
+  const graph = await fetchJson('data/map.json');
   const nodes = Object.keys(graph).map((id) => ({ id, name: loader.data.locations[id]?.name || id }));
   const links = [];
   Object.entries(graph).forEach(([src, exits]) => {
@@ -1439,8 +1510,8 @@ async function handleInput(text) {
       addLog(`You receive ${loader.data.items[id].name}.`);
       if (loader.data.items[id]?.relic) discoverRelic(id);
     } else if (type === 'mob') {
-      const mobId = generateRandomMob(game.player.level);
-      startCombat(mobId);
+      const mob = getRandomMobForZone() || { id: generateRandomMob(game.player.level) };
+      startCombat(mob.id);
     } else if (type === 'quest') {
       const qid = generateRandomQuest(game.player.level);
       game.player.activeQuests.push(qid);
@@ -1543,6 +1614,16 @@ function bindUI() {
   document.querySelectorAll('button[data-panel]').forEach((btn) => {
     btn.onclick = () => showPanel(btn.dataset.panel);
   });
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.remove('hidden');
+    };
+  });
+  const firstTab = document.querySelector('.tab-btn');
+  if (firstTab) firstTab.click();
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };

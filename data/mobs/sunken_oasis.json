@@ -1,0 +1,35 @@
+{
+  "zone": "sunken_oasis",
+  "recommended_level_range": [
+    36,
+    41
+  ],
+  "mobs": [
+    {
+      "id": "oasis_myconid",
+      "name": "Oasis Myconid",
+      "type": "fungus",
+      "level_range": [
+        36,
+        38
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "fungal_core"
+      ]
+    },
+    {
+      "id": "sunken_watcher",
+      "name": "Sunken Watcher",
+      "type": "elemental",
+      "level_range": [
+        39,
+        41
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "watery_eye"
+      ]
+    }
+  ]
+}
