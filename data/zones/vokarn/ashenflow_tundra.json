@@ -1,0 +1,27 @@
+{
+  "id": "ashenflow_tundra",
+  "name": "Ashenflow Tundra",
+  "description": "This is a placeholder description for Ashenflow Tundra.",
+  "level_range": [
+    1,
+    10
+  ],
+  "type": "starter/hardmode",
+  "exits": {
+    "north": "stormveil_bastion",
+    "east": "frostbite_spires"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 1,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "wailing_glacier",
+  "name": "Wailing Glacier",
+  "description": "This is a placeholder description for Wailing Glacier.",
+  "level_range": [
+    30,
+    40
+  ],
+  "type": "wildland",
+  "exits": {
+    "north": "frostbite_spires",
+    "south": "burnscar_chasm"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 30,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

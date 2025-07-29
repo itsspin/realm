@@ -1,0 +1,27 @@
+{
+  "id": "stoneflame_mountains",
+  "name": "Stoneflame Mountains",
+  "description": "This is a placeholder description for Stoneflame Mountains.",
+  "level_range": [
+    30,
+    40
+  ],
+  "type": "wildland",
+  "exits": {
+    "west": "briarcliff_woods",
+    "south": "verdan_outlands"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 30,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

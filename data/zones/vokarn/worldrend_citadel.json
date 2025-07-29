@@ -1,0 +1,26 @@
+{
+  "id": "worldrend_citadel",
+  "name": "Worldrend Citadel",
+  "description": "This is a placeholder description for Worldrend Citadel.",
+  "level_range": [
+    60,
+    65
+  ],
+  "type": "pvp/endgame",
+  "exits": {
+    "north": "burnscar_chasm"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 60,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

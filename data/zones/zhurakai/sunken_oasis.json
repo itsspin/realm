@@ -1,0 +1,26 @@
+{
+  "id": "sunken_oasis",
+  "name": "Sunken Oasis",
+  "description": "This is a placeholder description for Sunken Oasis.",
+  "level_range": [
+    35,
+    45
+  ],
+  "type": "dungeon",
+  "exits": {
+    "west": "glasswaste_expanse"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 35,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

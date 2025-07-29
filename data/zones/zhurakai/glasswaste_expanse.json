@@ -1,0 +1,27 @@
+{
+  "id": "glasswaste_expanse",
+  "name": "Glasswaste Expanse",
+  "description": "This is a placeholder description for Glasswaste Expanse.",
+  "level_range": [
+    25,
+    35
+  ],
+  "type": "wildland",
+  "exits": {
+    "north": "obelisk_ridge",
+    "east": "sunken_oasis"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 25,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

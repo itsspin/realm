@@ -1,0 +1,27 @@
+{
+  "id": "briarcliff_woods",
+  "name": "Briarcliff Woods",
+  "description": "This is a placeholder description for Briarcliff Woods.",
+  "level_range": [
+    15,
+    25
+  ],
+  "type": "wildland",
+  "exits": {
+    "west": "windfall_pass",
+    "south": "deepgrip_mines"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 15,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

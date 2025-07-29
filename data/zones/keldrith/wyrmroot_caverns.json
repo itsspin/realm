@@ -1,0 +1,26 @@
+{
+  "id": "wyrmroot_caverns",
+  "name": "Wyrmroot Caverns",
+  "description": "This is a placeholder description for Wyrmroot Caverns.",
+  "level_range": [
+    30,
+    40
+  ],
+  "type": "dungeon",
+  "exits": {
+    "west": "faeblight_vale"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 30,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "stormveil_bastion",
+  "name": "Stormveil Bastion",
+  "description": "This is a placeholder description for Stormveil Bastion.",
+  "level_range": [
+    0,
+    0
+  ],
+  "type": "city",
+  "exits": {
+    "south": "ashenflow_tundra",
+    "tree_portal": "tree_sylvaran_stormveil"
+  },
+  "mobs": [
+    {
+      "id": "placeholder_mob_01",
+      "name": "Placeholder Mob",
+      "level": 0,
+      "spawn_rate": 0.25
+    }
+  ],
+  "items": [],
+  "ambient_text": [
+    "The wind whistles through the trees.",
+    "You hear something rustling in the distance."
+  ]
+}
