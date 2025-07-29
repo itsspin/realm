@@ -20,6 +20,10 @@ function loadCharacter() {
   p.completedQuests ||= [];
   p.questProgress ||= {};
   p.professions ||= [];
+  p.crafting ||= {};
+  Object.keys(loader.data.professions || {}).forEach((id) => {
+    p.crafting[id] ||= 0;
+  });
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
   p.xp ||= 0;
@@ -585,10 +589,10 @@ function showNpcMenu(id) {
     if (game.player.professions.includes(prof)) return;
     const btn = document.createElement('button');
     btn.className = 'btn text-xs';
-    btn.textContent = `Learn ${loader.data.crafting[prof].name}`;
+    btn.textContent = `Learn ${loader.data.professions[prof].name}`;
     btn.onclick = () => {
       game.player.professions.push(prof);
-      addLog(`You learn ${loader.data.crafting[prof].name}.`);
+      addLog(`You learn ${loader.data.professions[prof].name}.`);
       dlg.classList.add('hidden');
     };
     tdiv.append(btn);
@@ -1047,12 +1051,14 @@ async function buildGraph() {
   });
 }
 
-function craftItem(prof, rid) {
+function craftItem(rid) {
+  const recipe = loader.data.recipes[rid];
+  if (!recipe) return;
+  const prof = recipe.profession;
   if (!game.player.professions.includes(prof)) {
     addLog('You have not learned that profession.');
     return;
   }
-  const recipe = loader.data.crafting[prof].recipes[rid];
   const mats = recipe.materials;
   for (const [mat, qty] of Object.entries(mats)) {
     const count = game.player.inventory.filter((i) => i === mat).length;
@@ -1070,33 +1076,58 @@ function craftItem(prof, rid) {
       }
     }
   }
-  game.player.inventory.push(recipe.result);
-  addLog(`You craft ${loader.data.items[recipe.result].name}.`);
-  checkQuestProgress('item', recipe.result);
+
+  const skill = game.player.crafting[prof] || 0;
+  const successChance = Math.min(0.95, Math.max(0.05, 0.5 + (skill - recipe.difficulty) / 100));
+  const critChance = Math.max(0, Math.min(0.3, 0.05 + (skill - recipe.difficulty) / 200));
+  const success = Math.random() < successChance;
+  let resultId = recipe.result;
+  if (success) {
+    if (Math.random() < critChance) {
+      const base = loader.data.items[resultId];
+      const uid = `crit_${resultId}_${Date.now()}_${rand(1000)}`;
+      loader.data.items[uid] = { ...base };
+      loader.data.items[uid].name = `Masterwork ${base.name}`;
+      if (base.damage) loader.data.items[uid].damage = Math.ceil(base.damage * 1.2);
+      if (base.armor) loader.data.items[uid].armor = Math.ceil(base.armor * 1.2);
+      resultId = uid;
+      addLog('Critical success!');
+    }
+    game.player.inventory.push(resultId);
+    addLog(`You craft ${loader.data.items[resultId].name}.`);
+    game.player.crafting[prof] += recipe.xp;
+    checkQuestProgress('item', resultId);
+  } else {
+    addLog('Crafting failed.');
+    game.player.crafting[prof] += Math.floor(recipe.xp / 2);
+  }
   buildInventory();
 }
 
 function showRecipes(prof) {
   const div = document.getElementById('recipe-list');
-  div.innerHTML = `<h3 class="font-bold mb-1">${loader.data.crafting[prof].name}</h3>`;
-  Object.entries(loader.data.crafting[prof].recipes).forEach(([rid, r]) => {
-    const btn = document.createElement('button');
-    const req = Object.entries(r.materials)
-      .map(([m, q]) => `${q} ${loader.data.items[m].name}`)
-      .join(', ');
-    btn.className = 'btn text-xs mt-1';
-    btn.textContent = `Craft ${loader.data.items[r.result].name} (${req})`;
-    if (!game.player.professions.includes(prof)) btn.disabled = true;
-    btn.onclick = () => craftItem(prof, rid);
-    div.append(btn);
-  });
+  const xp = game.player.crafting[prof] || 0;
+  div.innerHTML = `<h3 class="font-bold mb-1">${loader.data.professions[prof].name} (XP ${xp})</h3>`;
+  Object.entries(loader.data.recipes)
+    .filter(([, r]) => r.profession === prof)
+    .forEach(([rid, r]) => {
+      const btn = document.createElement('button');
+      const req = Object.entries(r.materials)
+        .map(([m, q]) => `${q} ${loader.data.items[m].name}`)
+        .join(', ');
+      btn.className = 'btn text-xs mt-1';
+      btn.textContent = `Craft ${loader.data.items[r.result].name} (${req})`;
+      if (!game.player.professions.includes(prof)) btn.disabled = true;
+      btn.onclick = () => craftItem(rid);
+      div.append(btn);
+    });
 }
 
 function buildCraftPanel() {
   const panel = document.getElementById('craft');
   panel.innerHTML = '<h2 class="text-lg mb-2">Crafting</h2>';
   const list = document.createElement('ul');
-  Object.entries(loader.data.crafting).forEach(([pid, prof]) => {
+  Object.entries(loader.data.professions).forEach(([pid, prof]) => {
     const li = document.createElement('li');
     const btn = document.createElement('button');
     btn.className = 'underline text-sky-400';
@@ -1290,6 +1321,9 @@ function showCreateForm() {
       questProgress: {},
       party: [],
       professions: [],
+      crafting: Object.fromEntries(
+        Object.keys(loader.data.professions).map((p) => [p, 0])
+      ),
       coins: { copper: 0, silver: 0, gold: 0 },
       xp: 0
     };
