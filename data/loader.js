@@ -28,7 +28,12 @@ export const loader = {
       'crafting',
       'events',
       'guilds',
-      'achievements'
+      'achievements',
+      'npcs',
+      'mobs',
+      'nodes',
+      'professions',
+      'recipes'
     ];
     await Promise.all(
       files.map(async (name) => {
@@ -62,5 +67,15 @@ export const loader = {
   },
   get(type, id) {
     return this.data[type]?.[id];
+  },
+
+  async loadNpc(id) {
+    if (!this.data.npcs) {
+      this.data.npcs = await fetchJson('data/npcs.json');
+    }
+    if (!this.data.mobs) {
+      this.data.mobs = await fetchJson('data/mobs.json');
+    }
+    return this.data.npcs[id] || this.data.mobs[id];
   }
 };
