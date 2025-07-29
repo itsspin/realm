@@ -42,7 +42,7 @@ export const loader = {
       'items',
       'locations',
       'crafting',
-      'achievements'
+      'achievements',
       'events',
       'guilds',
       'achievements',
