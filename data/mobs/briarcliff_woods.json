@@ -1,0 +1,37 @@
+{
+  "zone": "briarcliff_woods",
+  "recommended_level_range": [
+    18,
+    25
+  ],
+  "mobs": [
+    {
+      "id": "briarcliff_thistleback",
+      "name": "Briarcliff Thistleback",
+      "type": "beast",
+      "level_range": [
+        18,
+        22
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "thistle_spike",
+        "thorn_hide"
+      ]
+    },
+    {
+      "id": "wandering_treant",
+      "name": "Wandering Treant",
+      "type": "elemental",
+      "level_range": [
+        20,
+        25
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "splintered_wood",
+        "bark_essence"
+      ]
+    }
+  ]
+}

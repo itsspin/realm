@@ -1,0 +1,37 @@
+{
+  "zone": "verdan_outlands",
+  "recommended_level_range": [
+    42,
+    50
+  ],
+  "mobs": [
+    {
+      "id": "verdan_brigand",
+      "name": "Verdan Brigand",
+      "type": "humanoid",
+      "level_range": [
+        42,
+        46
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "brigand_blade",
+        "dark_bandana"
+      ]
+    },
+    {
+      "id": "outland_rager",
+      "name": "Outland Rager",
+      "type": "beast",
+      "level_range": [
+        45,
+        50
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "rage_tusk",
+        "wild_hide"
+      ]
+    }
+  ]
+}

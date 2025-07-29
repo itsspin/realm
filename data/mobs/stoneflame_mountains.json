@@ -1,0 +1,37 @@
+{
+  "zone": "stoneflame_mountains",
+  "recommended_level_range": [
+    32,
+    39
+  ],
+  "mobs": [
+    {
+      "id": "lava_imp",
+      "name": "Lava Imp",
+      "type": "elemental",
+      "level_range": [
+        32,
+        35
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "molten_core",
+        "singe_dust"
+      ]
+    },
+    {
+      "id": "ash_drake",
+      "name": "Ash Drake",
+      "type": "dragonkin",
+      "level_range": [
+        35,
+        39
+      ],
+      "spawn_rate": 0.1,
+      "loot_table": [
+        "drake_claw",
+        "fire_essence"
+      ]
+    }
+  ]
+}
