@@ -8,7 +8,6 @@ export const loader = {
       'classes',
       'deities',
       'items',
-      'quests',
       'locations',
       'crafting'
     ];

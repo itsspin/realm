@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { worldState, classColors, formatPlaytime } from './worldState.js';
 
 const game = {
   player: null,
@@ -223,6 +224,19 @@ function dropLoot(mob) {
   return loot;
 }
 
+function grantRewards(rewards) {
+  if (!rewards) return;
+  if (rewards.xp) {
+    game.player.xp += rewards.xp;
+    addLog(`You gain ${rewards.xp} XP.`);
+  }
+  (rewards.items || []).forEach((id) => {
+    game.player.inventory.push(id);
+    addLog(`You receive ${loader.data.items[id]?.name || id}.`);
+  });
+  updateHUD();
+}
+
 function updateHUD() {
   const p = game.player;
   const nameEl = document.getElementById('player-name');
@@ -272,6 +286,13 @@ function buildMoveControls(loc) {
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
+  document.getElementById('log').append(div);
+  div.scrollIntoView();
+}
+
+function addLogHTML(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
   document.getElementById('log').append(div);
   div.scrollIntoView();
 }
@@ -406,7 +427,7 @@ function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
   list.innerHTML = '';
-  game.onlinePlayers.forEach((p) => {
+  worldState.getPlayerNames().forEach((p) => {
     const btn = document.createElement('button');
     btn.className = 'npc-btn text-xs';
     btn.textContent = p;
@@ -545,7 +566,19 @@ function attackNpc(id) {
 function talkToNpc(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
-  const line = npc.dialogue?.[0] || '...';
+  let line = npc.dialogue?.[0] || '...';
+  Object.entries(loader.data.quests).forEach(([qid, q]) => {
+    if (q.giver !== id) return;
+    if (game.player.activeQuests.includes(qid)) {
+      const stage = q.stages[game.player.questProgress[qid].stage];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (game.player.completedQuests.includes(qid)) {
+      const stage = q.stages[q.stages.length - 1];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (q.stages[0].dialogue) {
+      line = q.stages[0].dialogue;
+    }
+  });
   addLog(`${npc.name} says: "${line}"`);
   checkQuestProgress('talk', id);
   document.getElementById('dialogue').classList.add('hidden');
@@ -814,6 +847,7 @@ function completeQuest(qid) {
   game.player.activeQuests.splice(idx, 1);
   game.player.completedQuests.push(qid);
   delete game.player.questProgress[qid];
+  grantRewards(loader.data.quests[qid].rewards);
   addLog(`Quest completed: ${loader.data.quests[qid].name}`);
   buildQuestList();
 }
@@ -822,6 +856,8 @@ function advanceQuestStage(qid) {
   const q = loader.data.quests[qid];
   const prog = game.player.questProgress[qid];
   if (!q || !prog) return;
+  const stage = q.stages[prog.stage];
+  grantRewards(stage.rewards);
   if (prog.stage < q.stages.length - 1) {
     prog.stage += 1;
     prog.count = 0;
@@ -925,10 +961,15 @@ function showQuestDetails(qid) {
   const stage = q.stages[stageIdx];
   const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
-  (q.rewards?.items || []).forEach((i) =>
-    rewards.push(loader.data.items[i]?.name || i)
-  );
+  const sr = stage.rewards || {};
+  if (sr.xp) rewards.push(`${sr.xp} XP`);
+  (sr.items || []).forEach((i) => rewards.push(loader.data.items[i]?.name || i));
+  if (stageIdx === q.stages.length - 1) {
+    if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+    (q.rewards?.items || []).forEach((i) =>
+      rewards.push(loader.data.items[i]?.name || i)
+    );
+  }
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
@@ -1201,7 +1242,23 @@ async function handleInput(text) {
   } else if (cmd === '/help') {
     showHelp();
   } else if (cmd === '/who') {
-    addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+    const players = worldState.getPlayersSortedByLevel();
+    if (!players.length) {
+      addLog('No players online.');
+    } else {
+      let html = '<div><strong>Online Players:</strong></div>';
+      players.forEach((p) => {
+        const zone = worldState.getZone(p.name);
+        const gear = Object.values(p.equipped || {})
+          .map((id) => loader.get('items', id)?.name || id)
+          .join(', ') || 'None';
+        const color = classColors[p.class] || 'text-white';
+        const play = formatPlaytime(worldState.getPlaytimeMs(p.name));
+        const clsName = loader.data.classes[p.class]?.name || p.class;
+        html += `<div>${p.level} <span class="${color}">${clsName}</span> ${p.name} - ${zone} - GS ${p.gearScore} - ${play} - Gear: ${gear}</div>`;
+      });
+      addLogHTML(html);
+    }
   } else if (cmd.startsWith('/random')) {
     const [, type] = cmd.split(' ');
     if (type === 'item') {
@@ -1285,7 +1342,31 @@ async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
-  game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];
+
+  worldState.addPlayer(player);
+  worldState.addPlayer({
+    name: 'Hero',
+    class: 'warrior',
+    level: 5,
+    location: 'greystone_hills',
+    equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Adventurer',
+    class: 'ranger',
+    level: 3,
+    location: 'gearhaven_plaza',
+    equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Mystic',
+    class: 'mage',
+    level: 8,
+    location: 'howling_caverns',
+    equipped: { weapon: 'druid_staff' }
+  });
+
+  game.onlinePlayers = worldState.getPlayerNames();
   updatePlayersList();
   bindUI();
   buildHotbar();
