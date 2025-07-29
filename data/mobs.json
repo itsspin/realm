@@ -17,6 +17,7 @@
   "bog_creeper": {
     "name": "Bog Creeper",
     "level": 3,
+    "boss": true,
     "hp": 40,
     "damage": 5,
     "str": 7,

@@ -27,13 +27,13 @@ export const loader = {
       })
     );
 
-    const qIndexRes = await fetch('quests/index.json');
-    const questIds = await qIndexRes.json();
-    this.data.quests = {};
+    const loreIdx = await fetch('data/lore/index.json');
+    const loreFiles = await loreIdx.json();
+    this.data.lore = {};
     await Promise.all(
-      questIds.map(async (id) => {
-        const res = await fetch(`quests/${id}.json`);
-        this.data.quests[id] = await res.json();
+      loreFiles.map(async (f) => {
+        const res = await fetch(`data/lore/${f}.json`);
+        this.data.lore[f] = await res.json();
       })
     );
   },
