@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { worldState, classColors, formatPlaytime } from './worldState.js';
 
 const game = {
   player: null,
@@ -235,6 +236,19 @@ function dropLoot(mob) {
   return loot;
 }
 
+function grantRewards(rewards) {
+  if (!rewards) return;
+  if (rewards.xp) {
+    game.player.xp += rewards.xp;
+    addLog(`You gain ${rewards.xp} XP.`);
+  }
+  (rewards.items || []).forEach((id) => {
+    game.player.inventory.push(id);
+    addLog(`You receive ${loader.data.items[id]?.name || id}.`);
+  });
+  updateHUD();
+}
+
 function updateHUD() {
   const p = game.player;
   const nameEl = document.getElementById('player-name');
@@ -288,6 +302,13 @@ function addLog(txt) {
   div.scrollIntoView();
 }
 
+function addLogHTML(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.getElementById('log').append(div);
+  div.scrollIntoView();
+}
+
 function addChat(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -336,6 +357,7 @@ function showPanel(name) {
   if (name === 'map') buildMap();
   if (name === 'graph') buildGraph();
   if (name === 'craft') buildCraftPanel();
+  if (name === 'codex') buildCodexPanel();
 }
 
 function renderRoom(loc) {
@@ -404,6 +426,7 @@ async function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
+  discoverZone(id);
 }
 
 async function move(dir) {
@@ -416,7 +439,7 @@ function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
   list.innerHTML = '';
-  game.onlinePlayers.forEach((p) => {
+  worldState.getPlayerNames().forEach((p) => {
     const btn = document.createElement('button');
     btn.className = 'npc-btn text-xs';
     btn.textContent = p;
@@ -448,6 +471,7 @@ function endCombat(win) {
   document.getElementById('combat-overlay').classList.add('hidden');
   if (win) {
     addLog(`${mob.name} dies.`);
+    if (mob.boss) discoverBoss(mob.id);
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -455,6 +479,7 @@ function endCombat(win) {
     loot.items.forEach((id) => {
       game.player.inventory.push(id);
       addLog(`You loot ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
@@ -558,7 +583,19 @@ function attackNpc(id) {
 function talkToNpc(id) {
   const npc = loader.get('npcs', id);
   if (!npc) return;
-  const line = npc.dialogue?.[0] || '...';
+  let line = npc.dialogue?.[0] || '...';
+  Object.entries(loader.data.quests).forEach(([qid, q]) => {
+    if (q.giver !== id) return;
+    if (game.player.activeQuests.includes(qid)) {
+      const stage = q.stages[game.player.questProgress[qid].stage];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (game.player.completedQuests.includes(qid)) {
+      const stage = q.stages[q.stages.length - 1];
+      if (stage.dialogue) line = stage.dialogue;
+    } else if (q.stages[0].dialogue) {
+      line = q.stages[0].dialogue;
+    }
+  });
   addLog(`${npc.name} says: "${line}"`);
   checkQuestProgress('talk', id);
   document.getElementById('dialogue').classList.add('hidden');
@@ -854,6 +891,8 @@ function advanceQuestStage(qid) {
   const q = loader.data.quests[qid];
   const prog = game.player.questProgress[qid];
   if (!q || !prog) return;
+  const stage = q.stages[prog.stage];
+  grantRewards(stage.rewards);
   if (prog.stage < q.stages.length - 1) {
     prog.stage += 1;
     prog.count = 0;
@@ -957,10 +996,15 @@ function showQuestDetails(qid) {
   const stage = q.stages[stageIdx];
   const objective = formatObjective(stage.objective);
   const rewards = [];
-  if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
-  (q.rewards?.items || []).forEach((i) =>
-    rewards.push(loader.data.items[i]?.name || i)
-  );
+  const sr = stage.rewards || {};
+  if (sr.xp) rewards.push(`${sr.xp} XP`);
+  (sr.items || []).forEach((i) => rewards.push(loader.data.items[i]?.name || i));
+  if (stageIdx === q.stages.length - 1) {
+    if (q.rewards?.xp) rewards.push(`${q.rewards.xp} XP`);
+    (q.rewards?.items || []).forEach((i) =>
+      rewards.push(loader.data.items[i]?.name || i)
+    );
+  }
   const details = document.getElementById('quest-details');
   details.innerHTML = `
     <h3 class="text-md font-bold mb-1">${q.name}</h3>
@@ -969,6 +1013,60 @@ function showQuestDetails(qid) {
     <p class="mb-1"><strong>Reward:</strong> ${rewards.join(', ') || 'None'}</p>
     <p class="mb-1"><strong>Turn in:</strong> ${giver}</p>
   `;
+}
+
+function getLoreTitle(key) {
+  const [type, id] = key.split('-', 2);
+  const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+  return loader.data.lore?.[map[type]]?.[id]?.title || '';
+}
+
+function unlockLore(key) {
+  if (!game.player.codex.includes(key)) {
+    game.player.codex.push(key);
+    saveCharacter(game.player);
+    const title = getLoreTitle(key);
+    if (title) addLog(`Codex updated: ${title}`);
+  }
+}
+
+function discoverZone(locId) {
+  const zone = locId.split('_')[0];
+  if (loader.data.lore?.zones?.[zone]) unlockLore(`zone-${zone}`);
+}
+
+function discoverBoss(mobId) {
+  if (loader.data.lore?.bosses?.[mobId]) unlockLore(`boss-${mobId}`);
+}
+
+function discoverRelic(itemId) {
+  if (loader.data.lore?.relics?.[itemId]) unlockLore(`relic-${itemId}`);
+}
+
+function buildCodexPanel() {
+  const panel = document.getElementById('codex');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Codex</h2>';
+  const book = document.createElement('div');
+  book.className = 'codex-book space-y-4 overflow-y-auto max-h-[70vh]';
+  if (!game.player.codex.length) {
+    book.textContent = 'You have not discovered any lore yet.';
+  } else {
+    game.player.codex.forEach((key) => {
+      const [type, id] = key.split('-', 2);
+      const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+      const entry = loader.data.lore?.[map[type]]?.[id];
+      if (!entry) return;
+      const art = document.createElement('article');
+      const h3 = document.createElement('h3');
+      h3.className = 'font-bold text-lg mb-1';
+      h3.textContent = entry.title;
+      const p = document.createElement('p');
+      p.textContent = entry.text;
+      art.append(h3, p);
+      book.append(art);
+    });
+  }
+  panel.append(book);
 }
 
 function findPath(start, end) {
@@ -1109,6 +1207,7 @@ function craftItem(prof, rid) {
   }
   game.player.inventory.push(recipe.result);
   addLog(`You craft ${loader.data.items[recipe.result].name}.`);
+  if (loader.data.items[recipe.result]?.relic) discoverRelic(recipe.result);
   checkQuestProgress('item', recipe.result);
   buildInventory();
 }
@@ -1187,6 +1286,7 @@ async function handleInput(text) {
       const id = generateRandomItem(game.player.level);
       game.player.inventory.push(id);
       addLog(`You receive ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
     } else if (type === 'mob') {
       const mobId = generateRandomMob(game.player.level);
       startCombat(mobId);
@@ -1263,7 +1363,31 @@ async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
-  game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];
+
+  worldState.addPlayer(player);
+  worldState.addPlayer({
+    name: 'Hero',
+    class: 'warrior',
+    level: 5,
+    location: 'greystone_hills',
+    equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Adventurer',
+    class: 'ranger',
+    level: 3,
+    location: 'gearhaven_plaza',
+    equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Mystic',
+    class: 'mage',
+    level: 8,
+    location: 'howling_caverns',
+    equipped: { weapon: 'druid_staff' }
+  });
+
+  game.onlinePlayers = worldState.getPlayerNames();
   updatePlayersList();
   bindUI();
   buildHotbar();

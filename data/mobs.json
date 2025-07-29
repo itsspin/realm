@@ -19,6 +19,7 @@
     "name": "Bog Creeper",
     "faction": "umbra",
     "level": 3,
+    "boss": true,
     "hp": 40,
     "damage": 5,
     "str": 7,
