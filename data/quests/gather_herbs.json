@@ -2,6 +2,7 @@
   "name": "Gather Herbs",
   "giver": "druid_npc",
   "zones": ["gearhaven"],
+  "faction": "luminara",
   "stages": [
     {
       "description": "Collect 5 healing herbs around Gearhaven.",

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Profile - Twilight Realms</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-full bg-slate-900 text-slate-200 flex flex-col">
+  <header class="shrink-0 p-2 bg-slate-800 flex items-center gap-4">
+    <h1 class="text-xl font-bold">Profile</h1>
+    <nav class="flex gap-2 text-sm">
+      <a href="index.html" class="btn">Back</a>
+    </nav>
+  </header>
+  <main class="grow p-4 space-y-2">
+    <div id="stats" class="space-y-1"></div>
+    <div class="text-slate-400 text-sm">Future growth paths will let you improve your attributes through quests, gear, or stat-tokens.</div>
+  </main>
+  <script type="module">
+    import { playerStats } from './playerStats.js';
+    playerStats.init();
+    const container = document.getElementById('stats');
+    for (const [key, value] of Object.entries(playerStats.data)) {
+      const div = document.createElement('div');
+      div.textContent = `${key}: ${value}`;
+      container.appendChild(div);
+    }
+  </script>
+</body>
+</html>
