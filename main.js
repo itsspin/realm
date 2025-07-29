@@ -14,6 +14,15 @@ function saveCharacter(p) {
   localStorage.setItem('player', JSON.stringify(p));
 }
 
+function saveGuilds() {
+  localStorage.setItem('guilds', JSON.stringify(loader.data.guilds));
+}
+
+function loadGuilds() {
+  const data = localStorage.getItem('guilds');
+  if (data) loader.data.guilds = JSON.parse(data);
+}
+
 function loadCharacter() {
   const data = localStorage.getItem('player');
   if (!data) return null;
@@ -27,6 +36,8 @@ function loadCharacter() {
   });
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
+  p.friends ||= [];
+  p.guild ||= null;
   p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
@@ -470,6 +481,16 @@ function updatePlayersList() {
   });
 }
 
+function updatePartyPanel() {
+  const panel = document.getElementById('party');
+  if (!panel) return;
+  if (!game.player.party.length) {
+    panel.textContent = 'Party: —';
+  } else {
+    panel.textContent = `Party: ${game.player.party.join(', ')}`;
+  }
+}
+
 // --- Turn-based Combat System ---
 function addCombatLog(txt) {
   const div = document.createElement('div');
@@ -834,6 +855,13 @@ function showHelp() {
   addLog(' /attack - attack a nearby mob');
   addLog(' hail - speak to your target');
   addLog(' /target <name> - target an NPC or object by name');
+  addLog(' /group invite <name> - invite player to party');
+  addLog(' /leave - leave your party');
+  addLog(' /kick <name> - remove member from party');
+  addLog(' /friends list - list your friends');
+  addLog(' /guild create <name> - create a guild');
+  addLog(' /guild members - list members of your guild');
+  addLog(' /g <msg> - guild chat');
   addLog(' /help - show this help');
 }
 
@@ -1351,6 +1379,68 @@ async function handleInput(text) {
     } else {
       addLog('Usage: /random item|mob|quest');
     }
+  } else if (cmd.startsWith('/group invite')) {
+    const name = cmd.slice(13).trim();
+    if (!name) {
+      addLog('Usage: /group invite <player>');
+    } else if (game.player.party.length >= 6) {
+      addLog('Your party is full.');
+    } else if (!game.player.party.includes(name)) {
+      game.player.party.push(name);
+      addLog(`You invite ${name} to your party.`);
+      updatePartyPanel();
+      saveCharacter(game.player);
+    }
+  } else if (cmd === '/leave') {
+    if (game.player.party.length) {
+      game.player.party = [];
+      addLog('You leave the party.');
+      updatePartyPanel();
+      saveCharacter(game.player);
+    } else {
+      addLog('You are not in a party.');
+    }
+  } else if (cmd.startsWith('/kick ')) {
+    const name = cmd.slice(6).trim();
+    const idx = game.player.party.indexOf(name);
+    if (idx !== -1) {
+      game.player.party.splice(idx, 1);
+      addLog(`${name} has been removed from the party.`);
+      updatePartyPanel();
+      saveCharacter(game.player);
+    } else {
+      addLog('No such party member.');
+    }
+  } else if (cmd === '/friends list') {
+    const list = game.player.friends;
+    if (list.length) addLog(`Friends: ${list.join(', ')}`);
+    else addLog('You have no friends.');
+  } else if (cmd.startsWith('/guild create')) {
+    const name = cmd.slice(14).trim();
+    if (!name) {
+      addLog('Usage: /guild create <name>');
+    } else if (loader.data.guilds[name]) {
+      addLog('Guild already exists.');
+    } else {
+      loader.data.guilds[name] = { name, members: [game.player.name] };
+      game.player.guild = name;
+      saveGuilds();
+      saveCharacter(game.player);
+      addLog(`Guild ${name} created.`);
+    }
+  } else if (cmd === '/guild members') {
+    const gname = game.player.guild;
+    if (gname && loader.data.guilds[gname]) {
+      addLog(`Guild members: ${loader.data.guilds[gname].members.join(', ')}`);
+    } else {
+      addLog('You are not in a guild.');
+    }
+  } else if (cmd.startsWith('/g ')) {
+    const msg = cmd.slice(3);
+    if (!game.player.guild) {
+      addLog('You are not in a guild.');
+    } else {
+      ws.send('chat', { channel: 'guild', msg: `${game.player.name}: ${msg}` });
   } else if (cmd.startsWith('/title')) {
     const [, title] = cmd.split(' ', 2);
     if (!title) {
@@ -1453,6 +1543,7 @@ async function startGame(player) {
 
   game.onlinePlayers = worldState.getPlayerNames();
   updatePlayersList();
+  updatePartyPanel();
   bindUI();
   buildHotbar();
   game.player.activeQuests.forEach((qid) => {
@@ -1525,6 +1616,8 @@ function showCreateForm() {
       questProgress: {},
       party: [],
       professions: [],
+      friends: [],
+      guild: null,
       crafting: Object.fromEntries(
         Object.keys(loader.data.professions).map((p) => [p, 0])
       ),
@@ -1538,6 +1631,7 @@ function showCreateForm() {
 
 export async function init() {
   await loader.init();
+  loadGuilds();
   generateItems();
   bindUI();
   const saved = loadCharacter();

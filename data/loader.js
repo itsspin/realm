@@ -10,6 +10,7 @@ export const loader = {
       'items',
       'locations',
       'crafting',
+      'guilds'
       'achievements'
     ];
     await Promise.all(
@@ -28,6 +29,10 @@ export const loader = {
       })
     );
 
+    const savedGuilds = localStorage.getItem('guilds');
+    if (savedGuilds) {
+      this.data.guilds = JSON.parse(savedGuilds);
+    }
     const loreIdx = await fetch('data/lore/index.json');
     const loreFiles = await loreIdx.json();
     this.data.lore = {};
