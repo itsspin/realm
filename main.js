@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { initEvents } from './events.js';
 
 const game = {
   player: null,
@@ -1299,6 +1300,7 @@ function showCreateForm() {
 
 export async function init() {
   await loader.init();
+  await initEvents();
   generateItems();
   bindUI();
   const saved = loadCharacter();
