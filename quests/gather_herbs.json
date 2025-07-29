@@ -1,0 +1,19 @@
+{
+  "name": "Gather Herbs",
+  "giver": "druid_npc",
+  "zones": ["gearhaven"],
+  "stages": [
+    {
+      "description": "Collect 5 healing herbs around Gearhaven.",
+      "objective": { "item": "healing_herb", "count": 5 },
+      "dialogue": "The forest provides all we need. Gather five herbs for me.",
+      "rewards": { "xp": 40 }
+    },
+    {
+      "description": "Bring the herbs to the druid.",
+      "objective": { "talk": "druid_npc" },
+      "dialogue": "Ah, such fresh herbs! Thank you.",
+      "rewards": { "xp": 40, "items": ["regrowth_scroll"] }
+    }
+  ]
+}

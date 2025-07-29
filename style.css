@@ -42,3 +42,8 @@ body {
 .inventory-panel {
   @apply fixed right-0 top-0 bottom-0 w-64 p-4 bg-slate-800 overflow-y-auto hidden;
 }
+
+/* Codex book styling */
+.codex-book {
+  @apply bg-amber-100 text-slate-800 p-4 rounded shadow-inner font-serif;
+}
