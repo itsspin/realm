@@ -1,7 +1,7 @@
 import { loader, fetchJson } from './data/loader.js';
 import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
-import { worldState } from './worldState.js';
+import { worldState, zoneFromLocation } from './worldState.js';
 /* global d3 */
 
 const game = {
@@ -482,6 +482,7 @@ async function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
+  updateZonePanel();
   discoverZone(id);
 }
 
@@ -540,6 +541,34 @@ function gearScore(player) {
 
 function zoneOf(loc) {
   return loc || '';
+}
+
+function getZoneData(id) {
+  const world = loader.data.world;
+  if (!world?.continents) return null;
+  for (const cont of world.continents) {
+    const zone = cont.zones.find((z) => z.id === id);
+    if (zone) return zone;
+  }
+  return null;
+}
+
+function updateZonePanel() {
+  const zid = zoneFromLocation(game.player.location);
+  const zone = getZoneData(zid);
+  if (!zone) return;
+  const nameEl = document.getElementById('zone-name');
+  if (nameEl) nameEl.textContent = zone.name;
+  const descEl = document.getElementById('zone-desc');
+  if (descEl) descEl.textContent = zone.description || '';
+  const exitsEl = document.getElementById('zone-exits');
+  if (exitsEl) {
+    const parts = Object.values(zone.exits || {}).map((z) => {
+      const zd = getZoneData(z);
+      return zd ? zd.name : z;
+    });
+    exitsEl.textContent = parts.join(', ') || 'None';
+  }
 }
 
 async function loadZoneMobs(zoneId) {
