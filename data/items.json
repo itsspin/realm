@@ -61,7 +61,8 @@
     "level": 1,
     "damage": 2,
     "slot": "weapon",
-    "description": "Carved from an ancient tree."
+    "description": "Carved from an ancient tree.",
+    "relic": true
   },
   "shadow_dagger": {
     "name": "Shadow Dagger",
@@ -117,5 +118,12 @@
     "name": "Water Flask",
     "level": 1,
     "description": "Used in many recipes."
+  },
+  "clockwork_gauntlet": {
+    "name": "Clockwork Gauntlet",
+    "level": 1,
+    "damage": 4,
+    "slot": "weapon",
+    "description": "A crude mechanical glove packed with gears."
   }
 }

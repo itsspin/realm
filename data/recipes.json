@@ -1,0 +1,23 @@
+{
+  "bronze_sword": {
+    "profession": "blacksmithing",
+    "result": "bronze_sword",
+    "materials": { "iron_ore": 3, "wood_plank": 1 },
+    "difficulty": 10,
+    "xp": 10
+  },
+  "healing_potion": {
+    "profession": "alchemy",
+    "result": "healing_potion",
+    "materials": { "herb_leaf": 2, "water": 1 },
+    "difficulty": 5,
+    "xp": 8
+  },
+  "clockwork_gauntlet": {
+    "profession": "tinkering",
+    "result": "clockwork_gauntlet",
+    "materials": { "iron_ore": 2, "arcane_dust": 1 },
+    "difficulty": 12,
+    "xp": 12
+  }
+}
