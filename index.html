@@ -92,9 +92,17 @@
     <div id="graph" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="codex" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="loot" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div class="text-center">
       <button id="close-overlay" class="btn">Close</button>
     </div>
+  </div>
+  <!-- Combat overlay -->
+  <div id="combat-overlay" class="hidden fixed inset-0 bg-black/80 flex flex-col items-center justify-center p-4">
+    <div id="combat-enemy" class="text-lg font-bold mb-1"></div>
+    <div id="combat-stats" class="mb-2 text-sm"></div>
+    <div id="combat-buttons" class="flex gap-2 mb-2"></div>
+    <div id="combat-log" class="bg-slate-800 p-2 rounded w-full max-w-md h-32 overflow-y-auto mb-2"></div>
   </div>
   <!-- Hotbar for abilities -->
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
