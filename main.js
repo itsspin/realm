@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+import { worldState, classColors, formatPlaytime } from './worldState.js';
 
 const game = {
   player: null,
@@ -275,6 +276,13 @@ function addLog(txt) {
   div.scrollIntoView();
 }
 
+function addLogHTML(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  document.getElementById('log').append(div);
+  div.scrollIntoView();
+}
+
 function addChat(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -403,7 +411,7 @@ function updatePlayersList() {
   const list = document.getElementById('player-list');
   if (!list) return;
   list.innerHTML = '';
-  game.onlinePlayers.forEach((p) => {
+  worldState.getPlayerNames().forEach((p) => {
     const btn = document.createElement('button');
     btn.className = 'npc-btn text-xs';
     btn.textContent = p;
@@ -1141,7 +1149,23 @@ async function handleInput(text) {
   } else if (cmd === '/help') {
     showHelp();
   } else if (cmd === '/who') {
-    addLog(`Online: ${game.onlinePlayers.join(', ')}`);
+    const players = worldState.getPlayersSortedByLevel();
+    if (!players.length) {
+      addLog('No players online.');
+    } else {
+      let html = '<div><strong>Online Players:</strong></div>';
+      players.forEach((p) => {
+        const zone = worldState.getZone(p.name);
+        const gear = Object.values(p.equipped || {})
+          .map((id) => loader.get('items', id)?.name || id)
+          .join(', ') || 'None';
+        const color = classColors[p.class] || 'text-white';
+        const play = formatPlaytime(worldState.getPlaytimeMs(p.name));
+        const clsName = loader.data.classes[p.class]?.name || p.class;
+        html += `<div>${p.level} <span class="${color}">${clsName}</span> ${p.name} - ${zone} - GS ${p.gearScore} - ${play} - Gear: ${gear}</div>`;
+      });
+      addLogHTML(html);
+    }
   } else if (cmd.startsWith('/random')) {
     const [, type] = cmd.split(' ');
     if (type === 'item') {
@@ -1224,7 +1248,31 @@ async function startGame(player) {
   game.player = player;
   document.getElementById('create-overlay').classList.add('hidden');
   saveCharacter(player);
-  game.onlinePlayers = ['Hero', 'Adventurer', 'Mystic'];
+
+  worldState.addPlayer(player);
+  worldState.addPlayer({
+    name: 'Hero',
+    class: 'warrior',
+    level: 5,
+    location: 'greystone_hills',
+    equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Adventurer',
+    class: 'ranger',
+    level: 3,
+    location: 'gearhaven_plaza',
+    equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
+  });
+  worldState.addPlayer({
+    name: 'Mystic',
+    class: 'mage',
+    level: 8,
+    location: 'howling_caverns',
+    equipped: { weapon: 'druid_staff' }
+  });
+
+  game.onlinePlayers = worldState.getPlayerNames();
   updatePlayersList();
   bindUI();
   buildHotbar();
