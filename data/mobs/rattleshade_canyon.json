@@ -1,0 +1,35 @@
+{
+  "zone": "rattleshade_canyon",
+  "recommended_level_range": [
+    6,
+    9
+  ],
+  "mobs": [
+    {
+      "id": "canyon_viper",
+      "name": "Canyon Viper",
+      "type": "reptile",
+      "level_range": [
+        6,
+        8
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "viper_fang"
+      ]
+    },
+    {
+      "id": "sand_scavenger",
+      "name": "Sand Scavenger",
+      "type": "humanoid",
+      "level_range": [
+        7,
+        9
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "scavenged_bag"
+      ]
+    }
+  ]
+}

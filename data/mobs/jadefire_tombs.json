@@ -1,0 +1,35 @@
+{
+  "zone": "jadefire_tombs",
+  "recommended_level_range": [
+    45,
+    50
+  ],
+  "mobs": [
+    {
+      "id": "embalmed_revenant",
+      "name": "Embalmed Revenant",
+      "type": "undead",
+      "level_range": [
+        45,
+        48
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "revenant_bone"
+      ]
+    },
+    {
+      "id": "tombfire_priest",
+      "name": "Tombfire Priest",
+      "type": "undead",
+      "level_range": [
+        48,
+        50
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "flame_tome"
+      ]
+    }
+  ]
+}

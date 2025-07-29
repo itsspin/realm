@@ -1,0 +1,35 @@
+{
+  "zone": "faeblight_vale",
+  "recommended_level_range": [
+    26,
+    30
+  ],
+  "mobs": [
+    {
+      "id": "faeblight_stalker",
+      "name": "Faeblight Stalker",
+      "type": "fae",
+      "level_range": [
+        26,
+        28
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "stalker_claw"
+      ]
+    },
+    {
+      "id": "glade_trickster",
+      "name": "Glade Trickster",
+      "type": "humanoid",
+      "level_range": [
+        28,
+        30
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "illusion_dust"
+      ]
+    }
+  ]
+}

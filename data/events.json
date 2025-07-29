@@ -1,0 +1,33 @@
+[
+  {
+    "id": "gearhaven_invasion",
+    "name": "Gearhaven Invasion",
+    "type": "elite_mob",
+    "mob": "rogue_clockwork",
+    "location": "gearhaven_plaza",
+    "levelBoost": 3,
+    "start": "2023-01-01T00:00:00Z",
+    "end": "2099-01-01T00:00:00Z",
+    "message": "Elite clockwork machines storm Gearhaven Plaza!"
+  },
+  {
+    "id": "treasure_hunt",
+    "name": "Treasure Hunt",
+    "type": "rare_loot",
+    "mob": "goblin_raider",
+    "drop": { "id": "rusty_sword", "weight": 5 },
+    "start": "2023-01-01T00:00:00Z",
+    "end": "2099-01-01T00:00:00Z",
+    "message": "Rumors of hidden treasure spread among the goblins!"
+  },
+  {
+    "id": "festival_of_light",
+    "name": "Festival of Light",
+    "type": "npc_dialogue",
+    "npc": "thaldo_tinkerer",
+    "line": "Happy Festival of Light!",
+    "start": "2023-01-01T00:00:00Z",
+    "end": "2099-01-01T00:00:00Z",
+    "message": "Citizens celebrate the Festival of Light across the realm!"
+  }
+]

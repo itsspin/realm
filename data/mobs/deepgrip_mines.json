@@ -1,0 +1,37 @@
+{
+  "zone": "deepgrip_mines",
+  "recommended_level_range": [
+    24,
+    30
+  ],
+  "mobs": [
+    {
+      "id": "tunnel_spider",
+      "name": "Tunnel Spider",
+      "type": "beast",
+      "level_range": [
+        24,
+        27
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "spider_leg",
+        "silken_thread"
+      ]
+    },
+    {
+      "id": "mad_dwarf_miner",
+      "name": "Mad Dwarf Miner",
+      "type": "humanoid",
+      "level_range": [
+        26,
+        30
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "rusted_pickaxe",
+        "dented_helm"
+      ]
+    }
+  ]
+}

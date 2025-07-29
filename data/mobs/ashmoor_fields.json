@@ -1,0 +1,92 @@
+{
+  "zone": "ashmoor_fields",
+  "recommended_level_range": [
+    1,
+    7
+  ],
+  "mobs": [
+    {
+      "id": "field_rat",
+      "name": "Field Rat",
+      "type": "beast",
+      "level_range": [
+        1,
+        2
+      ],
+      "spawn_rate": 0.3,
+      "loot_table": [
+        "rat_tail",
+        "small_hide"
+      ]
+    },
+    {
+      "id": "ashmoor_snake",
+      "name": "Ashmoor Snake",
+      "type": "beast",
+      "level_range": [
+        1,
+        3
+      ],
+      "spawn_rate": 0.25,
+      "loot_table": [
+        "shed_skin"
+      ]
+    },
+    {
+      "id": "burrow_beetle",
+      "name": "Burrow Beetle",
+      "type": "insect",
+      "level_range": [
+        2,
+        4
+      ],
+      "spawn_rate": 0.2,
+      "loot_table": [
+        "beetle_leg",
+        "carapace_fragment"
+      ]
+    },
+    {
+      "id": "young_shadow_skeleton",
+      "name": "Young Shadow Skeleton",
+      "type": "undead",
+      "level_range": [
+        3,
+        5
+      ],
+      "spawn_rate": 0.15,
+      "loot_table": [
+        "bone_shard",
+        "cracked_skull"
+      ]
+    },
+    {
+      "id": "ashmoor_bandit",
+      "name": "Ashmoor Bandit",
+      "type": "humanoid",
+      "level_range": [
+        4,
+        6
+      ],
+      "spawn_rate": 0.1,
+      "loot_table": [
+        "copper_coin",
+        "tattered_sash"
+      ]
+    },
+    {
+      "id": "roaming_ash_hound",
+      "name": "Roaming Ash Hound",
+      "type": "beast",
+      "level_range": [
+        5,
+        7
+      ],
+      "spawn_rate": 0.05,
+      "loot_table": [
+        "hound_fang",
+        "coarse_fur"
+      ]
+    }
+  ]
+}
