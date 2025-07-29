@@ -1,0 +1,64 @@
+{
+  "gearhaven_plaza": {
+    "n": "gearhaven_workshop",
+    "e": "neutral_crossroads",
+    "s": "shadowfen_camp"
+  },
+  "gearhaven_workshop": {
+    "s": "gearhaven_plaza"
+  },
+  "shadowfen_camp": {
+    "n": "gearhaven_plaza",
+    "e": "shadowfen_bog"
+  },
+  "shadowfen_bog": {
+    "w": "shadowfen_camp"
+  },
+  "neutral_crossroads": {
+    "west": "gearhaven_plaza",
+    "elven_path": "elven_glade_path",
+    "dwarf_path": "dwarf_fort_path",
+    "gnome_path": "gnome_burrow_path",
+    "orc_path": "orc_stronghold_path",
+    "undead_path": "undead_trail"
+  },
+  "elven_glade_path": {
+    "crossroads": "neutral_crossroads",
+    "city": "elven_glade"
+  },
+  "elven_glade": {
+    "road": "elven_glade_path"
+  },
+  "dwarf_fort_path": {
+    "crossroads": "neutral_crossroads",
+    "city": "dwarf_fortress"
+  },
+  "dwarf_fortress": {
+    "road": "dwarf_fort_path"
+  },
+  "gnome_burrow_path": {
+    "crossroads": "neutral_crossroads",
+    "city": "gnome_burrow"
+  },
+  "gnome_burrow": {
+    "road": "gnome_burrow_path"
+  },
+  "orc_stronghold_path": {
+    "crossroads": "neutral_crossroads",
+    "city": "orc_stronghold"
+  },
+  "orc_stronghold": {
+    "road": "orc_stronghold_path"
+  },
+  "undead_trail": {
+    "crossroads": "neutral_crossroads",
+    "city": "undead_necropolis"
+  },
+  "undead_necropolis": {
+    "road": "undead_trail",
+    "boat_dawn_isle_port": "dawn_isle_port"
+  },
+  "dawn_isle_port": {
+    "boat_undead_necropolis": "undead_necropolis"
+  }
+}
