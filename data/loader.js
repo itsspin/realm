@@ -27,6 +27,16 @@ export const loader = {
         Object.assign(this.data.abilities, await res.json());
       })
     );
+
+    const loreIdx = await fetch('data/lore/index.json');
+    const loreFiles = await loreIdx.json();
+    this.data.lore = {};
+    await Promise.all(
+      loreFiles.map(async (f) => {
+        const res = await fetch(`data/lore/${f}.json`);
+        this.data.lore[f] = await res.json();
+      })
+    );
   },
   get(type, id) {
     return this.data[type]?.[id];

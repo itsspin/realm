@@ -22,6 +22,7 @@ function loadCharacter() {
   p.professions ||= [];
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
+  p.codex ||= [];
   p.xp ||= 0;
   return p;
 }
@@ -323,6 +324,7 @@ function showPanel(name) {
   if (name === 'map') buildMap();
   if (name === 'graph') buildGraph();
   if (name === 'craft') buildCraftPanel();
+  if (name === 'codex') buildCodexPanel();
 }
 
 function renderRoom(loc) {
@@ -391,6 +393,7 @@ async function enterRoom(id) {
   checkQuestProgress('location', id);
   updateHUD();
   updateLocationPanel();
+  discoverZone(id);
 }
 
 async function move(dir) {
@@ -435,6 +438,7 @@ function endCombat(win) {
   document.getElementById('combat-overlay').classList.add('hidden');
   if (win) {
     addLog(`${mob.name} dies.`);
+    if (mob.boss) discoverBoss(mob.id);
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
     game.player.coins.silver += loot.silver;
@@ -442,6 +446,7 @@ function endCombat(win) {
     loot.items.forEach((id) => {
       game.player.inventory.push(id);
       addLog(`You loot ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
       checkQuestProgress('item', id);
     });
     if (loot.copper || loot.silver || loot.gold) {
@@ -934,6 +939,60 @@ function showQuestDetails(qid) {
   `;
 }
 
+function getLoreTitle(key) {
+  const [type, id] = key.split('-', 2);
+  const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+  return loader.data.lore?.[map[type]]?.[id]?.title || '';
+}
+
+function unlockLore(key) {
+  if (!game.player.codex.includes(key)) {
+    game.player.codex.push(key);
+    saveCharacter(game.player);
+    const title = getLoreTitle(key);
+    if (title) addLog(`Codex updated: ${title}`);
+  }
+}
+
+function discoverZone(locId) {
+  const zone = locId.split('_')[0];
+  if (loader.data.lore?.zones?.[zone]) unlockLore(`zone-${zone}`);
+}
+
+function discoverBoss(mobId) {
+  if (loader.data.lore?.bosses?.[mobId]) unlockLore(`boss-${mobId}`);
+}
+
+function discoverRelic(itemId) {
+  if (loader.data.lore?.relics?.[itemId]) unlockLore(`relic-${itemId}`);
+}
+
+function buildCodexPanel() {
+  const panel = document.getElementById('codex');
+  panel.innerHTML = '<h2 class="text-lg mb-2">Codex</h2>';
+  const book = document.createElement('div');
+  book.className = 'codex-book space-y-4 overflow-y-auto max-h-[70vh]';
+  if (!game.player.codex.length) {
+    book.textContent = 'You have not discovered any lore yet.';
+  } else {
+    game.player.codex.forEach((key) => {
+      const [type, id] = key.split('-', 2);
+      const map = { zone: 'zones', boss: 'bosses', relic: 'relics' };
+      const entry = loader.data.lore?.[map[type]]?.[id];
+      if (!entry) return;
+      const art = document.createElement('article');
+      const h3 = document.createElement('h3');
+      h3.className = 'font-bold text-lg mb-1';
+      h3.textContent = entry.title;
+      const p = document.createElement('p');
+      p.textContent = entry.text;
+      art.append(h3, p);
+      book.append(art);
+    });
+  }
+  panel.append(book);
+}
+
 function findPath(start, end) {
   const queue = [[start]];
   const visited = new Set([start]);
@@ -1072,6 +1131,7 @@ function craftItem(prof, rid) {
   }
   game.player.inventory.push(recipe.result);
   addLog(`You craft ${loader.data.items[recipe.result].name}.`);
+  if (loader.data.items[recipe.result]?.relic) discoverRelic(recipe.result);
   checkQuestProgress('item', recipe.result);
   buildInventory();
 }
@@ -1148,6 +1208,7 @@ async function handleInput(text) {
       const id = generateRandomItem(game.player.level);
       game.player.inventory.push(id);
       addLog(`You receive ${loader.data.items[id].name}.`);
+      if (loader.data.items[id]?.relic) discoverRelic(id);
     } else if (type === 'mob') {
       const mobId = generateRandomMob(game.player.level);
       startCombat(mobId);
@@ -1291,6 +1352,7 @@ function showCreateForm() {
       party: [],
       professions: [],
       coins: { copper: 0, silver: 0, gold: 0 },
+      codex: [],
       xp: 0
     };
     await startGame(player);
