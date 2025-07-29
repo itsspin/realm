@@ -9,7 +9,10 @@ export const loader = {
       'deities',
       'items',
       'locations',
-      'crafting'
+      'crafting',
+      'professions',
+      'materials',
+      'recipes'
     ];
     await Promise.all(
       files.map(async (name) => {

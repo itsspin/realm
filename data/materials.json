@@ -1,0 +1,8 @@
+{
+  "iron_ore": { "name": "Iron Ore" },
+  "wood_plank": { "name": "Wood Plank" },
+  "cloth_scrap": { "name": "Cloth Scrap" },
+  "herb_leaf": { "name": "Herb Leaf" },
+  "arcane_dust": { "name": "Arcane Dust" },
+  "water": { "name": "Water Flask" }
+}
