@@ -17,6 +17,7 @@ export const loader = {
   data: {},
   loadedZones: new Set(),
   async init() {
+    console.log('Loader initializing');
     const files = [
       'attributes',
       'races',
@@ -28,11 +29,24 @@ export const loader = {
       'crafting',
       'events',
       'guilds',
-      'achievements'
+      'achievements',
+      'npcs',
+      'mobs',
+      'nodes',
+      'professions',
+      'materials',
+      'recipes',
+      'skill_progression',
+      'world'
     ];
     await Promise.all(
       files.map(async (name) => {
-        this.data[name] = await fetchJson(`data/${name}.json`);
+        try {
+          this.data[name] = await fetchJson(`data/${name}.json`);
+        } catch (err) {
+          console.warn('Failed loading data file', name, err);
+          this.data[name] = {};
+        }
       })
     );
 
@@ -62,5 +76,17 @@ export const loader = {
   },
   get(type, id) {
     return this.data[type]?.[id];
+  },
+
+  async loadNpc(id) {
+    if (this.data.npcs?.[id]) return;
+    this.data.npcs ||= {};
+    try {
+      const npc = await fetchJson(`data/npcs/${id}.json`);
+      this.data.npcs[id] = npc;
+      console.log('Loaded NPC', id);
+    } catch (err) {
+      console.warn('Failed to load NPC', id, err);
+    }
   }
 };
