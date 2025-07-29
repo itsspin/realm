@@ -540,7 +540,7 @@ function gearScore(player) {
 }
 
 function zoneOf(loc) {
-  return loc || '';
+  return zoneFromLocation(loc);
 }
 
 function getZoneData(id) {

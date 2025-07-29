@@ -24,8 +24,16 @@ export function computeGearScore(equipped = {}) {
 
 export function zoneFromLocation(locId) {
   if (!locId) return 'unknown';
-  const idx = locId.indexOf('_');
-  return idx === -1 ? locId : locId.slice(0, idx);
+  const world = loader.data.world;
+  const parts = locId.split('_');
+  while (parts.length > 1) {
+    const candidate = parts.join('_');
+    if (world?.continents?.some((c) => c.zones.some((z) => z.id === candidate))) {
+      return candidate;
+    }
+    parts.pop();
+  }
+  return parts.join('_');
 }
 
 export function formatPlaytime(ms) {
