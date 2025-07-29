@@ -539,7 +539,7 @@ function gearScore(player) {
 }
 
 function zoneOf(loc) {
-  return (loc || '').split('_')[0];
+  return loc || '';
 }
 
 async function loadZoneMobs(zoneId) {
@@ -1695,7 +1695,7 @@ async function startGame(player) {
     name: 'Adventurer',
     class: 'ranger',
     level: 3,
-    location: 'gearhaven_plaza',
+    location: 'ashmoor_fields',
     equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
   });
   worldState.addPlayer({

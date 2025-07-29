@@ -1,21 +1,11 @@
 {
-  "gearhaven_plaza": {
-    "n": "gearhaven_workshop",
-    "e": "neutral_crossroads",
-    "s": "shadowfen_camp"
-  },
-  "gearhaven_workshop": {
-    "s": "gearhaven_plaza"
-  },
   "shadowfen_camp": {
-    "n": "gearhaven_plaza",
     "e": "shadowfen_bog"
   },
   "shadowfen_bog": {
     "w": "shadowfen_camp"
   },
   "neutral_crossroads": {
-    "west": "gearhaven_plaza",
     "elven_path": "elven_glade_path",
     "dwarf_path": "dwarf_fort_path",
     "gnome_path": "gnome_burrow_path",

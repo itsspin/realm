@@ -1,7 +1,7 @@
 {
   "name": "Welcome to REALM",
   "giver": "thaldo_tinkerer",
-  "zones": ["gearhaven"],
+  "zones": ["ashmoor_fields"],
   "faction": "luminara",
   "stages": [
     {

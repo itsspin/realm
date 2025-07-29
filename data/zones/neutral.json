@@ -6,7 +6,6 @@
       "faction": "neutral",
       "description": "A dusty intersection where caravans pause and news from all factions is traded.",
       "exits": [
-        "gearhaven_plaza",
         "elven_glade_path",
         "dwarf_fort_path",
         "gnome_burrow_path",
@@ -14,7 +13,6 @@
         "undead_trail"
       ],
       "links": {
-        "west": "gearhaven_plaza",
         "elven_path": "elven_glade_path",
         "dwarf_path": "dwarf_fort_path",
         "gnome_path": "gnome_burrow_path",

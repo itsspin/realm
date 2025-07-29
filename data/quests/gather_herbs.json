@@ -1,11 +1,11 @@
 {
   "name": "Gather Herbs",
   "giver": "druid_npc",
-  "zones": ["gearhaven"],
+  "zones": ["ashmoor_fields"],
   "faction": "luminara",
   "stages": [
     {
-      "description": "Collect 5 healing herbs around Gearhaven.",
+      "description": "Collect 5 healing herbs around Ashmoor Fields.",
       "objective": { "item": "healing_herb", "count": 5 }
     },
     {

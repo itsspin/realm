@@ -1,7 +1,7 @@
 {
   "name": "Lost Lute",
   "giver": "bard_npc",
-  "zones": ["gearhaven"],
+  "zones": ["ashmoor_fields"],
   "faction": "luminara",
   "stages": [
     {
