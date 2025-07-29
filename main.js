@@ -77,6 +77,51 @@ function randomRarity(level) {
   return 'common';
 }
 
+// Procedurally generate an item using prefix/core/suffix naming
+function generateItem(level) {
+  const prefixes = [
+    { name: 'Cracked', mult: 0.8, rarity: -1 },
+    { name: 'Fine', mult: 1.1, rarity: 0 },
+    { name: 'Sturdy', mult: 1.2, rarity: 1 },
+    { name: 'Ancient', mult: 1.3, rarity: 2 }
+  ];
+  const cores = [
+    { id: 'staff', slot: 'weapon', name: 'Staff', mult: 1 },
+    { id: 'sword', slot: 'weapon', name: 'Sword', mult: 1.1 },
+    { id: 'mace', slot: 'weapon', name: 'Mace', mult: 1.2 },
+    { id: 'robe', slot: 'chest', name: 'Robe', mult: 1 },
+    { id: 'mail', slot: 'chest', name: 'Mail', mult: 1.1 }
+  ];
+  const suffixes = [
+    { name: 'of Haste', mult: 1.1, rarity: 1 },
+    { name: 'of Power', mult: 1.2, rarity: 1 },
+    { name: 'of the Whale', mult: 1.3, rarity: 2 },
+    { name: 'of Devastation', mult: 1.4, rarity: 3 }
+  ];
+
+  const p = prefixes[rand(prefixes.length) - 1];
+  const c = cores[rand(cores.length) - 1];
+  const s = suffixes[rand(suffixes.length) - 1];
+
+  const score = 1 + (p.rarity || 0) + (c.rarity || 0) + (s.rarity || 0);
+  let rarity = 'common';
+  if (score >= 5) rarity = 'legendary';
+  else if (score >= 4) rarity = 'epic';
+  else if (score >= 3) rarity = 'rare';
+  else if (score >= 2) rarity = 'uncommon';
+
+  const mult = (p.mult || 1) * (c.mult || 1) * (s.mult || 1);
+  const item = {
+    name: `${p.name} ${c.name} ${s.name}`,
+    level,
+    slot: c.slot,
+    rarity
+  };
+  if (c.slot === 'weapon') item.damage = Math.floor(level * 0.8 * mult + 1);
+  else item.armor = Math.floor(level * 0.5 * mult + 1);
+  return item;
+}
+
 function generateItems() {
   const types = [
     { id: 'cloth', slot: 'chest', name: 'Cloth Armor' },
@@ -106,27 +151,9 @@ function generateItems() {
 
 // Generate a single random item scaled to the given level
 function generateRandomItem(level) {
-  const types = [
-    { id: 'sword', slot: 'weapon', name: 'Sword' },
-    { id: 'axe', slot: 'weapon', name: 'Axe' },
-    { id: 'mace', slot: 'weapon', name: 'Mace' },
-    { id: 'cloth', slot: 'chest', name: 'Cloth Armor' },
-    { id: 'leather', slot: 'chest', name: 'Leather Armor' }
-  ];
-  const t = types[rand(types.length) - 1];
-  const rarity = randomRarity(level);
-  const mult = { common: 1, uncommon: 1.2, rare: 1.5, epic: 2, legendary: 3 }[
-    rarity
-  ];
-  const id = `gen_${t.id}_${Date.now()}_${rand(1000)}`;
-  const item = {
-    name: `${rarity} ${t.name}`,
-    level,
-    slot: t.slot,
-    rarity
-  };
-  if (t.slot === 'weapon') item.damage = Math.floor(level * 0.8 * mult + 1);
-  else item.armor = Math.floor(level * 0.5 * mult + 1);
+  const item = generateItem(level);
+  const core = item.slot;
+  const id = `gen_${core}_${Date.now()}_${rand(1000)}`;
   loader.data.items[id] = item;
   return id;
 }
@@ -227,20 +254,19 @@ function updateLocationPanel() {
 }
 
 function buildMoveControls(loc) {
-  const mc = document.getElementById('move-controls');
-  mc.innerHTML = '';
-  const dirs = { n: 'North', e: 'East', s: 'South', w: 'West' };
+  const mc = document.getElementById("move-controls");
+  mc.innerHTML = "";
+  const dirs = { n: "North", e: "East", s: "South", w: "West" };
   Object.entries(dirs).forEach(([dir, label]) => {
     if (loc.links?.[dir]) {
-      const btn = document.createElement('button');
-      btn.className = 'move-btn';
+      const btn = document.createElement("button");
+      btn.className = "move-btn";
       btn.textContent = label;
       btn.dataset.dir = dir;
       mc.append(btn);
     }
   });
 }
-
 
 function addLog(txt) {
   const div = document.createElement('div');
