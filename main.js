@@ -1,5 +1,6 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
+/* global d3 */
 
 const game = {
   player: null,
@@ -23,6 +24,7 @@ function loadCharacter() {
   p.coins ||= { copper: 0, silver: 0, gold: 0 };
   p.party ||= [];
   p.xp ||= 0;
+  p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
 }
 let currentTargetBtn = null;
@@ -37,6 +39,21 @@ function rand(max) {
 
 function getPlayerLevel() {
   return Math.floor((game.player?.xp || 0) / 100) + 1;
+}
+
+function unlockAchievement(id) {
+  const defs = loader.data.achievements || {};
+  if (!defs[id]) return;
+  const a = game.player.achievements;
+  if (a.unlocked.includes(id)) return;
+  a.unlocked.push(id);
+  if (defs[id].title) {
+    if (!a.titles.includes(defs[id].title)) a.titles.push(defs[id].title);
+    addLog(`Achievement unlocked: ${defs[id].name} - Title ${defs[id].title}!`);
+  } else {
+    addLog(`Achievement unlocked: ${defs[id].name}`);
+  }
+  saveCharacter(game.player);
 }
 
 function getAvailableAbilities() {
@@ -225,7 +242,10 @@ function dropLoot(mob) {
 function updateHUD() {
   const p = game.player;
   const nameEl = document.getElementById('player-name');
-  if (nameEl) nameEl.textContent = p.name;
+  if (nameEl) {
+    const title = p.achievements.title ? ` ${p.achievements.title}` : '';
+    nameEl.textContent = p.name + title;
+  }
   const hpEl = document.getElementById('player-hp');
   if (hpEl) hpEl.textContent = `HP: ${p.hp}/${p.maxHp}`;
   const xpEl = document.getElementById('player-xp');
@@ -457,6 +477,7 @@ function endCombat(win) {
 
 function enemyAttack() {
   const mob = game.target;
+  // eslint-disable-next-line no-undef
   const res = resolveAttack(mob, game.player);
   if (res.dodge) {
     addCombatLog('You dodge the attack.');
@@ -482,6 +503,7 @@ function useAbility(id) {
   if (!spell) return;
   addCombatLog(`You use ${spell.name}.`);
   if (spell.damage) {
+    // eslint-disable-next-line no-undef
     const res = resolveAttack(game.player, game.target, spell);
     if (res.dodge) {
       addCombatLog(`${game.target.name} dodges your attack.`);
@@ -810,6 +832,9 @@ function completeQuest(qid) {
   game.player.completedQuests.push(qid);
   delete game.player.questProgress[qid];
   addLog(`Quest completed: ${loader.data.quests[qid].name}`);
+  if (game.player.completedQuests.length === 1) {
+    unlockAchievement('first_dungeon_clear');
+  }
   buildQuestList();
 }
 
@@ -1158,6 +1183,16 @@ async function handleInput(text) {
     } else {
       addLog('Usage: /random item|mob|quest');
     }
+  } else if (cmd.startsWith('/title')) {
+    const [, title] = cmd.split(' ', 2);
+    if (!title) {
+      addLog(`Titles: ${game.player.achievements.titles.join(', ')}`);
+    } else if (game.player.achievements.titles.includes(title)) {
+      game.player.achievements.title = title;
+      addLog(`Title set to ${title}`);
+    } else {
+      addLog('You have not unlocked that title.');
+    }
   } else if (cmd) {
     ws.send('chat', { channel: 'say', msg: `${game.player.name}: ${cmd}` });
   }
@@ -1236,6 +1271,14 @@ async function startGame(player) {
   buildQuestList();
   const start = location.hash.slice(1) || game.player.location;
   await enterRoom(start);
+  if (game.playTimer) clearInterval(game.playTimer);
+  game.playTimer = setInterval(() => {
+    game.player.achievements.playTime += 1;
+    if (game.player.achievements.playTime >= 6000) {
+      unlockAchievement('played_100_hours');
+    }
+    saveCharacter(game.player);
+  }, 60000);
 }
 
 function showCreateForm() {
@@ -1291,7 +1334,8 @@ function showCreateForm() {
       party: [],
       professions: [],
       coins: { copper: 0, silver: 0, gold: 0 },
-      xp: 0
+      xp: 0,
+      achievements: { unlocked: [], titles: [], title: '', playTime: 0 }
     };
     await startGame(player);
   };
