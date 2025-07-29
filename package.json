@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "@eslint/js": "^9.32.0"
+  },
+  "scripts": {
+    "build-map": "node scripts/build-map.js"
   }
 }

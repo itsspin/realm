@@ -321,6 +321,7 @@ function showPanel(name) {
   document.getElementById(name).classList.remove('hidden');
   if (name === 'quests') buildQuestList();
   if (name === 'map') buildMap();
+  if (name === 'graph') buildGraph();
   if (name === 'craft') buildCraftPanel();
 }
 
@@ -977,6 +978,73 @@ function buildMap() {
     list.append(li);
   });
   map.append(list);
+}
+
+async function buildGraph() {
+  const panel = document.getElementById('graph');
+  panel.innerHTML = '<h2 class="text-lg mb-2">World Graph</h2><svg width="600" height="600"></svg>';
+  const res = await fetch('data/map.json');
+  const graph = await res.json();
+  const nodes = Object.keys(graph).map((id) => ({ id, name: loader.data.locations[id]?.name || id }));
+  const links = [];
+  Object.entries(graph).forEach(([src, exits]) => {
+    Object.values(exits).forEach((dest) => links.push({ source: src, target: dest }));
+  });
+  const svg = d3.select(panel.querySelector('svg'));
+  const sim = d3
+    .forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id((d) => d.id).distance(80))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(300, 300));
+  const link = svg
+    .selectAll('line')
+    .data(links)
+    .enter()
+    .append('line')
+    .attr('stroke', '#999');
+  const node = svg
+    .selectAll('circle')
+    .data(nodes)
+    .enter()
+    .append('circle')
+    .attr('r', 5)
+    .attr('fill', '#60a5fa')
+    .call(
+      d3
+        .drag()
+        .on('start', (event, d) => {
+          if (!event.active) sim.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        })
+        .on('drag', (event, d) => {
+          d.fx = event.x;
+          d.fy = event.y;
+        })
+        .on('end', (event, d) => {
+          if (!event.active) sim.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        })
+    );
+  const label = svg
+    .selectAll('text')
+    .data(nodes)
+    .enter()
+    .append('text')
+    .attr('font-size', '10px')
+    .attr('dx', 8)
+    .attr('dy', '.35em')
+    .text((d) => d.name);
+  sim.on('tick', () => {
+    link
+      .attr('x1', (d) => d.source.x)
+      .attr('y1', (d) => d.source.y)
+      .attr('x2', (d) => d.target.x)
+      .attr('y2', (d) => d.target.y);
+    node.attr('cx', (d) => d.x).attr('cy', (d) => d.y);
+    label.attr('x', (d) => d.x).attr('y', (d) => d.y);
+  });
 }
 
 function craftItem(prof, rid) {
