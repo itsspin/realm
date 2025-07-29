@@ -1,6 +1,7 @@
 import { loader } from './data/loader.js';
 import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
+import { worldState } from './worldState.js';
 /* global d3 */
 
 const game = {
@@ -339,7 +340,6 @@ function addLog(txt) {
 }
 
 function addHtmlLog(html) {
-function addLogHTML(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
   document.getElementById('log').append(div);
@@ -540,6 +540,7 @@ function inspectPlayer(name) {
     const color = rarityColorClass(item.rarity || 'common');
     addHtmlLog(`${slot}: <span class="${color}">${item.name} (${item.rarity || 'common'})</span>`);
   });
+}
 function updatePartyPanel() {
   const panel = document.getElementById('party');
   if (!panel) return;
@@ -1506,6 +1507,7 @@ async function handleInput(text) {
       addLog('You are not in a guild.');
     } else {
       ws.send('chat', { channel: 'guild', msg: `${game.player.name}: ${msg}` });
+    }
   } else if (cmd.startsWith('/title')) {
     const [, title] = cmd.split(' ', 2);
     if (!title) {

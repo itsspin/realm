@@ -26,8 +26,8 @@ export const loader = {
       'items',
       'locations',
       'crafting',
-      'events'
-      'guilds'
+      'events',
+      'guilds',
       'achievements'
     ];
     await Promise.all(
