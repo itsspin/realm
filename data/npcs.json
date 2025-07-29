@@ -7,7 +7,7 @@
     "dialogue": [
       "Welcome to Gearhaven! I've got gadgets aplenty if you've the curiosity."
     ],
-    "teaches": ["tinkering"],
+    "teaches": ["tinkering"]
   },
   "gilda_crafter": {
     "name": "Gilda Gearsmith",

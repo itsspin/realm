@@ -1,4 +1,4 @@
-import { loader } from './data/loader.js';
+import { loader, fetchJson } from './data/loader.js';
 import { ws } from './websocket-stub.js';
 
 const active = [];
@@ -73,8 +73,7 @@ function checkEvents() {
 
 export async function initEvents() {
   try {
-    const res = await fetch('data/events.json');
-    loader.data.events = await res.json();
+    loader.data.events = await fetchJson('data/events.json');
   } catch {
     loader.data.events = [];
   }
