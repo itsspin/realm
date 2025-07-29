@@ -1,0 +1,12 @@
+{
+  "first_dungeon_clear": {
+    "name": "First Dungeon Clear",
+    "title": "The Brave",
+    "description": "Defeat your first dungeon boss."
+  },
+  "played_100_hours": {
+    "name": "Played 100 Hours",
+    "title": "Shadowblade",
+    "description": "Spend 100 hours adventuring."
+  }
+}
