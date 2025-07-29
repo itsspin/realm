@@ -10,7 +10,8 @@ const game = {
   combatTimer: 0,
   inCombat: false,
   onlinePlayers: [],
-  players: {}
+  players: {},
+  currentZone: { id: null, mobs: [] }
 };
 
 function saveCharacter(p) {
@@ -54,6 +55,10 @@ function isQuestGiver(id) {
 
 function rand(max) {
   return Math.floor(Math.random() * max) + 1;
+}
+
+function randRange(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function opposingFaction(fac) {
@@ -456,8 +461,10 @@ async function enterRoom(id) {
   console.log('Entering room', id);
   const loc = loader.data.locations[id];
   if (!loc) return;
+  await loadZoneMobs(zoneOf(id));
   const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
+  spawnMobsForLocation(loc);
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
@@ -522,6 +529,61 @@ function gearScore(player) {
 
 function zoneOf(loc) {
   return (loc || '').split('_')[0];
+}
+
+async function loadZoneMobs(zoneId) {
+  if (game.currentZone.id === zoneId) return;
+  game.currentZone = { id: zoneId, mobs: [] };
+  try {
+    const res = await fetch(`data/mobs/${zoneId}.json`);
+    const data = await res.json();
+    if (Array.isArray(data.mobs)) {
+      game.currentZone.mobs = data.mobs;
+    } else {
+      console.warn('Invalid mob data for zone', zoneId);
+    }
+  } catch (err) {
+    console.warn('Failed to load mobs for zone', zoneId, err);
+  }
+}
+
+function createZoneMob(tpl) {
+  const level = randRange(tpl.level_range[0], tpl.level_range[1]);
+  const id = `zone_${game.currentZone.id}_${tpl.id}_${Date.now()}_${rand(1000)}`;
+  loader.data.mobs[id] = {
+    name: tpl.name,
+    level,
+    hp: 10 + level * 10,
+    damage: Math.max(1, Math.floor(level * 1.5)),
+    dropTable: (tpl.loot_table || []).map((lid) => ({ id: lid, weight: 1 }))
+  };
+  return id;
+}
+
+function spawnMobsForLocation(loc) {
+  if (!loc._baseSpawns) loc._baseSpawns = [...(loc.spawns || [])];
+  loc.spawns = loc._baseSpawns.slice();
+  if (!game.currentZone.mobs.length) return;
+  game.currentZone.mobs.forEach((tpl) => {
+    if (Math.random() < tpl.spawn_rate) {
+      const id = createZoneMob(tpl);
+      loc.spawns.push(id);
+    }
+  });
+}
+
+function getRandomMobForZone() {
+  if (!game.currentZone.mobs.length) return null;
+  const total = game.currentZone.mobs.reduce((s, m) => s + m.spawn_rate, 0);
+  let roll = Math.random() * total;
+  for (const tpl of game.currentZone.mobs) {
+    roll -= tpl.spawn_rate;
+    if (roll <= 0) {
+      const id = createZoneMob(tpl);
+      return { id, ...loader.data.mobs[id] };
+    }
+  }
+  return null;
 }
 
 function inspectPlayer(name) {
@@ -1439,8 +1501,8 @@ async function handleInput(text) {
       addLog(`You receive ${loader.data.items[id].name}.`);
       if (loader.data.items[id]?.relic) discoverRelic(id);
     } else if (type === 'mob') {
-      const mobId = generateRandomMob(game.player.level);
-      startCombat(mobId);
+      const mob = getRandomMobForZone() || { id: generateRandomMob(game.player.level) };
+      startCombat(mob.id);
     } else if (type === 'quest') {
       const qid = generateRandomQuest(game.player.level);
       game.player.activeQuests.push(qid);
