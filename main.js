@@ -1296,6 +1296,10 @@ function findPath(start, end) {
     const node = path[path.length - 1];
     if (node === end) return path;
     const loc = loader.data.locations[node];
+    if (!loc) {
+      console.warn('findPath: unknown location', node);
+      continue;
+    }
     const links = loc.links || {};
     Object.values(links).forEach((n) => {
       if (!visited.has(n)) {
