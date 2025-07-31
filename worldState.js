@@ -12,6 +12,7 @@ export const classColors = {
 };
 
 import { loader } from './data/loader.js';
+import { ws } from './websocket-stub.js';
 
 export function computeGearScore(equipped = {}) {
   let score = 0;
@@ -45,6 +46,7 @@ export function formatPlaytime(ms) {
 
 export const worldState = {
   players: {},
+  zones: {},
 
   addPlayer(p) {
     this.players[p.name] = {
@@ -95,5 +97,64 @@ export const worldState = {
     const p = this.players[name];
     if (!p) return 0;
     return Date.now() - p.loginTime + p.pastPlaytime;
+  },
+
+  initZone(zoneId, templates) {
+    if (this.zones[zoneId]) return;
+    this.zones[zoneId] = { templates, mobs: {} };
+    for (let i = 0; i < 10; i++) {
+      const tpl = this._randomTemplate(zoneId);
+      if (tpl) this.spawnMob(zoneId, tpl);
+    }
+  },
+
+  _randomTemplate(zoneId) {
+    const zone = this.zones[zoneId];
+    if (!zone) return null;
+    const total = zone.templates.reduce((s, t) => s + t.spawn_rate, 0);
+    let roll = Math.random() * total;
+    for (const tpl of zone.templates) {
+      roll -= tpl.spawn_rate;
+      if (roll <= 0) return tpl;
+    }
+    return zone.templates[0];
+  },
+
+  spawnMob(zoneId, tpl) {
+    const level = this._randRange(tpl.level_range[0], tpl.level_range[1]);
+    const id = `zone_${zoneId}_${tpl.id}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    loader.data.mobs[id] = {
+      name: tpl.name,
+      level,
+      hp: 10 + level * 10,
+      damage: Math.max(1, Math.floor(level * 1.5)),
+      dropTable: (tpl.loot_table || []).map((lid) => ({ id: lid, weight: 1 }))
+    };
+    this.zones[zoneId].mobs[id] = { tpl };
+    loader.data.locations[zoneId].spawns.push(id);
+    ws.send('mob_spawn', { zoneId, mobId: id, mob: loader.data.mobs[id] });
+  },
+
+  killMob(zoneId, mobId) {
+    const zone = this.zones[zoneId];
+    if (!zone || !zone.mobs[mobId]) return;
+    const tpl = zone.mobs[mobId].tpl;
+    delete zone.mobs[mobId];
+    const loc = loader.data.locations[zoneId];
+    if (loc) loc.spawns = loc.spawns.filter((id) => id !== mobId);
+    delete loader.data.mobs[mobId];
+    ws.send('mob_remove', { zoneId, mobId });
+    const delay = this._randRange(15, 30) * 1000;
+    setTimeout(() => {
+      this.spawnMob(zoneId, tpl);
+    }, delay);
+  },
+
+  getMobIds(zoneId) {
+    return Object.keys(this.zones[zoneId]?.mobs || {});
+  },
+
+  _randRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 };

@@ -491,7 +491,7 @@ async function enterRoom(id) {
   await loadZoneMobs(zoneOf(id));
   const ids = [...(loc.npcs || []), ...(loc.spawns || [])];
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
-  spawnMobsForLocation(loc);
+  spawnMobsForLocation(loc, id);
   game.player.location = id;
   location.hash = id;
   renderRoom(loc);
@@ -594,6 +594,7 @@ async function loadZoneMobs(zoneId) {
     const data = await fetchJson(`data/mobs/${zoneId}.json`);
     if (Array.isArray(data.mobs)) {
       game.currentZone.mobs = data.mobs;
+      worldState.initZone(zoneId, game.currentZone.mobs);
     } else {
       console.warn('Invalid mob data for zone', zoneId);
     }
@@ -615,7 +616,7 @@ function createZoneMob(tpl) {
   return id;
 }
 
-function spawnMobsForLocation(loc) {
+function spawnMobsForLocation(loc, locId) {
   if (!loc._baseSpawns) loc._baseSpawns = [...(loc.spawns || [])];
   loc.spawns = loc._baseSpawns.slice();
   loc.mobGroups = [];
@@ -632,6 +633,8 @@ function spawnMobsForLocation(loc) {
       loc.mobGroups.push(group);
     }
   });
+  const zid = zoneFromLocation(locId || game.player.location);
+  loc.spawns = loc.spawns.concat(worldState.getMobIds(zid));
 }
 
 function getRandomMobForZone() {
@@ -701,6 +704,9 @@ function endCombat(win) {
   document.getElementById('combat-overlay').classList.add('hidden');
   if (win) {
     addLog(`${mob.name} dies.`);
+    if (mob.id.startsWith('zone_')) {
+      worldState.killMob(zoneOf(game.player.location), mob.id);
+    }
     if (mob.boss) discoverBoss(mob.id);
     const loot = dropLoot(mob);
     game.player.coins.copper += loot.copper;
@@ -1685,6 +1691,22 @@ function bindUI() {
   ws.on('chat', (m) => {
     addLog(`[${m.channel}] ${m.msg}`);
     addChat(`[${m.channel}] ${m.msg}`);
+  });
+  ws.on('mob_spawn', ({ zoneId, mobId, mob }) => {
+    loader.data.mobs[mobId] = mob;
+    const loc = loader.data.locations[zoneId];
+    if (loc && !loc.spawns.includes(mobId)) {
+      loc.spawns.push(mobId);
+      if (game.player.location === zoneId) buildMobList(loc.spawns);
+    }
+  });
+  ws.on('mob_remove', ({ zoneId, mobId }) => {
+    const loc = loader.data.locations[zoneId];
+    if (loc) {
+      loc.spawns = loc.spawns.filter((id) => id !== mobId);
+      delete loader.data.mobs[mobId];
+      if (game.player.location === zoneId) buildMobList(loc.spawns);
+    }
   });
   document.querySelectorAll('button[data-panel]').forEach((btn) => {
     btn.onclick = () => showPanel(btn.dataset.panel);
