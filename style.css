@@ -65,6 +65,17 @@ body {
   @apply w-full;
 }
 
+@keyframes pulse-text {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.pulse {
+  animation: pulse-text 1s infinite;
 /* Chat & combat windows */
 #chat-window,
 #combat-log-window {
