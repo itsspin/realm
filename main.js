@@ -115,6 +115,8 @@ function selectTarget(type, id, btn) {
     game.target = { ...loader.get('npcs', id), id, type };
   } else if (type === 'node') {
     game.target = { ...loader.get('nodes', id), id, type };
+  } else if (type === 'mob') {
+    game.target = { ...loader.data.mobs[id], id, type };
   } else {
     game.target = null;
   }
@@ -555,6 +557,18 @@ function gearScore(player) {
   );
 }
 
+function resolveAttack(attacker, defender, ability = {}) {
+  const hitChance = 0.8;
+  if (Math.random() > hitChance) return { miss: true };
+  const dodgeChance = Math.min((defender.dex || 0) / 100, 0.2);
+  if (Math.random() < dodgeChance) return { dodge: true };
+  let damage = ability.damage || attacker.damage || 1;
+  const critChance = 0.1;
+  const crit = Math.random() < critChance;
+  if (crit) damage *= 2;
+  return { damage: Math.floor(damage), crit };
+}
+
 function zoneOf(loc) {
   return zoneFromLocation(loc);
 }
@@ -894,6 +908,41 @@ function showNpcMenu(id) {
   });
 }
 
+function showMobMenu(id) {
+  const mob = loader.data.mobs[id];
+  if (!mob) return;
+  selectTarget('mob', id);
+  const dlg = document.getElementById('dialogue');
+  dlg.innerHTML = `
+    <div class="font-bold mb-1">${mob.name} (Lv ${mob.level})</div>
+    <div id="mob-actions" class="flex flex-wrap gap-2 mb-2"></div>
+  `;
+  dlg.classList.remove('hidden');
+  const actions = document.getElementById('mob-actions');
+  const atk = document.createElement('button');
+  atk.className = 'btn text-xs';
+  atk.textContent = 'Attack';
+  atk.onclick = () => {
+    dlg.classList.add('hidden');
+    startCombat(id);
+  };
+  actions.append(atk);
+  const abil = getAvailableAbilities();
+  abil.forEach((a) => {
+    const def = loader.data.abilities[a];
+    if (!def) return;
+    const b = document.createElement('button');
+    b.className = 'btn text-xs';
+    b.textContent = def.name;
+    b.onclick = () => {
+      dlg.classList.add('hidden');
+      startCombat(id);
+      setTimeout(() => useAbility(a), 0);
+    };
+    actions.append(b);
+  });
+}
+
 function buildNPCList(npcs) {
   const list = document.getElementById('npc-list');
   list.innerHTML = '';
@@ -942,7 +991,7 @@ function buildMobList(mobs, groups = []) {
     else color = 'text-red-600';
     if (color) btn.classList.add(color);
     btn.textContent = `${mob.name} (group of ${grp.length})`;
-    btn.onclick = () => startCombat(grp[0]);
+    btn.onclick = () => showMobMenu(grp[0]);
     list.append(btn);
   });
   mobs.forEach((id) => {
@@ -960,7 +1009,7 @@ function buildMobList(mobs, groups = []) {
     else color = 'text-red-600';
     if (color) btn.classList.add(color);
     btn.textContent = mob.name;
-    btn.onclick = () => startCombat(id);
+    btn.onclick = () => showMobMenu(id);
     list.append(btn);
   });
 }
