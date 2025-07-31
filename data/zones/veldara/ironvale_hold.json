@@ -9,7 +9,7 @@
   "type": "city",
   "exits": {
     "south": "ashmoor_fields",
-    "dock": "boat_ironvale_sandspire"
+    "dock": "sandspire"
   },
   "mobs": [
     {
