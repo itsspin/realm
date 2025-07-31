@@ -45,6 +45,7 @@ function loadCharacter() {
   p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   p.homeLocation ||= p.location;
+  p.lastSafeZone ||= p.homeLocation;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
 }
@@ -323,7 +324,7 @@ function updateHUD() {
   const statusEl = document.getElementById('status');
   if (statusEl)
     statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
-  updateTargetPanel();
+  updateTargetHUD();
   updatePartyPanel();
 }
 
@@ -525,6 +526,11 @@ async function enterRoom(id) {
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
   spawnMobsForLocation(loc, id);
   game.player.location = id;
+  const zid = zoneFromLocation(id);
+  if (isSafeZone(zid)) {
+    game.player.lastSafeZone = zid;
+    saveCharacter(game.player);
+  }
   location.hash = id;
   renderRoom(loc);
   checkQuestProgress('location', id);
@@ -536,8 +542,13 @@ async function enterRoom(id) {
 
 async function move(dir) {
   console.log('Move', dir);
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) await enterRoom(dest);
+  const cur = loader.data.locations[game.player.location];
+  const dest = cur?.links?.[dir];
+  if (!dest) {
+    addLog("You can't go that way.");
+    return;
+  }
+  await enterRoom(dest);
 }
 
 
@@ -611,6 +622,13 @@ function getZoneData(id) {
     if (zone) return zone;
   }
   return null;
+}
+
+function isSafeZone(id) {
+  const zone = getZoneData(id);
+  if (!zone || !zone.type) return false;
+  const type = zone.type.toLowerCase();
+  return type.includes('city') || type.startsWith('starter');
 }
 
 function updateZonePanel() {
@@ -745,6 +763,23 @@ function updatePartyPanel() {
     }
     container.append(row);
   });
+}
+
+function updateTargetHUD() {
+  const nameEl = document.getElementById('target-name');
+  if (!nameEl) return;
+  if (game.target) {
+    const hp = game.target.hp != null ? ` (${game.target.hp} HP)` : '';
+    nameEl.textContent = `${game.target.name}${hp}`;
+    nameEl.onclick = () => {
+      const tgt = game.target;
+      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
+      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
+    };
+  } else {
+    nameEl.textContent = '—';
+    nameEl.onclick = null;
+  }
 }
 
 function updateTargetPanel() {
@@ -903,9 +938,14 @@ function handlePlayerDeath() {
   }
   game.player.hp = game.player.maxHp;
   game.player.mp = game.player.maxMp;
-  const home = game.player.homeLocation || game.player.location;
-  worldState.updatePlayer(game.player.name, { location: home });
-  enterRoom(home);
+  let respawn = game.player.location;
+  if (!loader.data.locations[respawn]) {
+    respawn = game.player.lastSafeZone || game.player.homeLocation || respawn;
+  }
+  worldState.updatePlayer(game.player.name, { location: respawn });
+  enterRoom(respawn);
+  updateHUD();
+  saveCharacter(game.player);
 }
 
 function enemyAttack() {
@@ -1985,21 +2025,21 @@ async function startGame(player) {
   worldState.addPlayer(player);
   worldState.addPlayer({
     name: 'Hero',
-    class: 'warrior',
+    class: 'barbarian',
     level: 5,
     location: 'greystone_hills',
     equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Adventurer',
-    class: 'ranger',
+    class: 'amazon',
     level: 3,
     location: 'ashmoor_fields',
     equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Mystic',
-    class: 'mage',
+    class: 'sorceress',
     level: 8,
     location: 'howling_caverns',
     equipped: { weapon: 'druid_staff' }
@@ -2074,6 +2114,7 @@ function showCreateForm() {
       maxMp: stats.spi * 4,
       location: loader.data.races[race].startLocation,
       homeLocation: loader.data.races[race].startLocation,
+      lastSafeZone: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
       gearTypes: clsDef.gear || [],

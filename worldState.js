@@ -1,14 +1,9 @@
 export const classColors = {
-  warrior: 'text-red-400',
-  paladin: 'text-amber-300',
-  cleric: 'text-emerald-300',
-  mage: 'text-blue-400',
-  rogue: 'text-yellow-300',
-  ranger: 'text-green-400',
-  druid: 'text-teal-300',
+  barbarian: 'text-red-400',
+  sorceress: 'text-blue-400',
+  amazon: 'text-green-400',
   necromancer: 'text-purple-400',
-  shaman: 'text-orange-400',
-  bard: 'text-pink-400'
+  druid: 'text-teal-300'
 };
 
 import { loader } from './data/loader.js';
