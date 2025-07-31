@@ -305,6 +305,10 @@ function updateHUD() {
   if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
   const hpFill = document.getElementById('hp-fill');
   if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
+  const mpText = document.getElementById('player-mp-text');
+  if (mpText) mpText.textContent = `${p.mp}/${p.maxMp}`;
+  const mpFill = document.getElementById('mp-fill');
+  if (mpFill) mpFill.style.width = `${(p.mp / p.maxMp) * 100}%`;
   const xpText = document.getElementById('player-xp-text');
   if (xpText) xpText.textContent = p.xp || 0;
   const xpFill = document.getElementById('xp-fill');
@@ -312,6 +316,9 @@ function updateHUD() {
   const goldEl = document.getElementById('player-gold');
   if (goldEl)
     goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
+  const statusEl = document.getElementById('status');
+  if (statusEl)
+    statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
 }
 
 function updateLocationPanel() {
@@ -1565,8 +1572,8 @@ function showRecipes(prof) {
     });
 }
 
-function buildCraftPanel() {
-  const panel = document.getElementById('craft');
+function buildCraftPanel(target = 'craft') {
+  const panel = document.getElementById(target);
   panel.innerHTML = '<h2 class="text-lg mb-2">Crafting</h2>';
   const list = document.createElement('ul');
   Object.entries(loader.data.professions).forEach(([pid, prof]) => {
@@ -1757,7 +1764,9 @@ function bindUI() {
       document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
       btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      const panel = document.getElementById(btn.dataset.tab);
+      panel.classList.remove('hidden');
+      if (btn.dataset.tab === 'tab-craft') buildCraftPanel('craft-panel');
     };
   });
   const firstTab = document.querySelector('.tab-btn');
