@@ -14,7 +14,7 @@
           "name": "Ironvale Hold",
           "type": "city",
           "level_range": [0, 0],
-          "exits": { "south": "ashmoor_fields", "dock": "boat_ironvale_sandspire" }
+          "exits": { "south": "ashmoor_fields", "dock": "sandspire" }
         },
         {
           "id": "ashmoor_fields",
@@ -89,7 +89,7 @@
           "name": "Sandspire",
           "type": "city",
           "level_range": [0, 0],
-          "exits": { "north": "scorched_flats", "dock": "boat_ironvale_sandspire", "teleport_pad": "tele_sandspire_sylvaran" }
+          "exits": { "north": "scorched_flats", "dock": "ironvale_hold", "teleport_pad": "sylvaran_grove" }
         },
         {
           "id": "scorched_flats",
@@ -157,7 +157,7 @@
           "name": "Sylvaran Grove",
           "type": "city",
           "level_range": [0, 0],
-          "exits": { "south": "emerald_copse", "portal": "tele_sandspire_sylvaran", "ancient_tree": "tree_sylvaran_stormveil" }
+          "exits": { "south": "emerald_copse", "portal": "sandspire", "ancient_tree": "stormveil_bastion" }
         },
         {
           "id": "emerald_copse",
@@ -223,7 +223,7 @@
           "name": "Stormveil Bastion",
           "type": "city",
           "level_range": [0, 0],
-          "exits": { "south": "ashenflow_tundra", "tree_portal": "tree_sylvaran_stormveil" }
+          "exits": { "south": "ashenflow_tundra", "tree_portal": "sylvaran_grove" }
         },
         {
           "id": "ashenflow_tundra",
@@ -258,7 +258,7 @@
           "name": "Dreadhold Depths",
           "type": "raid",
           "level_range": [50, 60],
-          "exits": { "up": "burnscar_chasm", "portal": "raid_gate_every_capital" }
+          "exits": { "up": "burnscar_chasm", "portal": "stormveil_bastion" }
         },
         {
           "id": "worldrend_citadel",

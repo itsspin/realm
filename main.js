@@ -534,8 +534,13 @@ async function enterRoom(id) {
 
 async function move(dir) {
   console.log('Move', dir);
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) await enterRoom(dest);
+  const cur = loader.data.locations[game.player.location];
+  const dest = cur?.links?.[dir];
+  if (!dest) {
+    addLog("You can't go that way.");
+    return;
+  }
+  await enterRoom(dest);
 }
 
 

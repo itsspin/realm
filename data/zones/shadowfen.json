@@ -6,7 +6,6 @@
       "faction": "umbra",
       "description": "A dark encampment surrounded by murky waters where warriors of Umbra sharpen their blades.",
       "exits": [
-        "n",
         "e"
       ],
       "links": {
