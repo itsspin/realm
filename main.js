@@ -358,6 +358,23 @@ function buildMoveControls(loc) {
   });
 }
 
+function loadChatSettings() {
+  const data = localStorage.getItem('chatSettings');
+  if (data) return JSON.parse(data);
+  return {
+    world: { show: true, color: '#00ffff' },
+    guild: { show: true, color: '#00ff00' },
+    party: { show: true, color: '#ff00ff' },
+    private: { show: true, color: '#ffffff' }
+  };
+}
+
+function saveChatSettings() {
+  localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
+}
+
+let chatSettings = loadChatSettings();
+
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -372,10 +389,14 @@ function addHtmlLog(html) {
   div.scrollIntoView();
 }
 
-function addChat(txt) {
+function addChat(txt, channel) {
+  const settings = chatSettings[channel] || { show: true, color: '#ffffff' };
+  if (!settings.show) return;
   const div = document.createElement('div');
   div.textContent = txt;
-  document.getElementById('chat-panel').append(div);
+  div.style.color = settings.color;
+  document.getElementById('chat-window').append(div);
+  div.scrollIntoView();
 }
 
 function showLoot(loot) {
@@ -760,8 +781,16 @@ function addCombatLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
   const log = document.getElementById('combat-log');
-  log.append(div);
-  log.scrollTop = log.scrollHeight;
+  if (log) {
+    log.append(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  const main = document.getElementById('combat-log-window');
+  if (main) {
+    const clone = div.cloneNode(true);
+    main.append(clone);
+    main.scrollTop = main.scrollHeight;
+  }
 }
 
 function updateCombatUI() {
@@ -1771,7 +1800,7 @@ function bindUI() {
   });
   ws.on('chat', (m) => {
     addLog(`[${m.channel}] ${m.msg}`);
-    addChat(`[${m.channel}] ${m.msg}`);
+    addChat(`[${m.channel}] ${m.msg}`, m.channel);
   });
   ws.on('mob_spawn', ({ zoneId, mobId, mob }) => {
     loader.data.mobs[mobId] = mob;
@@ -1802,6 +1831,30 @@ function bindUI() {
       if (btn.dataset.tab === 'tab-craft') buildCraftPanel('craft-panel');
     };
   });
+  document.getElementById('open-chat-settings').onclick = () => {
+    document.getElementById('show-world').checked = chatSettings.world.show;
+    document.getElementById('show-guild').checked = chatSettings.guild.show;
+    document.getElementById('show-party').checked = chatSettings.party.show;
+    document.getElementById('show-private').checked = chatSettings.private.show;
+    document.getElementById('color-world').value = chatSettings.world.color;
+    document.getElementById('color-guild').value = chatSettings.guild.color;
+    document.getElementById('color-party').value = chatSettings.party.color;
+    document.getElementById('color-private').value = chatSettings.private.color;
+    showPanel('chat-settings');
+  };
+  document.getElementById('chat-settings-form').onsubmit = (e) => {
+    e.preventDefault();
+    chatSettings.world.show = document.getElementById('show-world').checked;
+    chatSettings.guild.show = document.getElementById('show-guild').checked;
+    chatSettings.party.show = document.getElementById('show-party').checked;
+    chatSettings.private.show = document.getElementById('show-private').checked;
+    chatSettings.world.color = document.getElementById('color-world').value;
+    chatSettings.guild.color = document.getElementById('color-guild').value;
+    chatSettings.party.color = document.getElementById('color-party').value;
+    chatSettings.private.color = document.getElementById('color-private').value;
+    saveChatSettings();
+    document.getElementById('overlay').classList.add('hidden');
+  };
   const firstTab = document.querySelector('.tab-btn');
   if (firstTab) firstTab.click();
   document.getElementById('close-overlay').onclick = () => {
