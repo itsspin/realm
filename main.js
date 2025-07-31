@@ -418,20 +418,36 @@ function renderRoom(loc) {
   const npcNames = loc.npcs
     .map((id) => loader.get('npcs', id)?.name || id)
     .join(', ') || 'None';
-  const mobNames = loc.spawns
-    .map((id) => {
-      const mob = loader.data.mobs[id];
-      if (!mob) return id;
-      const diff = mob.level - game.player.level;
-      let color = 'text-white';
-      if (diff <= -3) color = 'text-green-400';
-      else if (diff <= -1) color = 'text-blue-400';
-      else if (diff <= 0) color = 'text-white';
-      else if (diff <= 2) color = 'text-yellow-400';
-      else color = 'text-red-600';
-      return `<span class="${color}">${mob.name}</span>`;
-    })
-    .join(', ') || 'None';
+  const groupedIds = new Set((loc.mobGroups || []).flat());
+  const mobNameParts = [];
+  (loc.mobGroups || []).forEach((grp) => {
+    const mob = loader.data.mobs[grp[0]];
+    if (!mob) return;
+    const diff = mob.level - game.player.level;
+    let color = 'text-white';
+    if (diff <= -3) color = 'text-green-400';
+    else if (diff <= -1) color = 'text-blue-400';
+    else if (diff <= 0) color = 'text-white';
+    else if (diff <= 2) color = 'text-yellow-400';
+    else color = 'text-red-600';
+    mobNameParts.push(
+      `<span class="${color}">${mob.name} (group of ${grp.length})</span>`
+    );
+  });
+  loc.spawns.forEach((id) => {
+    if (groupedIds.has(id)) return;
+    const mob = loader.data.mobs[id];
+    if (!mob) return;
+    const diff = mob.level - game.player.level;
+    let color = 'text-white';
+    if (diff <= -3) color = 'text-green-400';
+    else if (diff <= -1) color = 'text-blue-400';
+    else if (diff <= 0) color = 'text-white';
+    else if (diff <= 2) color = 'text-yellow-400';
+    else color = 'text-red-600';
+    mobNameParts.push(`<span class="${color}">${mob.name}</span>`);
+  });
+  const mobNames = mobNameParts.join(', ') || 'None';
   const nodeNames = (loc.nodes || [])
     .map((id) => loader.get('nodes', id)?.name || id)
     .join(', ') || 'None';
@@ -463,7 +479,7 @@ function renderRoom(loc) {
     btn.onclick = () => enterRoom(btn.dataset.dest);
   });
   buildNPCList(loc.npcs);
-  buildMobList(loc.spawns);
+  buildMobList(loc.spawns, loc.mobGroups);
   buildNodeList(loc.nodes);
   buildActionsPanel(loc);
 }
@@ -603,6 +619,20 @@ function createZoneMob(tpl) {
 function spawnMobsForLocation(loc, locId) {
   if (!loc._baseSpawns) loc._baseSpawns = [...(loc.spawns || [])];
   loc.spawns = loc._baseSpawns.slice();
+  loc.mobGroups = [];
+  if (!game.currentZone.mobs.length) return;
+  game.currentZone.mobs.forEach((tpl) => {
+    if (Math.random() < tpl.spawn_rate) {
+      const size = randRange(2, 8);
+      const group = [];
+      for (let i = 0; i < size; i++) {
+        const id = createZoneMob(tpl);
+        loc.spawns.push(id);
+        group.push(id);
+      }
+      loc.mobGroups.push(group);
+    }
+  });
   const zid = zoneFromLocation(locId || game.player.location);
   loc.spawns = loc.spawns.concat(worldState.getMobIds(zid));
 }
@@ -894,10 +924,29 @@ function buildNodeList(nodes) {
   });
 }
 
-function buildMobList(mobs) {
+function buildMobList(mobs, groups = []) {
   const list = document.getElementById('mob-list');
   list.innerHTML = '';
+  const groupedIds = new Set(groups.flat());
+  groups.forEach((grp) => {
+    const mob = loader.data.mobs[grp[0]];
+    if (!mob) return;
+    const btn = document.createElement('button');
+    btn.className = 'mob-btn text-xs';
+    const diff = mob.level - game.player.level;
+    let color = '';
+    if (diff <= -3) color = 'text-green-400';
+    else if (diff <= -1) color = 'text-blue-400';
+    else if (diff <= 0) color = '';
+    else if (diff <= 2) color = 'text-yellow-400';
+    else color = 'text-red-600';
+    if (color) btn.classList.add(color);
+    btn.textContent = `${mob.name} (group of ${grp.length})`;
+    btn.onclick = () => startCombat(grp[0]);
+    list.append(btn);
+  });
   mobs.forEach((id) => {
+    if (groupedIds.has(id)) return;
     const mob = loader.data.mobs[id];
     if (!mob) return;
     const btn = document.createElement('button');
