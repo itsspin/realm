@@ -90,6 +90,25 @@ export const loader = {
         this.data.lore[f] = await fetchJson(`data/lore/${f}.json`);
       })
     );
+
+    if (this.data.world?.continents) {
+      this.data.locations ||= {};
+      for (const cont of this.data.world.continents) {
+        for (const zone of cont.zones) {
+          if (!this.data.locations[zone.id]) {
+            this.data.locations[zone.id] = {
+              name: zone.name,
+              description: zone.description || `The ${zone.name}.`,
+              exits: Object.keys(zone.exits || {}),
+              links: zone.exits || {},
+              npcs: [],
+              spawns: [],
+              nodes: []
+            };
+          }
+        }
+      }
+    }
   },
   get(type, id) {
     return this.data[type]?.[id];
