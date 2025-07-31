@@ -12,6 +12,7 @@ export default [
         fetch: 'readonly',
         location: 'readonly',
         setInterval: 'readonly',
+        setTimeout: 'readonly',
         clearInterval: 'readonly',
         localStorage: 'readonly',
         console: 'readonly'
