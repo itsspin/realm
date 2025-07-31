@@ -90,8 +90,11 @@
 
     <aside id="right-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
       <div id="status" class="hud-box">HP: --/-- MP: --/--</div>
-      <div id="target" class="hud-box">Target: —</div>
-      <div id="party" class="hud-box">Party: —</div>
+      <div id="target" class="hud-box"><span class="font-bold">Target:</span> <span id="target-name">—</span></div>
+      <div id="party" class="hud-box">
+        <div class="font-bold mb-1">Party</div>
+        <div id="party-list">—</div>
+      </div>
       <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
       <div class="tabs flex gap-1 mb-2">
         <button data-tab="tab-inventory" class="btn tab-btn text-xs">Inventory</button>

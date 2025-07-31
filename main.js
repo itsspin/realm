@@ -319,6 +319,8 @@ function updateHUD() {
   const statusEl = document.getElementById('status');
   if (statusEl)
     statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
+  updateTargetPanel();
+  updatePartyPanel();
 }
 
 function updateLocationPanel() {
@@ -688,12 +690,52 @@ function inspectPlayer(name) {
   });
 }
 function updatePartyPanel() {
-  const panel = document.getElementById('party');
-  if (!panel) return;
-  if (!game.player.party.length) {
-    panel.textContent = 'Party: —';
+  const container = document.getElementById('party-list');
+  if (!container) return;
+  container.innerHTML = '';
+  const members = [game.player.name, ...game.player.party];
+  if (!members.length) {
+    container.textContent = '—';
+    return;
+  }
+  members.forEach((name) => {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-1 mb-1';
+    const label = document.createElement('span');
+    label.textContent = name;
+    row.append(label);
+    const p = game.players[name];
+    if (p && p.hp != null) {
+      const bar = document.createElement('div');
+      bar.className = 'progress w-16';
+      const fill = document.createElement('div');
+      fill.className = 'progress-fill';
+      fill.style.width = `${(p.hp / p.maxHp) * 100}%`;
+      bar.append(fill);
+      row.append(bar);
+      const hp = document.createElement('span');
+      hp.className = 'text-xs';
+      hp.textContent = `${p.hp}/${p.maxHp}`;
+      row.append(hp);
+    }
+    container.append(row);
+  });
+}
+
+function updateTargetPanel() {
+  const nameEl = document.getElementById('target-name');
+  if (!nameEl) return;
+  if (game.target) {
+    const hp = game.target.hp != null ? ` (${game.target.hp} HP)` : '';
+    nameEl.textContent = `${game.target.name}${hp}`;
+    nameEl.onclick = () => {
+      const tgt = game.target;
+      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
+      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
+    };
   } else {
-    panel.textContent = `Party: ${game.player.party.join(', ')}`;
+    nameEl.textContent = '—';
+    nameEl.onclick = null;
   }
 }
 
@@ -822,6 +864,7 @@ function startCombat(targetId, type = 'mob') {
     btns.append(b);
   });
   updateCombatUI();
+  updateTargetPanel();
   document.getElementById('dialogue').classList.add('hidden');
 }
 
@@ -1827,7 +1870,13 @@ async function startGame(player) {
       const items = Object.entries(loader.data.items).filter(([, it]) => it.slot === slot);
       if (items.length) equipped[slot] = items[Math.floor(Math.random() * items.length)][0];
     });
-    game.players[n] = { name: n, location: player.location, equipped };
+    game.players[n] = {
+      name: n,
+      location: player.location,
+      equipped,
+      hp: 30,
+      maxHp: 30
+    };
   });
 
   worldState.addPlayer(player);
