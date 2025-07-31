@@ -1,0 +1,26 @@
+{
+  "cleave": {
+    "name": "Cleave",
+    "level": 1,
+    "damage": 5,
+    "description": "A sweeping melee strike hitting multiple foes."
+  },
+  "bash": {
+    "name": "Bash",
+    "level": 1,
+    "damage": 4,
+    "description": "A powerful strike that can stagger the target."
+  },
+  "firebolt": {
+    "name": "Firebolt",
+    "level": 1,
+    "damage": 6,
+    "description": "Hurl a small bolt of fire at the enemy."
+  },
+  "ice_shard": {
+    "name": "Ice Shard",
+    "level": 1,
+    "damage": 5,
+    "description": "Launch a shard of ice that chills the enemy."
+  }
+}

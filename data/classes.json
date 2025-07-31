@@ -56,5 +56,21 @@
       "40": ["entangle_3", "regrowth_3"],
       "60": ["bear_form_2"]
     }
+  },
+  "barbarian": {
+    "name": "Barbarian",
+    "stats": {"str": 9, "dex": 6, "int": 3, "wis": 3, "spi": 4, "vit": 8},
+    "gear": ["axe", "mace", "twohand", "leather"],
+    "abilities": {
+      "1": ["cleave", "bash"]
+    }
+  },
+  "sorceress": {
+    "name": "Sorceress",
+    "stats": {"str": 3, "dex": 5, "int": 9, "wis": 8, "spi": 7, "vit": 4},
+    "gear": ["staff", "wand", "cloth"],
+    "abilities": {
+      "1": ["firebolt", "ice_shard"]
+    }
   }
 }
