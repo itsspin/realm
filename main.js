@@ -3,16 +3,10 @@ import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
 import { worldState, zoneFromLocation } from './worldState.js';
 /* global d3 */
+import { game } from './modules/gameState.js';
+import { updateHUD, updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
+import { resolveAttack } from './modules/combat.js';
 
-const game = {
-  player: null,
-  target: null,
-  combatTimer: 0,
-  inCombat: false,
-  onlinePlayers: [],
-  players: {},
-  currentZone: { id: null, mobs: [] }
-};
 
 function saveCharacter(p) {
   localStorage.setItem('player', JSON.stringify(p));
@@ -598,17 +592,6 @@ function gearScore(player) {
   );
 }
 
-function resolveAttack(attacker, defender, ability = {}) {
-  const hitChance = 0.8;
-  if (Math.random() > hitChance) return { miss: true };
-  const dodgeChance = Math.min((defender.dex || 0) / 100, 0.2);
-  if (Math.random() < dodgeChance) return { dodge: true };
-  let damage = ability.damage || attacker.damage || 1;
-  const critChance = 0.1;
-  const crit = Math.random() < critChance;
-  if (crit) damage *= 2;
-  return { damage: Math.floor(damage), crit };
-}
 
 function zoneOf(loc) {
   return zoneFromLocation(loc);
@@ -764,6 +747,7 @@ function updatePartyPanel() {
     container.append(row);
   });
 }
+
 
 function updateTargetHUD() {
   const nameEl = document.getElementById('target-name');
