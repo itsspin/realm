@@ -3,16 +3,10 @@ import { ws } from './websocket-stub.js';
 import { initEvents } from './events.js';
 import { worldState, zoneFromLocation } from './worldState.js';
 /* global d3 */
+import { game } from './modules/gameState.js';
+import { updateHUD, updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
+import { resolveAttack } from './modules/combat.js';
 
-const game = {
-  player: null,
-  target: null,
-  combatTimer: 0,
-  inCombat: false,
-  onlinePlayers: [],
-  players: {},
-  currentZone: { id: null, mobs: [] }
-};
 
 function saveCharacter(p) {
   localStorage.setItem('player', JSON.stringify(p));
@@ -292,38 +286,6 @@ function grantRewards(rewards) {
   updateHUD();
 }
 
-function updateHUD() {
-  const p = game.player;
-  const nameEl = document.getElementById('player-name');
-  if (nameEl) {
-    const title = p.achievements.title ? ` ${p.achievements.title}` : '';
-    nameEl.textContent = p.name + title;
-  }
-  const clsEl = document.getElementById('player-class');
-  if (clsEl) clsEl.textContent = p.class;
-  const lvlEl = document.getElementById('player-level');
-  if (lvlEl) lvlEl.textContent = `Lv ${getPlayerLevel()}`;
-  const hpText = document.getElementById('player-hp-text');
-  if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
-  const hpFill = document.getElementById('hp-fill');
-  if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
-  const mpText = document.getElementById('player-mp-text');
-  if (mpText) mpText.textContent = `${p.mp}/${p.maxMp}`;
-  const mpFill = document.getElementById('mp-fill');
-  if (mpFill) mpFill.style.width = `${(p.mp / p.maxMp) * 100}%`;
-  const xpText = document.getElementById('player-xp-text');
-  if (xpText) xpText.textContent = p.xp || 0;
-  const xpFill = document.getElementById('xp-fill');
-  if (xpFill) xpFill.style.width = `${(p.xp % 100)}%`;
-  const goldEl = document.getElementById('player-gold');
-  if (goldEl)
-    goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
-  const statusEl = document.getElementById('status');
-  if (statusEl)
-    statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
-  updateTargetPanel();
-  updatePartyPanel();
-}
 
 function updateLocationPanel() {
   const loc = loader.data.locations[game.player.location];
@@ -585,17 +547,6 @@ function gearScore(player) {
   );
 }
 
-function resolveAttack(attacker, defender, ability = {}) {
-  const hitChance = 0.8;
-  if (Math.random() > hitChance) return { miss: true };
-  const dodgeChance = Math.min((defender.dex || 0) / 100, 0.2);
-  if (Math.random() < dodgeChance) return { dodge: true };
-  let damage = ability.damage || attacker.damage || 1;
-  const critChance = 0.1;
-  const crit = Math.random() < critChance;
-  if (crit) damage *= 2;
-  return { damage: Math.floor(damage), crit };
-}
 
 function zoneOf(loc) {
   return zoneFromLocation(loc);
@@ -745,79 +696,7 @@ function updatePartyPanel() {
   });
 }
 
-function updateTargetPanel() {
-  const nameEl = document.getElementById('target-name');
-  if (!nameEl) return;
-  if (game.target) {
-    const hp = game.target.hp != null ? ` (${game.target.hp} HP)` : '';
-    nameEl.textContent = `${game.target.name}${hp}`;
-    nameEl.onclick = () => {
-      const tgt = game.target;
-      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
-      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
-    };
-  } else {
-    nameEl.textContent = '—';
-    nameEl.onclick = null;
-  }
-}
 
-function updateTargetPanel() {
-  const panel = document.getElementById('target');
-  if (!panel) return;
-  const t = game.target;
-  panel.innerHTML = '';
-  if (!t) {
-    panel.textContent = 'Target: —';
-    return;
-  }
-  const header = document.createElement('div');
-  header.className = 'font-bold mb-1';
-  header.textContent = t.name || t.id;
-  if (t.level) header.textContent += ` (Lv ${t.level})`;
-  panel.append(header);
-
-  if (t.type === 'mob' && t.group) {
-    t.group.forEach((mid) => {
-      const mob = loader.data.mobs[mid];
-      if (!mob) return;
-      const row = document.createElement('div');
-      row.className = 'flex items-center gap-1 mb-1';
-      const span = document.createElement('span');
-      span.textContent = `${mob.name} (Lv ${mob.level})`;
-      if (mob.inCombat) span.classList.add('pulse');
-      row.append(span);
-      const b = document.createElement('button');
-      b.className = 'btn text-xs';
-      b.textContent = 'Attack';
-      b.onclick = () => startCombat(mid);
-      row.append(b);
-      panel.append(row);
-    });
-  } else if (t.type === 'mob') {
-    const row = document.createElement('div');
-    row.className = 'flex items-center gap-1';
-    const btn = document.createElement('button');
-    btn.className = 'btn text-xs';
-    btn.textContent = 'Attack';
-    btn.onclick = () => startCombat(t.id);
-    row.append(btn);
-    panel.append(row);
-  } else if (t.type === 'npc') {
-    const row = document.createElement('div');
-    row.className = 'flex items-center gap-1';
-    const talk = document.createElement('button');
-    talk.className = 'btn text-xs';
-    talk.textContent = 'Talk';
-    talk.onclick = () => talkToNpc(t.id);
-    const attack = document.createElement('button');
-    attack.className = 'btn text-xs';
-    attack.textContent = 'Attack';
-    attack.onclick = () => attackNpc(t.id);
-    row.append(talk, attack);
-    panel.append(row);
-  }
-}
 
 // --- Turn-based Combat System ---
 function addCombatLog(txt) {
@@ -836,17 +715,6 @@ function addCombatLog(txt) {
   }
 }
 
-function updateCombatUI() {
-  const panel = document.getElementById('combat-info');
-  if (!panel) return;
-  if (!game.inCombat) {
-    panel.classList.add('hidden');
-    return;
-  }
-  const enemy = game.target;
-  panel.classList.remove('hidden');
-  panel.textContent = `${enemy.name} HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
-}
 
 function endCombat(win) {
   const mob = game.target;
