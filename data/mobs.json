@@ -46,5 +46,34 @@
       { "id": "bronze_sword", "weight": 80 },
       { "id": "rusty_dagger", "weight": 20 }
     ]
+  },
+  "field_rat": {
+    "name": "Field Rat",
+    "faction": "neutral",
+    "level": 1,
+    "hp": 12,
+    "damage": 1,
+    "str": 2,
+    "dex": 2,
+    "int": 1,
+    "description": "A small rodent scurrying in the fields.",
+    "dropTable": [
+      { "id": "rat_tail", "weight": 50 },
+      { "id": "small_hide", "weight": 30 }
+    ]
+  },
+  "timid_rabbit": {
+    "name": "Timid Rabbit",
+    "faction": "neutral",
+    "level": 1,
+    "hp": 10,
+    "damage": 1,
+    "str": 1,
+    "dex": 3,
+    "int": 1,
+    "description": "A nervous rabbit that flees danger.",
+    "dropTable": [
+      { "id": "rabbit_pelt", "weight": 50 }
+    ]
   }
 }

@@ -668,11 +668,17 @@ async function loadZoneMobs(zoneId) {
 function createZoneMob(tpl) {
   const level = randRange(tpl.level_range[0], tpl.level_range[1]);
   const id = `zone_${game.currentZone.id}_${tpl.id}_${Date.now()}_${rand(1000)}`;
+  let hp = 10 + level * 10;
+  let damage = Math.max(1, Math.floor(level * 1.5));
+  if (level === 1) {
+    hp = 12;
+    damage = 1;
+  }
   loader.data.mobs[id] = {
     name: tpl.name,
     level,
-    hp: 10 + level * 10,
-    damage: Math.max(1, Math.floor(level * 1.5)),
+    hp,
+    damage,
     dropTable: (tpl.loot_table || []).map((lid) => ({ id: lid, weight: 1 }))
   };
   return id;
