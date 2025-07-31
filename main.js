@@ -45,6 +45,7 @@ function loadCharacter() {
   p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   p.homeLocation ||= p.location;
+  p.lastSafeZone ||= p.homeLocation;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
 }
@@ -321,7 +322,7 @@ function updateHUD() {
   const statusEl = document.getElementById('status');
   if (statusEl)
     statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
-  updateTargetPanel();
+  updateTargetHUD();
   updatePartyPanel();
 }
 
@@ -523,6 +524,11 @@ async function enterRoom(id) {
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
   spawnMobsForLocation(loc, id);
   game.player.location = id;
+  const zid = zoneFromLocation(id);
+  if (isSafeZone(zid)) {
+    game.player.lastSafeZone = zid;
+    saveCharacter(game.player);
+  }
   location.hash = id;
   renderRoom(loc);
   checkQuestProgress('location', id);
@@ -609,6 +615,13 @@ function getZoneData(id) {
     if (zone) return zone;
   }
   return null;
+}
+
+function isSafeZone(id) {
+  const zone = getZoneData(id);
+  if (!zone || !zone.type) return false;
+  const type = zone.type.toLowerCase();
+  return type.includes('city') || type.startsWith('starter');
 }
 
 function updateZonePanel() {
@@ -745,7 +758,7 @@ function updatePartyPanel() {
   });
 }
 
-function updateTargetPanel() {
+function updateTargetHUD() {
   const nameEl = document.getElementById('target-name');
   if (!nameEl) return;
   if (game.target) {
@@ -903,9 +916,14 @@ function handlePlayerDeath() {
   }
   game.player.hp = game.player.maxHp;
   game.player.mp = game.player.maxMp;
-  const home = game.player.homeLocation || game.player.location;
-  worldState.updatePlayer(game.player.name, { location: home });
-  enterRoom(home);
+  let respawn = game.player.location;
+  if (!loader.data.locations[respawn]) {
+    respawn = game.player.lastSafeZone || game.player.homeLocation || respawn;
+  }
+  worldState.updatePlayer(game.player.name, { location: respawn });
+  enterRoom(respawn);
+  updateHUD();
+  saveCharacter(game.player);
 }
 
 function enemyAttack() {
@@ -2072,6 +2090,7 @@ function showCreateForm() {
       maxMp: stats.spi * 4,
       location: loader.data.races[race].startLocation,
       homeLocation: loader.data.races[race].startLocation,
+      lastSafeZone: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
       gearTypes: clsDef.gear || [],
