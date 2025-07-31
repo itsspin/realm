@@ -44,6 +44,7 @@ function loadCharacter() {
   p.guild ||= null;
   p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
+  p.homeLocation ||= p.location;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
 }
@@ -886,10 +887,25 @@ function endCombat(win) {
     checkQuestProgress('kill', mob.id);
   } else {
     addLog('You have been slain!');
+    handlePlayerDeath();
   }
   updateHUD();
   updateCombatUI();
   updateTargetPanel();
+}
+
+function handlePlayerDeath() {
+  const lvl = getPlayerLevel();
+  const loss = Math.floor(lvl * 20);
+  if (loss > 0) {
+    game.player.xp = Math.max(0, game.player.xp - loss);
+    addLog(`You lose ${loss} XP.`);
+  }
+  game.player.hp = game.player.maxHp;
+  game.player.mp = game.player.maxMp;
+  const home = game.player.homeLocation || game.player.location;
+  worldState.updatePlayer(game.player.name, { location: home });
+  enterRoom(home);
 }
 
 function enemyAttack() {
@@ -2055,6 +2071,7 @@ function showCreateForm() {
       mp: stats.spi * 4,
       maxMp: stats.spi * 4,
       location: loader.data.races[race].startLocation,
+      homeLocation: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
       gearTypes: clsDef.gear || [],
