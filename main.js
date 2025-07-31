@@ -45,6 +45,7 @@ function loadCharacter() {
   p.reputation ||= { luminara: 0, umbra: 0, neutral: 0 };
   p.xp ||= 0;
   p.homeLocation ||= p.location;
+  p.lastSafeZone ||= p.homeLocation;
   p.achievements ||= { unlocked: [], titles: [], title: '', playTime: 0 };
   return p;
 }
@@ -124,6 +125,8 @@ function selectTarget(type, id, btn, group = null) {
   document.getElementById('dialogue').classList.add('hidden');
   updateHUD();
   updateTargetPanel();
+  if (game.target) addLog(`Targeting ${game.target.name}.`);
+  else addLog('Target cleared.');
 }
 function randomRarity(level) {
   const roll = Math.random() * 100;
@@ -321,7 +324,7 @@ function updateHUD() {
   const statusEl = document.getElementById('status');
   if (statusEl)
     statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
-  updateTargetPanel();
+  updateTargetHUD();
   updatePartyPanel();
 }
 
@@ -523,6 +526,11 @@ async function enterRoom(id) {
   await Promise.all(ids.map((nid) => loader.loadNpc(nid)));
   spawnMobsForLocation(loc, id);
   game.player.location = id;
+  const zid = zoneFromLocation(id);
+  if (isSafeZone(zid)) {
+    game.player.lastSafeZone = zid;
+    saveCharacter(game.player);
+  }
   location.hash = id;
   renderRoom(loc);
   checkQuestProgress('location', id);
@@ -534,8 +542,13 @@ async function enterRoom(id) {
 
 async function move(dir) {
   console.log('Move', dir);
-  const dest = loader.data.locations[game.player.location].links[dir];
-  if (dest) await enterRoom(dest);
+  const cur = loader.data.locations[game.player.location];
+  const dest = cur?.links?.[dir];
+  if (!dest) {
+    addLog("You can't go that way.");
+    return;
+  }
+  await enterRoom(dest);
 }
 
 
@@ -609,6 +622,13 @@ function getZoneData(id) {
     if (zone) return zone;
   }
   return null;
+}
+
+function isSafeZone(id) {
+  const zone = getZoneData(id);
+  if (!zone || !zone.type) return false;
+  const type = zone.type.toLowerCase();
+  return type.includes('city') || type.startsWith('starter');
 }
 
 function updateZonePanel() {
@@ -745,14 +765,45 @@ function updatePartyPanel() {
   });
 }
 
+function updateTargetHUD() {
+  const nameEl = document.getElementById('target-name');
+  if (!nameEl) return;
+  if (game.target) {
+    const hp = game.target.hp != null ? ` (${game.target.hp} HP)` : '';
+    nameEl.textContent = `${game.target.name}${hp}`;
+    nameEl.onclick = () => {
+      const tgt = game.target;
+      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
+      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
+    };
+  } else {
+    nameEl.textContent = '—';
+    nameEl.onclick = null;
+  }
+}
+
 function updateTargetPanel() {
   const panel = document.getElementById('target');
+  const nameEl = document.getElementById('target-name');
   if (!panel) return;
   const t = game.target;
   panel.innerHTML = '';
   if (!t) {
+    if (nameEl) {
+      nameEl.textContent = '—';
+      nameEl.onclick = null;
+    }
     panel.textContent = 'Target: —';
     return;
+  }
+  if (nameEl) {
+    const hpText = t.hp != null ? ` (${t.hp} HP)` : '';
+    nameEl.textContent = `${t.name}${hpText}`;
+    nameEl.onclick = () => {
+      const tgt = game.target;
+      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
+      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
+    };
   }
   const header = document.createElement('div');
   header.className = 'font-bold mb-1';
@@ -821,14 +872,28 @@ function addCombatLog(txt) {
 
 function updateCombatUI() {
   const panel = document.getElementById('combat-info');
-  if (!panel) return;
+  const overlay = document.getElementById('combat-overlay');
+  if (!panel || !overlay) return;
   if (!game.inCombat) {
     panel.classList.add('hidden');
+    overlay.classList.add('hidden');
     return;
   }
   const enemy = game.target;
   panel.classList.remove('hidden');
+  overlay.classList.remove('hidden');
   panel.textContent = `${enemy.name} HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+  document.getElementById('combat-enemy').textContent = enemy.name;
+  document.getElementById('combat-stats').textContent = `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+  const wrap = document.getElementById('combat-buttons');
+  wrap.innerHTML = '';
+  getAvailableAbilities().forEach((id) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn text-xs';
+    btn.textContent = loader.data.abilities[id]?.name || id;
+    btn.onclick = () => useAbility(id);
+    wrap.append(btn);
+  });
 }
 
 function endCombat(win) {
@@ -875,6 +940,7 @@ function endCombat(win) {
   updateHUD();
   updateCombatUI();
   updateTargetPanel();
+  addCombatLog('Combat ended.');
 }
 
 function handlePlayerDeath() {
@@ -886,9 +952,14 @@ function handlePlayerDeath() {
   }
   game.player.hp = game.player.maxHp;
   game.player.mp = game.player.maxMp;
-  const home = game.player.homeLocation || game.player.location;
-  worldState.updatePlayer(game.player.name, { location: home });
-  enterRoom(home);
+  let respawn = game.player.location;
+  if (!loader.data.locations[respawn]) {
+    respawn = game.player.lastSafeZone || game.player.homeLocation || respawn;
+  }
+  worldState.updatePlayer(game.player.name, { location: respawn });
+  enterRoom(respawn);
+  updateHUD();
+  saveCharacter(game.player);
 }
 
 function enemyAttack() {
@@ -950,6 +1021,8 @@ function startCombat(targetId, type = 'mob') {
   game.target = { ...data, id: targetId, type };
   game.inCombat = true;
   document.getElementById('combat-log').innerHTML = '';
+  addCombatLog(`Combat started with ${game.target.name}.`);
+  addLog(`You engage ${game.target.name}.`);
   if (type === 'mob') {
     loader.data.mobs[targetId].inCombat = true;
     const loc = loader.data.locations[game.player.location];
@@ -1991,21 +2064,21 @@ async function startGame(player) {
   worldState.addPlayer(player);
   worldState.addPlayer({
     name: 'Hero',
-    class: 'warrior',
+    class: 'barbarian',
     level: 5,
     location: 'greystone_hills',
     equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Adventurer',
-    class: 'ranger',
+    class: 'amazon',
     level: 3,
     location: 'ashmoor_fields',
     equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Mystic',
-    class: 'mage',
+    class: 'sorceress',
     level: 8,
     location: 'howling_caverns',
     equipped: { weapon: 'druid_staff' }
@@ -2080,6 +2153,7 @@ function showCreateForm() {
       maxMp: stats.spi * 4,
       location: loader.data.races[race].startLocation,
       homeLocation: loader.data.races[race].startLocation,
+      lastSafeZone: loader.data.races[race].startLocation,
       inventory: ['rusty_sword', 'healing_potion'],
       equipped: { weapon: 'rusty_sword' },
       gearTypes: clsDef.gear || [],

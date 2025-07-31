@@ -9,7 +9,7 @@
   "type": "city",
   "exits": {
     "south": "ashenflow_tundra",
-    "tree_portal": "tree_sylvaran_stormveil"
+    "tree_portal": "sylvaran_grove"
   },
   "mobs": [
     {

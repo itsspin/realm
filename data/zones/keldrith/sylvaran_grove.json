@@ -9,8 +9,8 @@
   "type": "city",
   "exits": {
     "south": "emerald_copse",
-    "portal": "tele_sandspire_sylvaran",
-    "ancient_tree": "tree_sylvaran_stormveil"
+    "portal": "sandspire",
+    "ancient_tree": "stormveil_bastion"
   },
   "mobs": [
     {

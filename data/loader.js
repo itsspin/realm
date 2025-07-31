@@ -76,6 +76,11 @@ export const loader = {
         Object.assign(this.data.abilities, await fetchJson(`data/abilities/${f}.json`));
       })
     );
+    try {
+      Object.assign(this.data.abilities, await fetchJson('data/abilities.json'));
+    } catch (err) {
+      console.warn('Failed to load abilities.json', err);
+    }
 
     if (typeof localStorage !== 'undefined') {
       const savedGuilds = localStorage.getItem('guilds');
