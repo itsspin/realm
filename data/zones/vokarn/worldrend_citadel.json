@@ -3,7 +3,7 @@
   "name": "Worldrend Citadel",
   "description": "This is a placeholder description for Worldrend Citadel.",
   "level_range": [
-    60,
+    59,
     65
   ],
   "type": "pvp/endgame",

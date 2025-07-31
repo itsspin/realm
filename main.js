@@ -107,7 +107,7 @@ function abilityAllowed(id) {
   return getAvailableAbilities().includes(id);
 }
 
-function selectTarget(type, id, btn) {
+function selectTarget(type, id, btn, group = null) {
   if (currentTargetBtn) currentTargetBtn.classList.remove('targeted');
   currentTargetBtn = btn || null;
   if (currentTargetBtn) currentTargetBtn.classList.add('targeted');
@@ -116,12 +116,13 @@ function selectTarget(type, id, btn) {
   } else if (type === 'node') {
     game.target = { ...loader.get('nodes', id), id, type };
   } else if (type === 'mob') {
-    game.target = { ...loader.data.mobs[id], id, type };
+    game.target = { ...loader.data.mobs[id], id, type, group };
   } else {
     game.target = null;
   }
   document.getElementById('dialogue').classList.add('hidden');
   updateHUD();
+  updateTargetPanel();
 }
 function randomRarity(level) {
   const roll = Math.random() * 100;
@@ -359,6 +360,23 @@ function buildMoveControls(loc) {
   });
 }
 
+function loadChatSettings() {
+  const data = localStorage.getItem('chatSettings');
+  if (data) return JSON.parse(data);
+  return {
+    world: { show: true, color: '#00ffff' },
+    guild: { show: true, color: '#00ff00' },
+    party: { show: true, color: '#ff00ff' },
+    private: { show: true, color: '#ffffff' }
+  };
+}
+
+function saveChatSettings() {
+  localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
+}
+
+let chatSettings = loadChatSettings();
+
 function addLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
@@ -373,10 +391,14 @@ function addHtmlLog(html) {
   div.scrollIntoView();
 }
 
-function addChat(txt) {
+function addChat(txt, channel) {
+  const settings = chatSettings[channel] || { show: true, color: '#ffffff' };
+  if (!settings.show) return;
   const div = document.createElement('div');
   div.textContent = txt;
-  document.getElementById('chat-panel').append(div);
+  div.style.color = settings.color;
+  document.getElementById('chat-window').append(div);
+  div.scrollIntoView();
 }
 
 function showLoot(loot) {
@@ -739,28 +761,103 @@ function updateTargetPanel() {
   }
 }
 
+function updateTargetPanel() {
+  const panel = document.getElementById('target');
+  if (!panel) return;
+  const t = game.target;
+  panel.innerHTML = '';
+  if (!t) {
+    panel.textContent = 'Target: —';
+    return;
+  }
+  const header = document.createElement('div');
+  header.className = 'font-bold mb-1';
+  header.textContent = t.name || t.id;
+  if (t.level) header.textContent += ` (Lv ${t.level})`;
+  panel.append(header);
+
+  if (t.type === 'mob' && t.group) {
+    t.group.forEach((mid) => {
+      const mob = loader.data.mobs[mid];
+      if (!mob) return;
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-1 mb-1';
+      const span = document.createElement('span');
+      span.textContent = `${mob.name} (Lv ${mob.level})`;
+      if (mob.inCombat) span.classList.add('pulse');
+      row.append(span);
+      const b = document.createElement('button');
+      b.className = 'btn text-xs';
+      b.textContent = 'Attack';
+      b.onclick = () => startCombat(mid);
+      row.append(b);
+      panel.append(row);
+    });
+  } else if (t.type === 'mob') {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-1';
+    const btn = document.createElement('button');
+    btn.className = 'btn text-xs';
+    btn.textContent = 'Attack';
+    btn.onclick = () => startCombat(t.id);
+    row.append(btn);
+    panel.append(row);
+  } else if (t.type === 'npc') {
+    const row = document.createElement('div');
+    row.className = 'flex items-center gap-1';
+    const talk = document.createElement('button');
+    talk.className = 'btn text-xs';
+    talk.textContent = 'Talk';
+    talk.onclick = () => talkToNpc(t.id);
+    const attack = document.createElement('button');
+    attack.className = 'btn text-xs';
+    attack.textContent = 'Attack';
+    attack.onclick = () => attackNpc(t.id);
+    row.append(talk, attack);
+    panel.append(row);
+  }
+}
+
 // --- Turn-based Combat System ---
 function addCombatLog(txt) {
   const div = document.createElement('div');
   div.textContent = txt;
   const log = document.getElementById('combat-log');
-  log.append(div);
-  log.scrollTop = log.scrollHeight;
+  if (log) {
+    log.append(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  const main = document.getElementById('combat-log-window');
+  if (main) {
+    const clone = div.cloneNode(true);
+    main.append(clone);
+    main.scrollTop = main.scrollHeight;
+  }
 }
 
 function updateCombatUI() {
-  if (!game.inCombat) return;
+  const panel = document.getElementById('combat-info');
+  if (!panel) return;
+  if (!game.inCombat) {
+    panel.classList.add('hidden');
+    return;
+  }
   const enemy = game.target;
-  document.getElementById('combat-enemy').textContent = enemy.name;
-  document.getElementById('combat-stats').textContent =
-    `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+  panel.classList.remove('hidden');
+  panel.textContent = `${enemy.name} HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
 }
 
 function endCombat(win) {
   const mob = game.target;
   game.inCombat = false;
   game.target = null;
-  document.getElementById('combat-overlay').classList.add('hidden');
+  const overlay = document.getElementById('combat-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  if (mob && mob.id && loader.data.mobs[mob.id]) {
+    loader.data.mobs[mob.id].inCombat = false;
+    const loc = loader.data.locations[game.player.location];
+    if (loc) buildMobList(loc.spawns, loc.mobGroups);
+  }
   if (win) {
     addLog(`${mob.name} dies.`);
     if (mob.id.startsWith('zone_')) {
@@ -791,6 +888,8 @@ function endCombat(win) {
     addLog('You have been slain!');
   }
   updateHUD();
+  updateCombatUI();
+  updateTargetPanel();
 }
 
 function enemyAttack() {
@@ -849,20 +948,14 @@ function useAbility(id) {
 function startCombat(targetId, type = 'mob') {
   const data = type === 'npc' ? loader.get('npcs', targetId) : loader.data.mobs[targetId];
   if (!data) return;
-  game.target = { ...data, id: targetId };
+  game.target = { ...data, id: targetId, type };
   game.inCombat = true;
   document.getElementById('combat-log').innerHTML = '';
-  document.getElementById('combat-overlay').classList.remove('hidden');
-  const btns = document.getElementById('combat-buttons');
-  btns.innerHTML = '';
-  const abil = getAvailableAbilities();
-  abil.forEach((id) => {
-    const b = document.createElement('button');
-    b.className = 'btn text-xs';
-    b.textContent = loader.data.abilities[id].name;
-    b.onclick = () => useAbility(id);
-    btns.append(b);
-  });
+  if (type === 'mob') {
+    loader.data.mobs[targetId].inCombat = true;
+    const loc = loader.data.locations[game.player.location];
+    if (loc) buildMobList(loc.spawns, loc.mobGroups);
+  }
   updateCombatUI();
   updateTargetPanel();
   document.getElementById('dialogue').classList.add('hidden');
@@ -954,40 +1047,6 @@ function showNpcMenu(id) {
   });
 }
 
-function showMobMenu(id) {
-  const mob = loader.data.mobs[id];
-  if (!mob) return;
-  selectTarget('mob', id);
-  const dlg = document.getElementById('dialogue');
-  dlg.innerHTML = `
-    <div class="font-bold mb-1">${mob.name} (Lv ${mob.level})</div>
-    <div id="mob-actions" class="flex flex-wrap gap-2 mb-2"></div>
-  `;
-  dlg.classList.remove('hidden');
-  const actions = document.getElementById('mob-actions');
-  const atk = document.createElement('button');
-  atk.className = 'btn text-xs';
-  atk.textContent = 'Attack';
-  atk.onclick = () => {
-    dlg.classList.add('hidden');
-    startCombat(id);
-  };
-  actions.append(atk);
-  const abil = getAvailableAbilities();
-  abil.forEach((a) => {
-    const def = loader.data.abilities[a];
-    if (!def) return;
-    const b = document.createElement('button');
-    b.className = 'btn text-xs';
-    b.textContent = def.name;
-    b.onclick = () => {
-      dlg.classList.add('hidden');
-      startCombat(id);
-      setTimeout(() => useAbility(a), 0);
-    };
-    actions.append(b);
-  });
-}
 
 function buildNPCList(npcs) {
   const list = document.getElementById('npc-list');
@@ -1035,7 +1094,8 @@ function buildMobList(mobs, groups = []) {
     else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = `${mob.name} (group of ${grp.length})`;
-    btn.onclick = () => showMobMenu(grp[0]);
+    if (mob.inCombat) btn.classList.add('pulse');
+    btn.onclick = () => selectTarget('mob', grp[0], btn, grp);
     list.append(btn);
   });
   mobs.forEach((id) => {
@@ -1051,7 +1111,8 @@ function buildMobList(mobs, groups = []) {
     else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = mob.name;
-    btn.onclick = () => showMobMenu(id);
+    if (mob.inCombat) btn.classList.add('pulse');
+    btn.onclick = () => selectTarget('mob', id, btn);
     list.append(btn);
   });
 }
@@ -1781,7 +1842,7 @@ function bindUI() {
   });
   ws.on('chat', (m) => {
     addLog(`[${m.channel}] ${m.msg}`);
-    addChat(`[${m.channel}] ${m.msg}`);
+    addChat(`[${m.channel}] ${m.msg}`, m.channel);
   });
   ws.on('mob_spawn', ({ zoneId, mobId, mob }) => {
     loader.data.mobs[mobId] = mob;
@@ -1812,6 +1873,30 @@ function bindUI() {
       if (btn.dataset.tab === 'tab-craft') buildCraftPanel('craft-panel');
     };
   });
+  document.getElementById('open-chat-settings').onclick = () => {
+    document.getElementById('show-world').checked = chatSettings.world.show;
+    document.getElementById('show-guild').checked = chatSettings.guild.show;
+    document.getElementById('show-party').checked = chatSettings.party.show;
+    document.getElementById('show-private').checked = chatSettings.private.show;
+    document.getElementById('color-world').value = chatSettings.world.color;
+    document.getElementById('color-guild').value = chatSettings.guild.color;
+    document.getElementById('color-party').value = chatSettings.party.color;
+    document.getElementById('color-private').value = chatSettings.private.color;
+    showPanel('chat-settings');
+  };
+  document.getElementById('chat-settings-form').onsubmit = (e) => {
+    e.preventDefault();
+    chatSettings.world.show = document.getElementById('show-world').checked;
+    chatSettings.guild.show = document.getElementById('show-guild').checked;
+    chatSettings.party.show = document.getElementById('show-party').checked;
+    chatSettings.private.show = document.getElementById('show-private').checked;
+    chatSettings.world.color = document.getElementById('color-world').value;
+    chatSettings.guild.color = document.getElementById('color-guild').value;
+    chatSettings.party.color = document.getElementById('color-party').value;
+    chatSettings.private.color = document.getElementById('color-private').value;
+    saveChatSettings();
+    document.getElementById('overlay').classList.add('hidden');
+  };
   const firstTab = document.querySelector('.tab-btn');
   if (firstTab) firstTab.click();
   document.getElementById('close-overlay').onclick = () => {

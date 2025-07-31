@@ -38,6 +38,7 @@
     <nav class="flex gap-2 text-sm">
       <button data-tab="tab-inventory" class="btn tab-btn">Inventory</button>
       <button data-tab="tab-quests" class="btn tab-btn">Quests</button>
+      <button data-tab="tab-auction" class="btn tab-btn">Auction</button>
       <button data-tab="tab-craft" class="btn tab-btn">Crafting</button>
       <button data-panel="map" class="btn">Map</button>
       <a href="profile.html" class="btn">Settings</a>
@@ -82,6 +83,12 @@
 
     <div class="flex flex-col gap-2 overflow-hidden">
       <section id="log" class="grow bg-slate-800 p-3 rounded overflow-y-auto"></section>
+      <div id="chat-combat-container" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div id="chat-window" class="relative bg-slate-800 p-2 rounded h-40 overflow-y-auto">
+          <button id="open-chat-settings" class="btn absolute top-1 right-1 text-xs">⚙</button>
+        </div>
+        <div id="combat-log-window" class="bg-slate-800 p-2 rounded h-40 overflow-y-auto"></div>
+      </div>
       <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
         <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
         <button id="send" class="btn">Send</button>
@@ -95,10 +102,14 @@
         <div class="font-bold mb-1">Party</div>
         <div id="party-list">—</div>
       </div>
+      <div id="target" class="hud-box">Target: —</div>
+      <div id="combat-info" class="hud-box hidden"></div>
+      <div id="party" class="hud-box">Party: —</div>
       <div id="currency" class="hud-box">Coins: 0g 0s 0c</div>
       <div class="tabs flex gap-1 mb-2">
         <button data-tab="tab-inventory" class="btn tab-btn text-xs">Inventory</button>
         <button data-tab="tab-quests" class="btn tab-btn text-xs">Quests</button>
+        <button data-tab="tab-auction" class="btn tab-btn text-xs">Auction</button>
         <button data-tab="tab-craft" class="btn tab-btn text-xs">Crafting</button>
         <button data-tab="tab-mob" class="btn tab-btn text-xs">Mob Info</button>
         <button data-tab="tab-lore" class="btn tab-btn text-xs">Lore</button>
@@ -110,6 +121,8 @@
         <div id="tab-quests" class="tab-panel hidden">
           <div id="quests" class="hud-box"></div>
         </div>
+        <div id="tab-auction" class="tab-panel hidden">
+          <div id="auction-house" class="hud-box">Auction House coming soon...</div>
         <div id="tab-craft" class="tab-panel hidden">
           <div id="craft-panel" class="hud-box"></div>
         </div>
@@ -127,6 +140,16 @@
     <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="codex" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="loot" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="chat-settings" class="panel hidden bg-slate-800 p-4 rounded mb-4">
+      <h2 class="text-lg mb-2">Chat Settings</h2>
+      <form id="chat-settings-form" class="space-y-2">
+        <label class="flex items-center gap-2"><input type="checkbox" id="show-world"> Show World <input type="color" id="color-world" value="#00ffff" class="ml-auto"></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="show-guild"> Show Guild <input type="color" id="color-guild" value="#00ff00" class="ml-auto"></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="show-party"> Show Party <input type="color" id="color-party" value="#ff00ff" class="ml-auto"></label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="show-private"> Show Private <input type="color" id="color-private" value="#ffffff" class="ml-auto"></label>
+        <div class="text-center pt-2"><button class="btn" type="submit">Save</button></div>
+      </form>
+    </div>
     <div class="text-center">
       <button id="close-overlay" class="btn">Close</button>
     </div>
@@ -141,8 +164,7 @@
   <!-- Hotbar for abilities -->
   <div id="hotbar" class="shrink-0 p-2 bg-slate-800 flex gap-1 overflow-x-auto"></div>
 
-  <!-- Chat dock -->
-  <div id="chat-panel" class="shrink-0 bg-slate-800 p-2 h-32 overflow-y-auto"></div>
+
 
   <!-- Movement controls -->
   <div id="move-controls" class="shrink-0 p-2 bg-slate-800 flex gap-1 justify-center"></div>
