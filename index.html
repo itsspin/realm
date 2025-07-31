@@ -36,12 +36,11 @@
       <span id="player-gold"></span>
     </div>
     <nav class="flex gap-2 text-sm">
-      <button data-tab="tab-inventory" class="btn tab-btn">Inventory</button>
-      <button data-tab="tab-quests" class="btn tab-btn">Quests</button>
-      <button data-tab="tab-auction" class="btn tab-btn">Auction</button>
-      <button data-tab="tab-craft" class="btn tab-btn">Crafting</button>
-      <button data-panel="map" class="btn">Map</button>
-      <a href="profile.html" class="btn">Settings</a>
+      <button data-panel="map" class="btn">World Map</button>
+      <button data-panel="zone-info" class="btn">Zone Info</button>
+      <button data-panel="character" class="btn">Character</button>
+      <button data-panel="guild" class="btn">Guild</button>
+      <button data-panel="auction" class="btn">Auction House</button>
     </nav>
   </header>
 
@@ -58,21 +57,9 @@
         <div id="location-name" class="font-bold mb-1">Location</div>
         <div id="location-exits" class="flex flex-wrap gap-1"></div>
       </div>
-      <div id="players-box" class="hud-box">
-        <div class="font-bold mb-1">Nearby Players</div>
-        <div id="player-list" class="flex flex-wrap gap-1"></div>
-      </div>
       <div id="npcs-box" class="hud-box">
         <div class="font-bold mb-1">Nearby NPCs</div>
         <div id="npc-list" class="flex flex-col gap-1"></div>
-      </div>
-      <div id="mobs-box" class="hud-box">
-        <div class="font-bold mb-1">Nearby Mobs</div>
-        <div id="mob-list" class="flex flex-wrap gap-1"></div>
-      </div>
-      <div id="nodes-box" class="hud-box">
-        <div class="font-bold mb-1">Nearby Objects</div>
-        <div id="node-list" class="flex flex-wrap gap-1"></div>
       </div>
       <div id="actions-box" class="hud-box">
         <div class="font-bold mb-1">Actions</div>
@@ -81,18 +68,21 @@
       <div id="minimap" class="hud-box h-40"></div>
     </aside>
 
-    <div class="flex flex-col gap-2 overflow-hidden">
-      <section id="log" class="grow bg-slate-800 p-3 rounded overflow-y-auto"></section>
-      <div id="chat-combat-container" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+    <div id="center-panel" class="flex flex-col h-full overflow-hidden">
+      <div id="logs" class="flex flex-col overflow-y-auto grow">
+        <section id="log" class="bg-slate-800 p-3 rounded mb-2 grow overflow-y-auto"></section>
+        <div id="combat-log-window" class="bg-slate-800 p-2 rounded h-40 overflow-y-auto"></div>
+      </div>
+      <div id="drag-bar" class="h-2 bg-slate-700 cursor-row-resize"></div>
+      <div id="chat-section" class="flex flex-col">
         <div id="chat-window" class="relative bg-slate-800 p-2 rounded h-40 overflow-y-auto">
           <button id="open-chat-settings" class="btn absolute top-1 right-1 text-xs">⚙</button>
         </div>
-        <div id="combat-log-window" class="bg-slate-800 p-2 rounded h-40 overflow-y-auto"></div>
+        <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
+          <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
+          <button id="send" class="btn">Send</button>
+        </footer>
       </div>
-      <footer class="shrink-0 p-2 bg-slate-800 flex gap-2">
-        <input id="cmd" class="flex-grow bg-slate-700 p-2 rounded" placeholder="Type command or /help">
-        <button id="send" class="btn">Send</button>
-      </footer>
     </div>
 
     <aside id="right-panel" class="bg-slate-800 p-3 rounded flex flex-col gap-2 overflow-y-auto">
@@ -134,6 +124,10 @@
   <!-- Overlay panels -->
   <div id="overlay" class="hidden fixed inset-0 bg-black/70 p-4 overflow-auto">
     <div id="map" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="zone-info" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="character" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="guild" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
+    <div id="auction" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="graph" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="craft" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>
     <div id="codex" class="panel hidden bg-slate-800 p-4 rounded mb-4"></div>

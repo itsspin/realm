@@ -1138,6 +1138,7 @@ function buildNPCList(npcs) {
 
 function buildNodeList(nodes) {
   const list = document.getElementById('node-list');
+  if (!list) return;
   list.innerHTML = '';
   (nodes || []).forEach((id) => {
     const node = loader.get('nodes', id);
@@ -1152,6 +1153,7 @@ function buildNodeList(nodes) {
 
 function buildMobList(mobs, groups = []) {
   const list = document.getElementById('mob-list');
+  if (!list) return;
   list.innerHTML = '';
   const groupedIds = new Set(groups.flat());
   groups.forEach((grp) => {
@@ -1974,6 +1976,29 @@ function bindUI() {
   document.getElementById('close-overlay').onclick = () => {
     document.getElementById('overlay').classList.add('hidden');
   };
+  const dragBar = document.getElementById('drag-bar');
+  if (dragBar) {
+    let dragging = false;
+    const logs = document.getElementById('logs');
+    const chat = document.getElementById('chat-section');
+    dragBar.addEventListener('mousedown', () => {
+      dragging = true;
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const rect = document
+        .getElementById('center-panel')
+        .getBoundingClientRect();
+      const ratio = (e.clientY - rect.top) / rect.height;
+      if (ratio > 0.1 && ratio < 0.9) {
+        logs.style.flexBasis = `${ratio * 100}%`;
+        chat.style.flexBasis = `${(1 - ratio) * 100}%`;
+      }
+    });
+    document.addEventListener('mouseup', () => {
+      dragging = false;
+    });
+  }
   document.getElementById('move-controls').addEventListener('click', (e) => {
     const dir = e.target.dataset.dir;
     if (dir) move(dir);
