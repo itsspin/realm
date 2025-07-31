@@ -92,19 +92,36 @@ export const loader = {
     );
 
     if (this.data.world?.continents) {
+      const dirMap = {
+        north: 'n',
+        south: 's',
+        east: 'e',
+        west: 'w',
+        northeast: 'ne',
+        northwest: 'nw',
+        southeast: 'se',
+        southwest: 'sw'
+      };
       this.data.locations ||= {};
       for (const cont of this.data.world.continents) {
         for (const zone of cont.zones) {
-          if (!this.data.locations[zone.id]) {
-            this.data.locations[zone.id] = {
+          const loc =
+            this.data.locations[zone.id] ||
+            (this.data.locations[zone.id] = {
               name: zone.name,
               description: zone.description || `The ${zone.name}.`,
-              exits: Object.keys(zone.exits || {}),
-              links: zone.exits || {},
-              npcs: [],
-              spawns: [],
-              nodes: []
-            };
+              exits: [],
+              links: {},
+              npcs: zone.npcs || [],
+              spawns: zone.spawns || [],
+              nodes: zone.nodes || []
+            });
+          for (const [dir, dest] of Object.entries(zone.exits || {})) {
+            const short = dirMap[dir.toLowerCase()] || dir;
+            if (!loc.links[short]) {
+              loc.links[short] = dest;
+              if (!loc.exits.includes(short)) loc.exits.push(short);
+            }
           }
         }
       }
