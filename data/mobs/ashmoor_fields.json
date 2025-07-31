@@ -20,6 +20,19 @@
       ]
     },
     {
+      "id": "timid_rabbit",
+      "name": "Timid Rabbit",
+      "type": "beast",
+      "level_range": [
+        1,
+        1
+      ],
+      "spawn_rate": 0.35,
+      "loot_table": [
+        "rabbit_pelt"
+      ]
+    },
+    {
       "id": "ashmoor_snake",
       "name": "Ashmoor Snake",
       "type": "beast",

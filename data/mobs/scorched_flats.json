@@ -19,6 +19,19 @@
       ]
     },
     {
+      "id": "charred_scarab",
+      "name": "Charred Scarab",
+      "type": "insect",
+      "level_range": [
+        1,
+        1
+      ],
+      "spawn_rate": 0.35,
+      "loot_table": [
+        "scarab_shell"
+      ]
+    },
+    {
       "id": "flame_beetle",
       "name": "Flame Beetle",
       "type": "insect",
