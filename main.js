@@ -4,7 +4,7 @@ import { initEvents } from './events.js';
 import { worldState, zoneFromLocation } from './worldState.js';
 /* global d3 */
 import { game } from './modules/gameState.js';
-import { updateHUD, updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
+import { updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
 import { resolveAttack } from './modules/combat.js';
 
 
