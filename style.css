@@ -4,7 +4,8 @@
 
 /* Custom tweaks */
 body {
-  font-family: ui-monospace, monospace;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom, #1e293b, #0f172a);
 }
 
 /* HUD boxes styling */
@@ -14,7 +15,7 @@ body {
 
 /* Button styling */
 .btn {
-  @apply px-3 py-1 bg-indigo-600 hover:bg-indigo-500 rounded;
+  @apply px-3 py-1 bg-indigo-500 hover:bg-indigo-400 rounded text-sm;
 }
 
 /* NPC list buttons */
@@ -62,4 +63,10 @@ body {
 }
 .tab-panel {
   @apply w-full;
+}
+
+/* Chat & combat windows */
+#chat-window,
+#combat-log-window {
+  @apply text-sm bg-slate-800 rounded p-2 h-40 overflow-y-auto;
 }
