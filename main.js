@@ -1988,21 +1988,21 @@ async function startGame(player) {
   worldState.addPlayer(player);
   worldState.addPlayer({
     name: 'Hero',
-    class: 'warrior',
+    class: 'barbarian',
     level: 5,
     location: 'greystone_hills',
     equipped: { weapon: 'bronze_sword', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Adventurer',
-    class: 'ranger',
+    class: 'amazon',
     level: 3,
     location: 'ashmoor_fields',
     equipped: { weapon: 'hunter_bow', chest: 'leather_armor' }
   });
   worldState.addPlayer({
     name: 'Mystic',
-    class: 'mage',
+    class: 'sorceress',
     level: 8,
     location: 'howling_caverns',
     equipped: { weapon: 'druid_staff' }
