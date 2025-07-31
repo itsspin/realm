@@ -24,6 +24,11 @@
         <span id="player-hp-text" class="w-14 text-right"></span>
       </div>
       <div class="flex items-center gap-1">
+        <span class="text-xs">MP</span>
+        <div class="progress w-24"><div id="mp-fill" class="progress-fill bg-indigo-600"></div></div>
+        <span id="player-mp-text" class="w-14 text-right"></span>
+      </div>
+      <div class="flex items-center gap-1">
         <span class="text-xs">XP</span>
         <div class="progress w-24"><div id="xp-fill" class="progress-fill bg-blue-600"></div></div>
         <span id="player-xp-text" class="w-14 text-right"></span>
@@ -34,6 +39,7 @@
       <button data-tab="tab-inventory" class="btn tab-btn">Inventory</button>
       <button data-tab="tab-quests" class="btn tab-btn">Quests</button>
       <button data-tab="tab-auction" class="btn tab-btn">Auction</button>
+      <button data-tab="tab-craft" class="btn tab-btn">Crafting</button>
       <button data-panel="map" class="btn">Map</button>
       <a href="profile.html" class="btn">Settings</a>
     </nav>
@@ -98,6 +104,7 @@
         <button data-tab="tab-inventory" class="btn tab-btn text-xs">Inventory</button>
         <button data-tab="tab-quests" class="btn tab-btn text-xs">Quests</button>
         <button data-tab="tab-auction" class="btn tab-btn text-xs">Auction</button>
+        <button data-tab="tab-craft" class="btn tab-btn text-xs">Crafting</button>
         <button data-tab="tab-mob" class="btn tab-btn text-xs">Mob Info</button>
         <button data-tab="tab-lore" class="btn tab-btn text-xs">Lore</button>
       </div>
@@ -110,6 +117,8 @@
         </div>
         <div id="tab-auction" class="tab-panel hidden">
           <div id="auction-house" class="hud-box">Auction House coming soon...</div>
+        <div id="tab-craft" class="tab-panel hidden">
+          <div id="craft-panel" class="hud-box"></div>
         </div>
         <div id="tab-mob" class="tab-panel hidden">
           <div id="dialogue" class="hud-box hidden"></div>

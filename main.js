@@ -115,6 +115,8 @@ function selectTarget(type, id, btn) {
     game.target = { ...loader.get('npcs', id), id, type };
   } else if (type === 'node') {
     game.target = { ...loader.get('nodes', id), id, type };
+  } else if (type === 'mob') {
+    game.target = { ...loader.data.mobs[id], id, type };
   } else {
     game.target = null;
   }
@@ -303,6 +305,10 @@ function updateHUD() {
   if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
   const hpFill = document.getElementById('hp-fill');
   if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
+  const mpText = document.getElementById('player-mp-text');
+  if (mpText) mpText.textContent = `${p.mp}/${p.maxMp}`;
+  const mpFill = document.getElementById('mp-fill');
+  if (mpFill) mpFill.style.width = `${(p.mp / p.maxMp) * 100}%`;
   const xpText = document.getElementById('player-xp-text');
   if (xpText) xpText.textContent = p.xp || 0;
   const xpFill = document.getElementById('xp-fill');
@@ -310,6 +316,9 @@ function updateHUD() {
   const goldEl = document.getElementById('player-gold');
   if (goldEl)
     goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
+  const statusEl = document.getElementById('status');
+  if (statusEl)
+    statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
 }
 
 function updateLocationPanel() {
@@ -570,6 +579,18 @@ function gearScore(player) {
     (sum, id) => sum + (loader.data.items[id]?.level || 0),
     0
   );
+}
+
+function resolveAttack(attacker, defender, ability = {}) {
+  const hitChance = 0.8;
+  if (Math.random() > hitChance) return { miss: true };
+  const dodgeChance = Math.min((defender.dex || 0) / 100, 0.2);
+  if (Math.random() < dodgeChance) return { dodge: true };
+  let damage = ability.damage || attacker.damage || 1;
+  const critChance = 0.1;
+  const crit = Math.random() < critChance;
+  if (crit) damage *= 2;
+  return { damage: Math.floor(damage), crit };
 }
 
 function zoneOf(loc) {
@@ -919,6 +940,41 @@ function showNpcMenu(id) {
   });
 }
 
+function showMobMenu(id) {
+  const mob = loader.data.mobs[id];
+  if (!mob) return;
+  selectTarget('mob', id);
+  const dlg = document.getElementById('dialogue');
+  dlg.innerHTML = `
+    <div class="font-bold mb-1">${mob.name} (Lv ${mob.level})</div>
+    <div id="mob-actions" class="flex flex-wrap gap-2 mb-2"></div>
+  `;
+  dlg.classList.remove('hidden');
+  const actions = document.getElementById('mob-actions');
+  const atk = document.createElement('button');
+  atk.className = 'btn text-xs';
+  atk.textContent = 'Attack';
+  atk.onclick = () => {
+    dlg.classList.add('hidden');
+    startCombat(id);
+  };
+  actions.append(atk);
+  const abil = getAvailableAbilities();
+  abil.forEach((a) => {
+    const def = loader.data.abilities[a];
+    if (!def) return;
+    const b = document.createElement('button');
+    b.className = 'btn text-xs';
+    b.textContent = def.name;
+    b.onclick = () => {
+      dlg.classList.add('hidden');
+      startCombat(id);
+      setTimeout(() => useAbility(a), 0);
+    };
+    actions.append(b);
+  });
+}
+
 function buildNPCList(npcs) {
   const list = document.getElementById('npc-list');
   list.innerHTML = '';
@@ -965,7 +1021,7 @@ function buildMobList(mobs, groups = []) {
     else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = `${mob.name} (group of ${grp.length})`;
-    btn.onclick = () => startCombat(grp[0]);
+    btn.onclick = () => showMobMenu(grp[0]);
     list.append(btn);
   });
   mobs.forEach((id) => {
@@ -981,7 +1037,7 @@ function buildMobList(mobs, groups = []) {
     else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = mob.name;
-    btn.onclick = () => startCombat(id);
+    btn.onclick = () => showMobMenu(id);
     list.append(btn);
   });
 }
@@ -1545,8 +1601,8 @@ function showRecipes(prof) {
     });
 }
 
-function buildCraftPanel() {
-  const panel = document.getElementById('craft');
+function buildCraftPanel(target = 'craft') {
+  const panel = document.getElementById(target);
   panel.innerHTML = '<h2 class="text-lg mb-2">Crafting</h2>';
   const list = document.createElement('ul');
   Object.entries(loader.data.professions).forEach(([pid, prof]) => {
@@ -1737,7 +1793,9 @@ function bindUI() {
       document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach((p) => p.classList.add('hidden'));
       btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.remove('hidden');
+      const panel = document.getElementById(btn.dataset.tab);
+      panel.classList.remove('hidden');
+      if (btn.dataset.tab === 'tab-craft') buildCraftPanel('craft-panel');
     };
   });
   document.getElementById('open-chat-settings').onclick = () => {
