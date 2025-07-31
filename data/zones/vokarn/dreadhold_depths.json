@@ -9,7 +9,7 @@
   "type": "raid",
   "exits": {
     "up": "burnscar_chasm",
-    "portal": "raid_gate_every_capital"
+    "portal": "stormveil_bastion"
   },
   "mobs": [
     {

@@ -81,3 +81,7 @@ body {
 #combat-log-window {
   @apply text-sm bg-slate-800 rounded p-2 h-40 overflow-y-auto;
 }
+
+#drag-bar {
+  @apply h-2 bg-slate-600 cursor-row-resize;
+}

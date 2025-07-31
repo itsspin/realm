@@ -9,8 +9,8 @@
   "type": "city",
   "exits": {
     "north": "scorched_flats",
-    "dock": "boat_ironvale_sandspire",
-    "teleport_pad": "tele_sandspire_sylvaran"
+    "dock": "ironvale_hold",
+    "teleport_pad": "sylvaran_grove"
   },
   "mobs": [
     {
