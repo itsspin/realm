@@ -838,14 +838,28 @@ function addCombatLog(txt) {
 
 function updateCombatUI() {
   const panel = document.getElementById('combat-info');
-  if (!panel) return;
+  const overlay = document.getElementById('combat-overlay');
+  if (!panel || !overlay) return;
   if (!game.inCombat) {
     panel.classList.add('hidden');
+    overlay.classList.add('hidden');
     return;
   }
   const enemy = game.target;
   panel.classList.remove('hidden');
+  overlay.classList.remove('hidden');
   panel.textContent = `${enemy.name} HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+  document.getElementById('combat-enemy').textContent = enemy.name;
+  document.getElementById('combat-stats').textContent = `Enemy HP: ${enemy.hp} | Your HP: ${game.player.hp}`;
+  const wrap = document.getElementById('combat-buttons');
+  wrap.innerHTML = '';
+  getAvailableAbilities().forEach((id) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn text-xs';
+    btn.textContent = loader.data.abilities[id]?.name || id;
+    btn.onclick = () => useAbility(id);
+    wrap.append(btn);
+  });
 }
 
 function endCombat(win) {
