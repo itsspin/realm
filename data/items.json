@@ -144,5 +144,23 @@
     "damage": 4,
     "slot": "weapon",
     "description": "A crude mechanical glove packed with gears."
+  },
+  "rat_tail": {
+    "name": "Rat Tail",
+    "level": 1,
+    "rarity": "common",
+    "description": "A severed tail from a common field rat."
+  },
+  "small_hide": {
+    "name": "Small Hide",
+    "level": 1,
+    "rarity": "common",
+    "description": "Light hide usable for basic crafting."
+  },
+  "rabbit_pelt": {
+    "name": "Rabbit Pelt",
+    "level": 1,
+    "rarity": "common",
+    "description": "Soft pelt from a timid rabbit."
   }
 }
