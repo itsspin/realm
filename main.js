@@ -4,7 +4,7 @@ import { initEvents } from './events.js';
 import { worldState, zoneFromLocation } from './worldState.js';
 /* global d3 */
 import { game } from './modules/gameState.js';
-import { updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
+import { updateHUD, updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
 import { resolveAttack } from './modules/combat.js';
 
 
@@ -289,38 +289,6 @@ function grantRewards(rewards) {
   updateHUD();
 }
 
-function updateHUD() {
-  const p = game.player;
-  const nameEl = document.getElementById('player-name');
-  if (nameEl) {
-    const title = p.achievements.title ? ` ${p.achievements.title}` : '';
-    nameEl.textContent = p.name + title;
-  }
-  const clsEl = document.getElementById('player-class');
-  if (clsEl) clsEl.textContent = p.class;
-  const lvlEl = document.getElementById('player-level');
-  if (lvlEl) lvlEl.textContent = `Lv ${getPlayerLevel()}`;
-  const hpText = document.getElementById('player-hp-text');
-  if (hpText) hpText.textContent = `${p.hp}/${p.maxHp}`;
-  const hpFill = document.getElementById('hp-fill');
-  if (hpFill) hpFill.style.width = `${(p.hp / p.maxHp) * 100}%`;
-  const mpText = document.getElementById('player-mp-text');
-  if (mpText) mpText.textContent = `${p.mp}/${p.maxMp}`;
-  const mpFill = document.getElementById('mp-fill');
-  if (mpFill) mpFill.style.width = `${(p.mp / p.maxMp) * 100}%`;
-  const xpText = document.getElementById('player-xp-text');
-  if (xpText) xpText.textContent = p.xp || 0;
-  const xpFill = document.getElementById('xp-fill');
-  if (xpFill) xpFill.style.width = `${(p.xp % 100)}%`;
-  const goldEl = document.getElementById('player-gold');
-  if (goldEl)
-    goldEl.textContent = `${p.coins.gold}g ${p.coins.silver}s ${p.coins.copper}c`;
-  const statusEl = document.getElementById('status');
-  if (statusEl)
-    statusEl.textContent = `HP: ${p.hp}/${p.maxHp}\u2003MP: ${p.mp}/${p.maxMp}\u2003XP: ${p.xp}`;
-  updateTargetHUD();
-  updatePartyPanel();
-}
 
 function updateLocationPanel() {
   const loc = loader.data.locations[game.player.location];
@@ -748,23 +716,6 @@ function updatePartyPanel() {
   });
 }
 
-
-function updateTargetHUD() {
-  const nameEl = document.getElementById('target-name');
-  if (!nameEl) return;
-  if (game.target) {
-    const hp = game.target.hp != null ? ` (${game.target.hp} HP)` : '';
-    nameEl.textContent = `${game.target.name}${hp}`;
-    nameEl.onclick = () => {
-      const tgt = game.target;
-      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
-      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
-    };
-  } else {
-    nameEl.textContent = '—';
-    nameEl.onclick = null;
-  }
-}
 
 function updateTargetPanel() {
   const panel = document.getElementById('target');
