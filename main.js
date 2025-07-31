@@ -425,11 +425,9 @@ function renderRoom(loc) {
     if (!mob) return;
     const diff = mob.level - game.player.level;
     let color = 'text-white';
-    if (diff <= -3) color = 'text-green-400';
-    else if (diff <= -1) color = 'text-blue-400';
-    else if (diff <= 0) color = 'text-white';
-    else if (diff <= 2) color = 'text-yellow-400';
-    else color = 'text-red-600';
+    if (Math.abs(diff) > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < 0) color = 'text-blue-600';
     mobNameParts.push(
       `<span class="${color}">${mob.name} (group of ${grp.length})</span>`
     );
@@ -440,11 +438,9 @@ function renderRoom(loc) {
     if (!mob) return;
     const diff = mob.level - game.player.level;
     let color = 'text-white';
-    if (diff <= -3) color = 'text-green-400';
-    else if (diff <= -1) color = 'text-blue-400';
-    else if (diff <= 0) color = 'text-white';
-    else if (diff <= 2) color = 'text-yellow-400';
-    else color = 'text-red-600';
+    if (Math.abs(diff) > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < 0) color = 'text-blue-600';
     mobNameParts.push(`<span class="${color}">${mob.name}</span>`);
   });
   const mobNames = mobNameParts.join(', ') || 'None';
@@ -935,11 +931,9 @@ function buildMobList(mobs, groups = []) {
     btn.className = 'mob-btn text-xs';
     const diff = mob.level - game.player.level;
     let color = '';
-    if (diff <= -3) color = 'text-green-400';
-    else if (diff <= -1) color = 'text-blue-400';
-    else if (diff <= 0) color = '';
-    else if (diff <= 2) color = 'text-yellow-400';
-    else color = 'text-red-600';
+    if (Math.abs(diff) > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = `${mob.name} (group of ${grp.length})`;
     btn.onclick = () => startCombat(grp[0]);
@@ -953,11 +947,9 @@ function buildMobList(mobs, groups = []) {
     btn.className = 'mob-btn text-xs';
     const diff = mob.level - game.player.level;
     let color = '';
-    if (diff <= -3) color = 'text-green-400';
-    else if (diff <= -1) color = 'text-blue-400';
-    else if (diff <= 0) color = '';
-    else if (diff <= 2) color = 'text-yellow-400';
-    else color = 'text-red-600';
+    if (Math.abs(diff) > 2) color = 'text-red-600';
+    else if (diff > 0) color = 'text-yellow-400';
+    else if (diff < 0) color = 'text-blue-600';
     if (color) btn.classList.add(color);
     btn.textContent = mob.name;
     btn.onclick = () => startCombat(id);
