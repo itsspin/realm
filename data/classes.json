@@ -1,67 +1,29 @@
 {
-  "warrior": {
-    "name": "Warrior",
-    "stats": {"str": 8, "dex": 6, "int": 4, "wis": 4, "spi": 4, "vit": 8},
-    "gear": ["sword", "axe", "shield", "plate"],
+  "barbarian": {
+    "name": "Barbarian",
+    "stats": {"str": 8, "dex": 6, "int": 3, "wis": 3, "spi": 3, "vit": 8},
+    "gear": ["axe", "sword", "shield", "leather"],
     "abilities": {
       "1": ["slash", "block"],
       "20": ["slash_2", "block_2"],
-      "30": ["war_cry"],
       "40": ["slash_3", "block_3"],
       "60": ["war_cry_2"]
     }
   },
-  "paladin": {
-    "name": "Paladin",
-    "stats": {"str": 7, "dex": 5, "int": 5, "wis": 6, "spi": 6, "vit": 7},
-    "gear": ["sword", "mace", "shield", "plate"],
-    "abilities": {
-      "1": ["smite", "heal"],
-      "20": ["smite_2", "heal_2"],
-      "30": ["holy_light"],
-      "40": ["smite_3", "heal_3"],
-      "60": ["divine_shield", "holy_light_2"]
-    }
-  },
-  "cleric": {
-    "name": "Cleric",
-    "stats": {"str": 4, "dex": 5, "int": 6, "wis": 8, "spi": 7, "vit": 5},
-    "gear": ["mace", "staff", "cloth"],
-    "abilities": {
-      "1": ["heal", "bless"],
-      "20": ["heal_2", "bless_2"],
-      "30": ["holy_light"],
-      "40": ["heal_3", "bless_3"],
-      "60": ["divine_shield", "holy_light_2"]
-    }
-  },
-  "mage": {
-    "name": "Mage",
+  "sorceress": {
+    "name": "Sorceress",
     "stats": {"str": 3, "dex": 5, "int": 8, "wis": 7, "spi": 8, "vit": 4},
     "gear": ["staff", "wand", "cloth"],
     "abilities": {
       "1": ["fireball", "frostbolt"],
       "20": ["fireball_2", "frostbolt_2"],
-      "30": ["arcane_blast"],
       "40": ["fireball_3", "frostbolt_3"],
       "60": ["arcane_blast_2"]
     }
   },
-  "rogue": {
-    "name": "Rogue",
-    "stats": {"str": 5, "dex": 8, "int": 5, "wis": 4, "spi": 4, "vit": 6},
-    "gear": ["dagger", "sword", "leather"],
-    "abilities": {
-      "1": ["backstab", "stealth"],
-      "20": ["backstab_2", "stealth_2"],
-      "30": ["eviscerate"],
-      "40": ["backstab_3", "stealth_3"],
-      "60": ["eviscerate_2"]
-    }
-  },
-  "ranger": {
-    "name": "Ranger",
-    "stats": {"str": 6, "dex": 7, "int": 5, "wis": 5, "spi": 4, "vit": 6},
+  "amazon": {
+    "name": "Amazon",
+    "stats": {"str": 6, "dex": 8, "int": 4, "wis": 5, "spi": 4, "vit": 6},
     "gear": ["bow", "dagger", "leather"],
     "abilities": {
       "1": ["shoot", "track"],
@@ -69,18 +31,6 @@
       "30": ["rapid_fire"],
       "40": ["shoot_3", "track_3"],
       "60": ["rapid_fire_2"]
-    }
-  },
-  "druid": {
-    "name": "Druid",
-    "stats": {"str": 5, "dex": 6, "int": 6, "wis": 7, "spi": 7, "vit": 5},
-    "gear": ["staff", "mace", "leather"],
-    "abilities": {
-      "1": ["entangle", "regrowth"],
-      "20": ["entangle_2", "regrowth_2"],
-      "30": ["bear_form"],
-      "40": ["entangle_3", "regrowth_3"],
-      "60": ["bear_form_2"]
     }
   },
   "necromancer": {
@@ -95,28 +45,16 @@
       "60": ["bone_spear_2"]
     }
   },
-  "shaman": {
-    "name": "Shaman",
-    "stats": {"str": 6, "dex": 5, "int": 5, "wis": 7, "spi": 7, "vit": 6},
-    "gear": ["mace", "staff", "mail"],
+  "druid": {
+    "name": "Druid",
+    "stats": {"str": 5, "dex": 6, "int": 6, "wis": 7, "spi": 7, "vit": 5},
+    "gear": ["staff", "mace", "leather"],
     "abilities": {
-      "1": ["lightning", "totem"],
-      "20": ["lightning_2", "totem_2"],
-      "30": ["earth_shield"],
-      "40": ["lightning_3", "totem_3"],
-      "60": ["earth_shield_2"]
-    }
-  },
-  "bard": {
-    "name": "Bard",
-    "stats": {"str": 5, "dex": 7, "int": 6, "wis": 5, "spi": 6, "vit": 5},
-    "gear": ["dagger", "instrument", "leather"],
-    "abilities": {
-      "1": ["song_of_valor", "lullaby"],
-      "20": ["song_of_valor_2", "lullaby_2"],
-      "30": ["power_chord"],
-      "40": ["song_of_valor_3", "lullaby_3"],
-      "60": ["power_chord_2"]
+      "1": ["entangle", "regrowth"],
+      "20": ["entangle_2", "regrowth_2"],
+      "30": ["bear_form"],
+      "40": ["entangle_3", "regrowth_3"],
+      "60": ["bear_form_2"]
     }
   }
 }
