@@ -6,6 +6,7 @@ import { worldState, zoneFromLocation } from './worldState.js';
 import { game } from './modules/gameState.js';
 import { updateHUD, updateCombatUI, updateTargetName, updateTargetPanel } from './modules/ui.js';
 import { resolveAttack } from './modules/combat.js';
+import { runDiagnostics } from './modules/diagnostics.js';
 
 
 function saveCharacter(p) {
@@ -2113,6 +2114,7 @@ function showCreateForm() {
 export async function init() {
   console.log('Initializing game...');
   await loader.init();
+  await runDiagnostics();
   console.log('Data loaded');
   await initEvents();
   loadGuilds();
