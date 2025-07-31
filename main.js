@@ -125,6 +125,8 @@ function selectTarget(type, id, btn, group = null) {
   document.getElementById('dialogue').classList.add('hidden');
   updateHUD();
   updateTargetPanel();
+  if (game.target) addLog(`Targeting ${game.target.name}.`);
+  else addLog('Target cleared.');
 }
 function randomRarity(level) {
   const roll = Math.random() * 100;
@@ -782,12 +784,26 @@ function updateTargetHUD() {
 
 function updateTargetPanel() {
   const panel = document.getElementById('target');
+  const nameEl = document.getElementById('target-name');
   if (!panel) return;
   const t = game.target;
   panel.innerHTML = '';
   if (!t) {
+    if (nameEl) {
+      nameEl.textContent = '—';
+      nameEl.onclick = null;
+    }
     panel.textContent = 'Target: —';
     return;
+  }
+  if (nameEl) {
+    const hpText = t.hp != null ? ` (${t.hp} HP)` : '';
+    nameEl.textContent = `${t.name}${hpText}`;
+    nameEl.onclick = () => {
+      const tgt = game.target;
+      const targetOfTarget = game.inCombat ? game.player.name : 'nobody';
+      addLog(`${tgt.name} is targeting ${targetOfTarget}.`);
+    };
   }
   const header = document.createElement('div');
   header.className = 'font-bold mb-1';
@@ -910,6 +926,7 @@ function endCombat(win) {
   updateHUD();
   updateCombatUI();
   updateTargetPanel();
+  addCombatLog('Combat ended.');
 }
 
 function handlePlayerDeath() {
@@ -990,6 +1007,8 @@ function startCombat(targetId, type = 'mob') {
   game.target = { ...data, id: targetId, type };
   game.inCombat = true;
   document.getElementById('combat-log').innerHTML = '';
+  addCombatLog(`Combat started with ${game.target.name}.`);
+  addLog(`You engage ${game.target.name}.`);
   if (type === 'mob') {
     loader.data.mobs[targetId].inCombat = true;
     const loc = loader.data.locations[game.player.location];
