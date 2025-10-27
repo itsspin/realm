@@ -84,4 +84,38 @@
       window.MapRender.render(canvas, window.REALM);
     }
   }
+
+  // Simple UI helpers
+window.UI = {
+  el: {
+    tooltip: document.getElementById('tooltip'),
+    resBar: document.getElementById('resourceBar') // make sure index.html has it
+  },
+  showTooltip(tile, px, py) {
+    const tt = UI.el.tooltip;
+    tt.innerHTML = `
+      <div class="tt-title">${tile.biome.toUpperCase()} <span class="tt-tier">Tile ${tile.x},${tile.y}</span></div>
+      <div class="tt-row">Owner: ${tile.owner ?? 'Unclaimed'}</div>
+      <div class="tt-row">Rates: 🌾${tile.resources.foodRate} ⛏️${tile.resources.oreRate} 🌲${tile.resources.timberRate} 💠${tile.resources.essenceRate} 💰${tile.resources.goldRate}</div>
+      <div class="tt-foot">Structures: ${tile.structures?.join(', ') || 'None'}</div>
+    `;
+    tt.style.left = `${px + 12}px`;
+    tt.style.top = `${py + 12}px`;
+    tt.classList.remove('hidden');
+  },
+  hideTooltip() {
+    UI.el.tooltip?.classList.add('hidden');
+  },
+  refreshHeader() {
+    const { resources } = REALM.state.player;
+    UI.el.resBar.innerHTML = `
+      <span class="pill">🌾 ${resources.food}</span>
+      <span class="pill">⛏️ ${resources.ore}</span>
+      <span class="pill">🌲 ${resources.timber}</span>
+      <span class="pill">💠 ${resources.essence}</span>
+      <span class="pill">💰 ${resources.gold}</span>
+    `;
+  }
+};
+
 })();
