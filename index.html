@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REALM</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header" role="banner">
+    <h1>REALM</h1>
+  </header>
 
+  <main class="app-main" role="main">
+    <section class="map-area" aria-label="World Map">
+      <canvas id="mapCanvas" aria-label="Strategic world map" role="img"></canvas>
+      <div id="tooltip" role="tooltip" hidden></div>
+    </section>
+    <aside class="sidebar" aria-label="Player information and actions">
+      <section class="stats" aria-label="Player stats"></section>
+      <section class="actions" aria-label="Available actions"></section>
+    </aside>
+  </main>
+
+  <section class="chat-dock" aria-label="REALM communications">
+    <nav class="chat-tabs" aria-label="Chat channels" role="tablist">
+      <button id="tab-global" type="button" aria-controls="chat-global" aria-selected="true" role="tab">Global</button>
+      <button id="tab-order" type="button" aria-controls="chat-order" aria-selected="false" role="tab">Order</button>
+      <button id="tab-area" type="button" aria-controls="chat-area" aria-selected="false" role="tab">Area</button>
+      <button id="tab-trade" type="button" aria-controls="chat-trade" aria-selected="false" role="tab">Trade</button>
+    </nav>
+    <div class="chat-panels" role="tabpanel" id="chat-global" aria-labelledby="tab-global"></div>
+    <div class="chat-panels" role="tabpanel" id="chat-order" aria-labelledby="tab-order" hidden></div>
+    <div class="chat-panels" role="tabpanel" id="chat-area" aria-labelledby="tab-area" hidden></div>
+    <div class="chat-panels" role="tabpanel" id="chat-trade" aria-labelledby="tab-trade" hidden></div>
+  </section>
+
+  <script src="/src/app.js"></script>
+  <script src="/src/map/map-core.js"></script>
+  <script src="/src/map/map-render.js"></script>
+  <script src="/src/game/state.js"></script>
+  <script src="/src/game/economy.js"></script>
+  <script src="/src/game/chat.js"></script>
+</body>
+</html>
