@@ -1,1 +1,38 @@
-
+[
+  {
+    "id": "farm",
+    "tier": 0,
+    "cost": [
+      ["timber", 20]
+    ],
+    "effects": {
+      "passive": "+2 food/hour"
+    },
+    "vision": 0
+  },
+  {
+    "id": "watchtower",
+    "tier": 0,
+    "cost": [
+      ["timber", 40],
+      ["ore", 10]
+    ],
+    "effects": {
+      "passive": null
+    },
+    "vision": 2
+  },
+  {
+    "id": "workshop",
+    "tier": 1,
+    "cost": [
+      ["timber", 60],
+      ["ore", 30],
+      ["gold", 50]
+    ],
+    "effects": {
+      "passive": "enables t1_* crafting"
+    },
+    "vision": 0
+  }
+]
