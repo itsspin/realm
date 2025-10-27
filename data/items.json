@@ -1,1 +1,47 @@
 
+[
+  {
+    "itemId": "short_spear",
+    "type": "weapon",
+    "tier": "T0",
+    "stats": {
+      "atk": 2
+    },
+    "recipe": [
+      ["ore", 2],
+      ["timber", 1]
+    ],
+    "durability": 60,
+    "makerMark": true,
+    "affixes": []
+  },
+  {
+    "itemId": "iron_sword",
+    "type": "weapon",
+    "tier": "T1",
+    "stats": {
+      "atk": 5
+    },
+    "recipe": [
+      ["ore", 5],
+      ["timber", 1]
+    ],
+    "durability": 100,
+    "makerMark": true,
+    "affixes": []
+  },
+  {
+    "itemId": "charm_minor",
+    "type": "charm",
+    "tier": "T1",
+    "stats": {
+      "all": 1
+    },
+    "recipe": [
+      ["essence", 1]
+    ],
+    "durability": null,
+    "makerMark": true,
+    "affixes": []
+  }
+]
