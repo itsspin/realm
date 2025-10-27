@@ -1,1 +1,27 @@
-
+[
+  {
+    "id": "food",
+    "icon": "🍎",
+    "stack": 100000
+  },
+  {
+    "id": "ore",
+    "icon": "⛏️",
+    "stack": 100000
+  },
+  {
+    "id": "timber",
+    "icon": "🪵",
+    "stack": 100000
+  },
+  {
+    "id": "essence",
+    "icon": "✨",
+    "stack": 100000
+  },
+  {
+    "id": "gold",
+    "icon": "🏆",
+    "stack": 100000
+  }
+]
