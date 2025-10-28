@@ -16,6 +16,21 @@
       ui: {},
     };
 
+    document.getElementById('buildFarmBtn')?.addEventListener('click', () => {
+      const centerTile = REALM.data.tiles.find(t => t.owner === REALM.state.player.id);
+      const farm = REALM.data.structures.find(s => s.id === 'farm');
+      if (!centerTile) {
+        return alert('No owned tile available');
+      }
+      if (!farm) {
+        return alert('Farm definition missing');
+      }
+      if (!Economy.canAfford(farm.cost)) return alert('Not enough resources');
+      Economy.applyCost(farm.cost);
+      State.addStructure(centerTile.id, 'farm');
+      Economy.tick(); // immediate feedback
+    });
+
     if (window.State && typeof window.State.init === "function") {
       window.State.init();
     } else {
