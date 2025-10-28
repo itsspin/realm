@@ -1,136 +1,107 @@
-(function () {
-  const DATA_FILES = ["resources", "items", "structures", "tiles"];
-  const TICK_INTERVAL_MS = 60 * 1000;
+(function(){
+  const REALM = window.REALM = { data:{}, state:{}, ui:{} };
+  DIAG?.ok?.('app:script-loaded');
 
-  document.addEventListener("DOMContentLoaded", () => {
-    initializeApp().catch((error) => {
-      console.error("Failed to initialize REALM app", error);
-    });
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      DIAG.ok('app:dom-ready');
+      await loadData();
+      DIAG.ok('app:data-loaded');
+      State.init();
+      DIAG.ok('state:init');
+      bindUI();
+      MapRender.init();
+      DIAG.ok('map:render-init');
+      renderAll();
+      setInterval(() => { Economy.tick(); renderAll(); }, 5000);
+      DIAG.ok('tick:start');
+    } catch (err) {
+      DIAG.fail('app:boot', err);
+    }
   });
 
-  async function initializeApp() {
-    const data = await loadGameData();
-    window.REALM = {
-      data,
-      state: {},
-      ui: {},
-    };
+  // Build a correct URL relative to the current document (works on /realm/ and localhost)
+  function relURL(relPath){
+    const u = new URL(relPath, document.location.href);
+    // cache-bust so GitHub Pages shows fresh JSON/JS
+    u.searchParams.set('v', String(Date.now()));
+    return u.toString();
+  }
 
-    document.getElementById('buildFarmBtn')?.addEventListener('click', () => {
-      const centerTile = REALM.data.tiles.find(t => t.owner === REALM.state.player.id);
-      const farm = REALM.data.structures.find(s => s.id === 'farm');
-      if (!centerTile) {
-        return alert('No owned tile available');
+  async function loadData(){
+    const files = ['resources','items','structures','tiles'];
+    for (const f of files){
+      const url = relURL(`data/${f}.json`);
+      try {
+        const res = await fetch(url, {cache:'no-store'});
+        if (!res.ok) throw new Error(`${f}.json HTTP ${res.status}`);
+        REALM.data[f] = await res.json();
+        DIAG.ok(`data:${f}`);
+      } catch (err) {
+        DIAG.fail(`data:${f}`, err);
+        // minimal fallbacks for bring-up
+        if (f === 'tiles') REALM.data.tiles = genSampleTiles(16,10);
+        else if (f === 'resources') REALM.data.resources = [
+          {id:'food',icon:'🌾',stack:999999},{id:'ore',icon:'⛏️',stack:999999},
+          {id:'timber',icon:'🌲',stack:999999},{id:'essence',icon:'💠',stack:999999},{id:'gold',icon:'💰',stack:999999}
+        ];
+        else REALM.data[f] = [];
       }
-      if (!farm) {
-        return alert('Farm definition missing');
+    }
+  }
+
+  function genSampleTiles(w,h){
+    const arr = [];
+    for (let y=0;y<h;y++){
+      for (let x=0;x<w;x++){
+        const id = `t-${y*w+x}`;
+        const biome = (x+y)%7===0 ? 'forest' : (x%5===0 ? 'hills' : 'plains');
+        arr.push({
+          id, x, y, biome, owner:null, structures:[],
+          resources:{
+            foodRate: biome==='plains' ? 1:0,
+            oreRate: biome==='hills' ? 1:0,
+            timberRate: biome==='forest' ? 1:0,
+            essenceRate: 0, goldRate: 0
+          }
+        });
       }
-      if (!Economy.canAfford(farm.cost)) return alert('Not enough resources');
-      Economy.applyCost(farm.cost);
-      State.addStructure(centerTile.id, 'farm');
-      Economy.tick(); // immediate feedback
+    }
+    return arr;
+  }
+
+  function bindUI(){
+    REALM.ui.resBar = document.getElementById('resourceBar');
+    REALM.ui.sideLog = document.getElementById('sideLog');
+    const btn = document.getElementById('buildFarmBtn');
+    if (btn) btn.addEventListener('click', () => {
+      try {
+        const farm = REALM.data.structures.find(s=>s.id==='farm');
+        const home = REALM.data.tiles.find(t=>t.owner===REALM.state.player.id);
+        if (!farm || !home) return alert('No farm/home');
+        if (!Economy.canAfford(farm.cost)) return alert('Not enough resources');
+        Economy.applyCost(farm.cost);
+        State.addStructure(home.id, 'farm');
+        Economy.tick();
+        renderAll();
+      } catch (e){ DIAG.fail('ui:buildFarm', e); }
     });
-
-    if (window.State && typeof window.State.init === "function") {
-      window.State.init();
-    } else {
-      console.warn("State.init is not available yet");
-    }
-
-    setupTick();
-    setupCanvasResizing();
-    resizeAndRenderMap();
-
-    window.rDebug = function rDebug() {
-      console.log(window.REALM?.state ?? "No state available");
-    };
   }
 
-  async function loadGameData() {
-    const entries = await Promise.all(
-      DATA_FILES.map(async (name) => {
-        const response = await fetch(`/data/${name}.json`);
-        if (!response.ok) {
-          throw new Error(`Failed to load ${name} data: ${response.status}`);
-        }
-        const json = await response.json();
-        return [name, json];
-      })
-    );
-
-    return entries.reduce((acc, [key, value]) => {
-      acc[key] = value;
-      return acc;
-    }, {});
+  function renderAll(){
+    try {
+      UI.refreshHeader();
+      MapRender.draw(REALM.data.tiles, new Set(REALM.state.player.visibility||[]), REALM.state);
+      Chat.render();
+    } catch(e){ DIAG.fail('renderAll', e); }
   }
 
-  function setupTick() {
-    if (window.Economy && typeof window.Economy.tick === "function") {
-      setInterval(() => {
-        try {
-          window.Economy.tick();
-        } catch (error) {
-          console.error("Economy tick failed", error);
-        }
-      }, TICK_INTERVAL_MS);
-    } else {
-      console.warn("Economy.tick is not available yet");
-    }
-  }
-
-  function setupCanvasResizing() {
-    window.addEventListener("resize", resizeAndRenderMap);
-  }
-
-  function resizeAndRenderMap() {
-    const canvas = document.getElementById("mapCanvas");
-    if (!canvas) {
-      return;
-    }
-
-    const container = canvas.parentElement;
-    if (container) {
-      const { width, height } = container.getBoundingClientRect();
-      canvas.width = width;
-      canvas.height = height;
-    }
-
-    if (window.MapRender && typeof window.MapRender.render === "function") {
-      window.MapRender.render(canvas, window.REALM);
-    }
-  }
-
-  // Simple UI helpers
-window.UI = {
-  el: {
-    tooltip: document.getElementById('tooltip'),
-    resBar: document.getElementById('resourceBar') // make sure index.html has it
-  },
-  showTooltip(tile, px, py) {
-    const tt = UI.el.tooltip;
-    tt.innerHTML = `
-      <div class="tt-title">${tile.biome.toUpperCase()} <span class="tt-tier">Tile ${tile.x},${tile.y}</span></div>
-      <div class="tt-row">Owner: ${tile.owner ?? 'Unclaimed'}</div>
-      <div class="tt-row">Rates: 🌾${tile.resources.foodRate} ⛏️${tile.resources.oreRate} 🌲${tile.resources.timberRate} 💠${tile.resources.essenceRate} 💰${tile.resources.goldRate}</div>
-      <div class="tt-foot">Structures: ${tile.structures?.join(', ') || 'None'}</div>
-    `;
-    tt.style.left = `${px + 12}px`;
-    tt.style.top = `${py + 12}px`;
-    tt.classList.remove('hidden');
-  },
-  hideTooltip() {
-    UI.el.tooltip?.classList.add('hidden');
-  },
-  refreshHeader() {
-    const { resources } = REALM.state.player;
-    UI.el.resBar.innerHTML = `
-      <span class="pill">🌾 ${resources.food}</span>
-      <span class="pill">⛏️ ${resources.ore}</span>
-      <span class="pill">🌲 ${resources.timber}</span>
-      <span class="pill">💠 ${resources.essence}</span>
-      <span class="pill">💰 ${resources.gold}</span>
-    `;
-  }
-};
-
+  window.UI = {
+    refreshHeader(){
+      const rb = REALM.ui.resBar; if (!rb) return;
+      const r = REALM.state.player.resources || {};
+      rb.innerHTML = `🌾 ${r.food||0}  ⛏️ ${r.ore||0}  🌲 ${r.timber||0}  💠 ${r.essence||0}  💰 ${r.gold||0}`;
+    },
+    showTooltip(){}, hideTooltip(){}
+  };
 })();
