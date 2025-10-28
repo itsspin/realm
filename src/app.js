@@ -1,3 +1,4 @@
+
 (function () {
   // Detect the repo base when hosted on GitHub Pages, e.g. /realm/
   const PATHNAME = location.pathname.endsWith('/')
@@ -44,6 +45,7 @@
       DIAG.ok('app:dom-ready');
       await loadData();
       DIAG.ok('app:data-loaded');
+
       await initializeApp();
       DIAG.ok('state:init');
       bindUI();
