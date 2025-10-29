@@ -275,11 +275,25 @@
   }
 
   function recomputeVisibility(state, player, ownedTiles) {
-    const visible = new Set();
+    if (global.State && typeof global.State.recalculateVisibility === "function") {
+      const visibilitySet = global.State.recalculateVisibility();
+      if (visibilitySet instanceof Set) {
+        setVisibilityMetadata(state, visibilitySet);
+        if (global.Map && typeof global.Map.updateVisibility === "function") {
+          global.Map.updateVisibility(visibilitySet);
+        }
+        if (player) {
+          player.visibleTiles = visibilitySet;
+        }
+        return;
+      }
+    }
+
+    const fallbackVisible = new Set();
     const baseRange = Math.max(Number(player?.visionRange) || 0, 0);
 
     ownedTiles.forEach((tile) => {
-      markVision(visible, tile.x ?? 0, tile.y ?? 0, baseRange);
+      markVision(fallbackVisible, tile.x ?? 0, tile.y ?? 0, baseRange);
       const structures = Array.isArray(tile?.structures)
         ? tile.structures
         : [];
@@ -288,23 +302,35 @@
         const vision =
           Number(resolved?.vision ?? resolved?.visionRadius ?? 0) || 0;
         if (vision > 0) {
-          markVision(visible, tile.x ?? 0, tile.y ?? 0, vision);
+          markVision(fallbackVisible, tile.x ?? 0, tile.y ?? 0, vision);
         }
       });
     });
 
-    state.visibility = {
-      tiles: Array.from(visible),
-      tileSet: visible,
-    };
+    setVisibilityMetadata(state, fallbackVisible);
 
     if (player) {
-      player.visibleTiles = visible;
+      player.visibleTiles = fallbackVisible;
     }
 
     if (global.Map && typeof global.Map.updateVisibility === "function") {
-      global.Map.updateVisibility(visible);
+      global.Map.updateVisibility(fallbackVisible);
     }
+  }
+
+  function setVisibilityMetadata(state, visibilitySet) {
+    if (!state || typeof state !== "object") {
+      return;
+    }
+
+    const setInstance = visibilitySet instanceof Set ? visibilitySet : new Set();
+    state.visibility = Array.from(setInstance);
+    Object.defineProperty(state, "visibilitySet", {
+      value: setInstance,
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
   }
 
   function normaliseCost(cost) {
@@ -382,6 +408,10 @@
       }
 
       recomputeVisibility(state, player, ownedTiles);
+
+      if (global.State && typeof global.State.save === "function") {
+        global.State.save();
+      }
     },
 
     canAfford(cost) {

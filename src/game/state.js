@@ -12,6 +12,74 @@
     gold: 25
   };
 
+  function attachRuntimeMetadata(state, tiles, visibilitySet) {
+    if (!state || typeof state !== 'object') {
+      return;
+    }
+
+    if (tiles) {
+      Object.defineProperty(state, 'tiles', {
+        value: tiles,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    }
+
+    if (visibilitySet instanceof Set) {
+      Object.defineProperty(state, 'visibilitySet', {
+        value: visibilitySet,
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+    }
+  }
+
+  function applyVisibility(targetState, visibilitySource) {
+    if (!targetState || typeof targetState !== 'object') {
+      return new Set();
+    }
+
+    const visibilitySet = visibilitySource instanceof Set
+      ? visibilitySource
+      : new Set(Array.isArray(visibilitySource) ? visibilitySource : []);
+
+    targetState.visibility = Array.from(visibilitySet);
+    attachRuntimeMetadata(targetState, null, visibilitySet);
+    return visibilitySet;
+  }
+
+  function buildVisibilityPayload(state, tiles) {
+    if (!state) {
+      return null;
+    }
+
+    const ownedTileIds = Array.isArray(state.ownedTiles) ? state.ownedTiles : [];
+    return {
+      tiles,
+      player: state.player,
+      playerId: state.player?.id ?? state.playerId ?? DEFAULT_PLAYER.id,
+      ownedTileIds,
+      settlements: state.settlements,
+      settlementTileIds: state.settlementTileIds,
+    };
+  }
+
+  function computeVisibility(state, tiles) {
+    if (!global.MapCore || typeof global.MapCore.computeVisibility !== 'function') {
+      return applyVisibility(state, state?.visibility);
+    }
+
+    const payload = buildVisibilityPayload(state, tiles);
+    if (!payload || !Array.isArray(payload.tiles) || payload.tiles.length === 0) {
+      return applyVisibility(state, state?.visibility);
+    }
+
+    const visibilitySet = global.MapCore.computeVisibility(payload);
+    return applyVisibility(state, visibilitySet);
+  }
+
   function getMapTiles() {
     if (global.MapCore) {
       if (typeof global.MapCore.getAllTiles === 'function') {
@@ -78,6 +146,11 @@
     data: null,
 
     init() {
+      const loaded = this.load();
+      if (loaded) {
+        return loaded;
+      }
+
       const tiles = getMapTiles();
       if (!tiles.length) {
         throw new Error('Map tiles are required to initialise the state.');
@@ -108,9 +181,8 @@
         visibility: []
       };
 
-      if (global.MapCore && typeof global.MapCore.computeVisibility === 'function') {
-        this.data.visibility = global.MapCore.computeVisibility(this.data.ownedTiles);
-      }
+      const visibilitySet = computeVisibility(this.data, tiles);
+      attachRuntimeMetadata(this.data, tiles, visibilitySet);
 
       this.save();
       return this.data;
@@ -164,9 +236,8 @@
           }
         });
 
-        if (global.MapCore && typeof global.MapCore.computeVisibility === 'function') {
-          this.data.visibility = global.MapCore.computeVisibility(this.data.ownedTiles);
-        }
+        const visibilitySet = computeVisibility(this.data, tiles);
+        attachRuntimeMetadata(this.data, tiles, visibilitySet);
 
         return this.data;
       } catch (error) {
@@ -191,7 +262,17 @@
         tile.structures.push(structureId);
       }
 
+      computeVisibility(this.data, tiles);
       this.save();
+    },
+
+    recalculateVisibility() {
+      if (!this.data) {
+        return new Set();
+      }
+
+      const tiles = getMapTiles();
+      return computeVisibility(this.data, tiles);
     }
   };
 
