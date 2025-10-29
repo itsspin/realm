@@ -19,6 +19,13 @@
     : diagDefaults);
 
   const TICK_INTERVAL_MS = 5 * 1000;
+  const RESOURCE_ORDER = [
+    { key: 'food', fallbackIcon: '🌾', label: 'Food' },
+    { key: 'ore', fallbackIcon: '⛏️', label: 'Ore' },
+    { key: 'timber', fallbackIcon: '🌲', label: 'Timber' },
+    { key: 'essence', fallbackIcon: '💠', label: 'Essence' },
+    { key: 'gold', fallbackIcon: '💰', label: 'Gold' },
+  ];
 
   window.REALM = window.REALM || { data: {}, state: {}, ui: {} };
   const REALM = window.REALM;
@@ -97,10 +104,24 @@
       REALM.state.resources = REALM.state.player.resources;
     }
 
-    const gameState = (window.GameState = window.GameState || {});
-    gameState.player = REALM.state?.player || gameState.player || null;
-    gameState.resources = REALM.state?.resources || gameState.resources || {};
-    gameState.tiles = REALM.data.tiles || [];
+    if (REALM.state && typeof REALM.state === 'object') {
+      Object.defineProperty(REALM.state, 'tiles', {
+        value: REALM.data.tiles || [],
+        enumerable: false,
+        configurable: true,
+        writable: true,
+      });
+      if (REALM.state.visibilitySet instanceof Set === false) {
+        const visibilitySet = normaliseVisibility(REALM.state.visibility);
+        defineVisibilitySet(REALM.state, visibilitySet);
+      }
+      window.GameState = REALM.state;
+    } else {
+      const gameState = (window.GameState = window.GameState || {});
+      gameState.player = REALM.state?.player || gameState.player || null;
+      gameState.resources = REALM.state?.resources || gameState.resources || {};
+      gameState.tiles = REALM.data.tiles || [];
+    }
 
     setupDebug();
     if (window.UI && typeof window.UI.refreshHeader === 'function') {
@@ -119,6 +140,29 @@
     for (const f of files) {
       try {
         REALM.data[f] = await fetchJSON(`data/${f}.json`);
+        if (f === 'resources') {
+          REALM.data.resourceMap = Array.isArray(REALM.data[f])
+            ? REALM.data[f].reduce((acc, entry) => {
+                if (entry && entry.id) {
+                  const key = String(entry.id).toLowerCase();
+                  acc[key] = entry;
+                }
+                return acc;
+              }, {})
+            : {};
+        }
+        if (f === 'items') {
+          REALM.data.itemsById = Array.isArray(REALM.data[f])
+            ? REALM.data[f].reduce((acc, entry) => {
+                const id = entry?.itemId || entry?.id;
+                if (id) {
+                  const key = String(id).toLowerCase();
+                  acc[key] = entry;
+                }
+                return acc;
+              }, {})
+            : {};
+        }
         DIAG.ok(`data:${f}`);
       } catch (err) {
         if (f === 'tiles') {
@@ -131,8 +175,15 @@
             { id: 'essence', icon: '💠', stack: 999999 },
             { id: 'gold', icon: '💰', stack: 999999 },
           ];
+          REALM.data.resourceMap = REALM.data.resources.reduce((acc, entry) => {
+            acc[String(entry.id).toLowerCase()] = entry;
+            return acc;
+          }, {});
         } else {
           REALM.data[f] = [];
+          if (f === 'items') {
+            REALM.data.itemsById = {};
+          }
         }
       }
     }
@@ -159,6 +210,7 @@
   function bindUI() {
     if (window.UI && window.UI.el) {
       window.UI.el.tooltip = document.getElementById('tooltip');
+      window.UI.el.itemTooltip = document.getElementById('itemTooltip');
       window.UI.el.resBar = document.getElementById('resourceBar');
     }
     const buildFarmBtn = document.getElementById('buildFarmBtn');
@@ -194,8 +246,16 @@
       alert('Not enough resources');
       return;
     }
+    if (typeof window.Economy.applyCost !== 'function') {
+      alert('Economy system unavailable.');
+      return;
+    }
 
-    window.Economy.applyCost?.(farm.cost);
+    const paid = window.Economy.applyCost(farm.cost);
+    if (paid === false) {
+      alert('Not enough resources');
+      return;
+    }
     if (window.State && typeof window.State.addStructure === 'function') {
       window.State.addStructure(centerTile.id, 'farm');
     }
@@ -222,11 +282,7 @@
 
     const tiles = REALM.data.tiles || [];
     if (window.MapRender && typeof window.MapRender.draw === 'function') {
-      const visibilitySource = REALM.state?.visibility;
-      const visibility =
-        visibilitySource instanceof Set
-          ? visibilitySource
-          : new Set(Array.isArray(visibilitySource) ? visibilitySource : []);
+      const visibility = normaliseVisibility(REALM.state?.visibilitySet || REALM.state?.visibility);
       const renderState = {
         playerId: REALM.state?.player?.id,
         ownedTileIds: REALM.state?.ownedTiles,
@@ -268,9 +324,113 @@
     return tiles;
   }
 
+  function normaliseVisibility(source) {
+    if (!source) {
+      return new Set();
+    }
+
+    if (source instanceof Set) {
+      return source;
+    }
+
+    if (Array.isArray(source)) {
+      return new Set(source);
+    }
+
+    if (typeof source === 'object') {
+      if (source.tileSet instanceof Set) {
+        return source.tileSet;
+      }
+      if (Array.isArray(source.tiles)) {
+        return new Set(source.tiles);
+      }
+      if (Array.isArray(source.visibleTiles)) {
+        return new Set(source.visibleTiles);
+      }
+    }
+
+    return new Set();
+  }
+
+  function defineVisibilitySet(target, visibilitySet) {
+    if (!target || typeof target !== 'object') {
+      return;
+    }
+
+    const setInstance = visibilitySet instanceof Set ? visibilitySet : new Set();
+    Object.defineProperty(target, 'visibilitySet', {
+      value: setInstance,
+      enumerable: false,
+      configurable: true,
+      writable: true,
+    });
+  }
+
+  function resourceIconFor(key) {
+    const map = REALM.data?.resourceMap || {};
+    const entry = map[String(key).toLowerCase()];
+    if (entry && entry.icon) {
+      return entry.icon;
+    }
+    const fallback = RESOURCE_ORDER.find((res) => res.key === key);
+    return fallback ? fallback.fallbackIcon : '❔';
+  }
+
+  function describeResource(key) {
+    const fallback = RESOURCE_ORDER.find((res) => res.key === key);
+    return fallback?.label || key;
+  }
+
+  function formatNumber(value) {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '0';
+    }
+    return Math.trunc(value).toLocaleString();
+  }
+
+  function findItem(itemId) {
+    if (!itemId) {
+      return null;
+    }
+    const normalized = String(itemId).toLowerCase();
+    const map = REALM.data?.itemsById || {};
+    if (map[normalized]) {
+      return map[normalized];
+    }
+    const array = REALM.data?.items;
+    if (Array.isArray(array)) {
+      return array.find((entry) => {
+        const id = entry?.itemId || entry?.id;
+        return id && String(id).toLowerCase() === normalized;
+      }) || null;
+    }
+    return null;
+  }
+
+  function renderItemTooltip(item) {
+    if (!item) {
+      return '';
+    }
+    const displayName = (item.name || item.itemId || '').replace(/_/g, ' ');
+    const tier = item.tier ? String(item.tier).toUpperCase() : null;
+    const stats = item.stats && typeof item.stats === 'object'
+      ? Object.entries(item.stats)
+          .map(([key, val]) => `${key.toUpperCase()}: ${val}`)
+          .join(' • ')
+      : null;
+    return `
+      <div class="tt-title">${displayName || 'Unknown Item'}${
+        tier ? `<span class="tt-tier">${tier}</span>` : ''
+      }</div>
+      ${item.type ? `<div class="tt-row">Type: ${item.type}</div>` : ''}
+      ${stats ? `<div class="tt-row">${stats}</div>` : ''}
+    `;
+  }
+
   window.UI = window.UI || {
     el: {
       tooltip: document.getElementById('tooltip'),
+      itemTooltip: document.getElementById('itemTooltip'),
       resBar: document.getElementById('resourceBar'),
     },
     showTooltip(tile, px, py) {
@@ -297,19 +457,70 @@
       tt.classList.add('hidden');
       tt.hidden = true;
     },
+    showItemTooltip(itemId, anchor) {
+      const tooltip = this.el.itemTooltip;
+      if (!tooltip || !anchor) {
+        return;
+      }
+      const item = findItem(itemId);
+      if (!item) {
+        this.hideItemTooltip();
+        return;
+      }
+
+      tooltip.innerHTML = renderItemTooltip(item);
+
+      const rect = anchor.getBoundingClientRect();
+      const offset = 12;
+      const initialLeft = rect.left + rect.width / 2 + window.scrollX;
+      const initialTop = rect.top + window.scrollY - offset;
+      tooltip.style.left = `${initialLeft}px`;
+      tooltip.style.top = `${initialTop}px`;
+      tooltip.classList.remove('hidden');
+      tooltip.hidden = false;
+
+      const bounds = tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const adjustedLeft = Math.min(
+        Math.max(initialLeft - bounds.width / 2, window.scrollX + 8),
+        window.scrollX + viewportWidth - bounds.width - 8
+      );
+      let adjustedTop = initialTop - bounds.height - 4;
+      const minTop = window.scrollY + 8;
+      if (adjustedTop < minTop) {
+        adjustedTop = Math.min(
+          initialTop + offset,
+          window.scrollY + viewportHeight - bounds.height - 8
+        );
+      }
+      if (adjustedTop < minTop) {
+        adjustedTop = minTop;
+      }
+      tooltip.style.left = `${adjustedLeft}px`;
+      tooltip.style.top = `${adjustedTop}px`;
+    },
+    hideItemTooltip() {
+      const tooltip = this.el.itemTooltip;
+      if (!tooltip) {
+        return;
+      }
+      tooltip.classList.add('hidden');
+      tooltip.hidden = true;
+    },
     refreshHeader() {
       const resources = REALM.state?.resources;
       const resBar = this.el.resBar;
       if (!resources || !resBar) {
         return;
       }
-      resBar.innerHTML = `
-        <span class="pill">🌾 ${resources.food ?? 0}</span>
-        <span class="pill">⛏️ ${resources.ore ?? 0}</span>
-        <span class="pill">🌲 ${resources.timber ?? 0}</span>
-        <span class="pill">💠 ${resources.essence ?? 0}</span>
-        <span class="pill">💰 ${resources.gold ?? 0}</span>
-      `;
+      const content = RESOURCE_ORDER.map(({ key }) => {
+        const amount = formatNumber(resources[key] ?? 0);
+        const icon = resourceIconFor(key);
+        const label = describeResource(key);
+        return `<span class="pill" data-resource="${key}" title="${label}">${icon} ${amount}</span>`;
+      }).join('');
+      resBar.innerHTML = content;
     },
   };
 })();

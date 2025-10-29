@@ -10,6 +10,8 @@
   const panels = {};
   let activeChannel = "global";
   let dockElement = null;
+  let formElement = null;
+  let inputElement = null;
 
   function init() {
     dockElement = document.querySelector(".chat-dock");
@@ -33,8 +35,21 @@
 
     dockElement.addEventListener("pointerover", handleTooltipEnter, true);
     dockElement.addEventListener("pointerout", handleTooltipLeave, true);
+    dockElement.addEventListener("mouseleave", () => {
+      if (window.UI && typeof window.UI.hideItemTooltip === "function") {
+        window.UI.hideItemTooltip();
+      }
+    });
+
+    formElement = document.getElementById("chatComposer");
+    inputElement = document.getElementById("chatInput");
+    if (formElement && inputElement) {
+      formElement.addEventListener("submit", handleFormSubmit);
+    }
 
     switchChannel(activeChannel);
+
+    addMessage("global", "System", "Welcome to REALM. Type WTS [iron_sword] to test links.");
   }
 
   function switchChannel(channel) {
@@ -56,6 +71,7 @@
     });
 
     activeChannel = channel;
+    updateComposerContext();
   }
 
   function handleTooltipEnter(event) {
@@ -85,7 +101,7 @@
     }
 
     if (window.UI && typeof window.UI.hideItemTooltip === "function") {
-      window.UI.hideItemTooltip(target);
+      window.UI.hideItemTooltip();
     }
   }
 
@@ -143,6 +159,31 @@
     panel.scrollTop = panel.scrollHeight;
   }
 
+  function updateComposerContext() {
+    if (!inputElement) {
+      return;
+    }
+
+    const name = activeChannel.charAt(0).toUpperCase() + activeChannel.slice(1);
+    inputElement.setAttribute("aria-label", `Message the ${name} channel`);
+    inputElement.placeholder = `Message ${name}`;
+  }
+
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    if (!inputElement) {
+      return;
+    }
+
+    const value = inputElement.value.trim();
+    if (!value) {
+      return;
+    }
+
+    addMessage(activeChannel, "You", value);
+    inputElement.value = "";
+  }
+
   function parseMessageContent(text) {
     const fragment = document.createDocumentFragment();
     const source = String(text || "");
@@ -187,6 +228,9 @@
       return messages[lower] ? [...messages[lower]] : [];
     },
     switchChannel,
+    sendMessage: (text, username = "You") => {
+      addMessage(activeChannel, username, text);
+    },
   };
 
   window.Chat = Chat;

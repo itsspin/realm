@@ -13,8 +13,10 @@
 
   <main class="app-main" role="main">
     <section class="map-area" aria-label="World Map">
-      <canvas id="mapCanvas" aria-label="Strategic world map" role="img"></canvas>
-      <div id="tooltip" role="tooltip" hidden></div>
+      <div class="map-frame">
+        <canvas id="mapCanvas" aria-label="Strategic world map" role="img"></canvas>
+        <div id="tooltip" class="tooltip hidden" role="tooltip" hidden></div>
+      </div>
     </section>
     <aside class="sidebar" aria-label="Player information and actions">
       <section class="stats" aria-label="Player stats"></section>
@@ -32,13 +34,21 @@
       <button id="tab-area" type="button" aria-controls="chat-area" aria-selected="false" role="tab">Area</button>
       <button id="tab-trade" type="button" aria-controls="chat-trade" aria-selected="false" role="tab">Trade</button>
     </nav>
-    <div class="chat-panels" role="tabpanel" id="chat-global" aria-labelledby="tab-global"></div>
-    <div class="chat-panels" role="tabpanel" id="chat-order" aria-labelledby="tab-order" hidden></div>
-    <div class="chat-panels" role="tabpanel" id="chat-area" aria-labelledby="tab-area" hidden></div>
-    <div class="chat-panels" role="tabpanel" id="chat-trade" aria-labelledby="tab-trade" hidden></div>
-    <div id="resourceBar" class="resource-bar"></div>
-
+    <div class="chat-body">
+      <div class="chat-panels" role="tabpanel" id="chat-global" aria-labelledby="tab-global" aria-live="polite"></div>
+      <div class="chat-panels" role="tabpanel" id="chat-order" aria-labelledby="tab-order" aria-live="polite" hidden></div>
+      <div class="chat-panels" role="tabpanel" id="chat-area" aria-labelledby="tab-area" aria-live="polite" hidden></div>
+      <div class="chat-panels" role="tabpanel" id="chat-trade" aria-labelledby="tab-trade" aria-live="polite" hidden></div>
+    </div>
+    <form id="chatComposer" class="chat-composer" aria-label="Send chat message">
+      <label for="chatInput" class="sr-only">Message</label>
+      <input id="chatInput" name="message" type="text" autocomplete="off" placeholder="Type a message" required>
+      <button type="submit">Send</button>
+    </form>
+    <div id="resourceBar" class="resource-bar" role="status" aria-live="polite"></div>
   </section>
+
+  <div id="itemTooltip" class="tooltip tooltip--item hidden" role="tooltip" hidden></div>
 
   <script src="src/app.js"></script>
   <script src="src/map/map-core.js"></script>
