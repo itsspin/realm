@@ -1,0 +1,143 @@
+[
+  {
+    "class": "warrior",
+    "skills": [
+      { "id": "bash", "name": "Bash", "description": "A powerful melee attack that stuns the enemy.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "taunt", "name": "Taunt", "description": "Draw enemy attention to yourself.", "requiredLevel": 5, "cost": 50, "type": "ability" },
+      { "id": "kick", "name": "Kick", "description": "A quick kick that interrupts enemy actions.", "requiredLevel": 8, "cost": 100, "type": "ability" },
+      { "id": "disarm", "name": "Disarm", "description": "Attempt to disarm your opponent.", "requiredLevel": 12, "cost": 200, "type": "ability" },
+      { "id": "fury", "name": "Fury", "description": "Enter a berserker rage, increasing damage.", "requiredLevel": 15, "cost": 300, "type": "ability" }
+    ]
+  },
+  {
+    "class": "cleric",
+    "skills": [
+      { "id": "minor_heal", "name": "Minor Heal", "description": "Heal a small amount of health.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "light_heal", "name": "Light Heal", "description": "Heal a moderate amount of health.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "cure_disease", "name": "Cure Disease", "description": "Remove disease effects.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "heal", "name": "Heal", "description": "Heal a large amount of health.", "requiredLevel": 12, "cost": 200, "type": "spell" },
+      { "id": "resurrection", "name": "Resurrection", "description": "Resurrect a fallen ally.", "requiredLevel": 20, "cost": 500, "type": "spell" },
+      { "id": "smite_undead", "name": "Smite Undead", "description": "Deal extra damage to undead creatures.", "requiredLevel": 10, "cost": 150, "type": "spell" }
+    ]
+  },
+  {
+    "class": "paladin",
+    "skills": [
+      { "id": "bash", "name": "Bash", "description": "A powerful melee attack that stuns the enemy.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "lay_hands", "name": "Lay on Hands", "description": "Heal yourself or an ally.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "holy_strike", "name": "Holy Strike", "description": "A melee attack imbued with divine power.", "requiredLevel": 8, "cost": 100, "type": "ability" },
+      { "id": "divine_aura", "name": "Divine Aura", "description": "Protect yourself from harm.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "ranger",
+    "skills": [
+      { "id": "track", "name": "Track", "description": "Track nearby creatures.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "arrow_shot", "name": "Arrow Shot", "description": "A precise ranged attack.", "requiredLevel": 5, "cost": 50, "type": "ability" },
+      { "id": "nature_call", "name": "Nature Call", "description": "Summon nature to aid you.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "camouflage", "name": "Camouflage", "description": "Blend into your surroundings.", "requiredLevel": 10, "cost": 150, "type": "ability" },
+      { "id": "endure_cold", "name": "Endure Cold", "description": "Resist cold damage.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "rogue",
+    "skills": [
+      { "id": "backstab", "name": "Backstab", "description": "A devastating attack from behind.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "sneak", "name": "Sneak", "description": "Move silently and avoid detection.", "requiredLevel": 5, "cost": 50, "type": "ability" },
+      { "id": "pick_lock", "name": "Pick Lock", "description": "Unlock doors and chests.", "requiredLevel": 8, "cost": 100, "type": "ability" },
+      { "id": "hide", "name": "Hide", "description": "Become invisible to enemies.", "requiredLevel": 10, "cost": 150, "type": "ability" },
+      { "id": "poison_weapon", "name": "Poison Weapon", "description": "Coat your weapon with poison.", "requiredLevel": 12, "cost": 200, "type": "ability" }
+    ]
+  },
+  {
+    "class": "monk",
+    "skills": [
+      { "id": "flying_kick", "name": "Flying Kick", "description": "A powerful unarmed attack.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "meditate", "name": "Meditate", "description": "Restore mana through meditation.", "requiredLevel": 5, "cost": 50, "type": "ability" },
+      { "id": "feign_death", "name": "Feign Death", "description": "Pretend to be dead, causing enemies to lose interest.", "requiredLevel": 8, "cost": 100, "type": "ability" },
+      { "id": "dragon_punch", "name": "Dragon Punch", "description": "A devastating unarmed strike.", "requiredLevel": 12, "cost": 200, "type": "ability" }
+    ]
+  },
+  {
+    "class": "mage",
+    "skills": [
+      { "id": "magic_missile", "name": "Magic Missile", "description": "A bolt of arcane energy.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "fireball", "name": "Fireball", "description": "A powerful explosion of fire.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "summon_pet", "name": "Summon Pet", "description": "Summon a creature to fight for you.", "requiredLevel": 4, "cost": 40, "type": "spell" },
+      { "id": "frost_bolt", "name": "Frost Bolt", "description": "A bolt of ice that slows enemies.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "lightning_bolt", "name": "Lightning Bolt", "description": "A devastating bolt of lightning.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "enchanter",
+    "skills": [
+      { "id": "mesmerize", "name": "Mesmerize", "description": "Charm an enemy to fight for you.", "requiredLevel": 4, "cost": 40, "type": "spell" },
+      { "id": "haste", "name": "Haste", "description": "Increase attack speed of an ally.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "clarity", "name": "Clarity", "description": "Increase mana regeneration.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "charm", "name": "Charm", "description": "Charm a creature to be your pet.", "requiredLevel": 10, "cost": 150, "type": "spell" },
+      { "id": "mezmerize", "name": "Mezmerize", "description": "Put an enemy to sleep.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "necromancer",
+    "skills": [
+      { "id": "dark_bolt", "name": "Dark Bolt", "description": "A bolt of dark energy.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "summon_skeleton", "name": "Summon Skeleton", "description": "Summon an undead minion.", "requiredLevel": 4, "cost": 40, "type": "spell" },
+      { "id": "lifetap", "name": "Lifetap", "description": "Drain life from an enemy to heal yourself.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "fear", "name": "Fear", "description": "Cause an enemy to flee in terror.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "drain_soul", "name": "Drain Soul", "description": "Drain the soul of a dying enemy.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "wizard",
+    "skills": [
+      { "id": "magic_missile", "name": "Magic Missile", "description": "A bolt of arcane energy.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "fireball", "name": "Fireball", "description": "A powerful explosion of fire.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "ice_bolt", "name": "Ice Bolt", "description": "A bolt of ice that freezes enemies.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "meteor", "name": "Meteor", "description": "Summon a meteor to strike your enemies.", "requiredLevel": 15, "cost": 400, "type": "spell" },
+      { "id": "gate", "name": "Gate", "description": "Teleport to your bind point.", "requiredLevel": 10, "cost": 150, "type": "spell" }
+    ]
+  },
+  {
+    "class": "druid",
+    "skills": [
+      { "id": "minor_heal", "name": "Minor Heal", "description": "Heal a small amount of health.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "root", "name": "Root", "description": "Root an enemy in place.", "requiredLevel": 4, "cost": 40, "type": "spell" },
+      { "id": "thorns", "name": "Thorns", "description": "Cause damage to enemies that attack you.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "heal", "name": "Heal", "description": "Heal a moderate amount of health.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "wolf_form", "name": "Wolf Form", "description": "Transform into a wolf for increased speed.", "requiredLevel": 10, "cost": 150, "type": "spell" },
+      { "id": "teleport", "name": "Teleport", "description": "Teleport to a major city.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  },
+  {
+    "class": "shaman",
+    "skills": [
+      { "id": "minor_heal", "name": "Minor Heal", "description": "Heal a small amount of health.", "requiredLevel": 1, "cost": 10, "type": "spell" },
+      { "id": "strength", "name": "Strength", "description": "Increase the strength of an ally.", "requiredLevel": 4, "cost": 40, "type": "spell" },
+      { "id": "haste", "name": "Haste", "description": "Increase attack speed of an ally.", "requiredLevel": 5, "cost": 50, "type": "spell" },
+      { "id": "slow", "name": "Slow", "description": "Slow an enemy's attack speed.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "cannibalize", "name": "Cannibalize", "description": "Consume a corpse to restore mana.", "requiredLevel": 10, "cost": 150, "type": "spell" }
+    ]
+  },
+  {
+    "class": "bard",
+    "skills": [
+      { "id": "selos_song", "name": "Selos Song of Speed", "description": "Increase movement speed dramatically. Allows moving 3-5 tiles at once.", "requiredLevel": 3, "cost": 30, "type": "song" },
+      { "id": "mezmerize", "name": "Mezmerize", "description": "Put an enemy to sleep with music.", "requiredLevel": 5, "cost": 50, "type": "song" },
+      { "id": "haste_song", "name": "Haste Song", "description": "Increase attack speed of nearby allies.", "requiredLevel": 8, "cost": 100, "type": "song" },
+      { "id": "charm_song", "name": "Charm Song", "description": "Charm an enemy with music.", "requiredLevel": 10, "cost": 150, "type": "song" },
+      { "id": "mana_song", "name": "Mana Song", "description": "Increase mana regeneration of nearby allies.", "requiredLevel": 12, "cost": 200, "type": "song" }
+    ]
+  },
+  {
+    "class": "shadow_knight",
+    "skills": [
+      { "id": "bash", "name": "Bash", "description": "A powerful melee attack that stuns the enemy.", "requiredLevel": 1, "cost": 10, "type": "ability" },
+      { "id": "harm_touch", "name": "Harm Touch", "description": "A devastating dark attack.", "requiredLevel": 5, "cost": 50, "type": "ability" },
+      { "id": "lifetap", "name": "Lifetap", "description": "Drain life from an enemy to heal yourself.", "requiredLevel": 8, "cost": 100, "type": "spell" },
+      { "id": "fear", "name": "Fear", "description": "Cause an enemy to flee in terror.", "requiredLevel": 10, "cost": 150, "type": "spell" },
+      { "id": "summon_undead", "name": "Summon Undead", "description": "Summon an undead minion.", "requiredLevel": 12, "cost": 200, "type": "spell" }
+    ]
+  }
+]
+

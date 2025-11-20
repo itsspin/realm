@@ -1,12 +1,18 @@
 (function (global) {
   let mapCanvas = null;
   let mapCtx = null;
-  let zoomLevel = 1;
+  let zoomLevel = 2; // Start zoomed in more
   let panX = 0;
   let panY = 0;
   let isDragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
+  
+  // Expose for movement system
+  global.MapRender = global.MapRender || {};
+  global.MapRender.zoomLevel = zoomLevel;
+  global.MapRender.panX = panX;
+  global.MapRender.panY = panY;
 
   function initializeMapCanvas() {
     mapCanvas = document.getElementById('worldMapCanvas');
@@ -32,47 +38,102 @@
       window.addEventListener('resize', resizeCanvas);
     }
 
-    // Pan and zoom controls
+    // Pan and zoom controls (right-click or middle-click to pan)
     mapCanvas.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      dragStartX = e.clientX - panX;
-      dragStartY = e.clientY - panY;
-      mapCanvas.style.cursor = 'grabbing';
+      if (e.button === 2 || e.button === 1) { // Right click or middle click
+        isDragging = true;
+        dragStartX = e.clientX - panX;
+        dragStartY = e.clientY - panY;
+        mapCanvas.style.cursor = 'grabbing';
+        e.preventDefault();
+      }
     });
 
     mapCanvas.addEventListener('mousemove', (e) => {
       if (isDragging) {
         panX = e.clientX - dragStartX;
         panY = e.clientY - dragStartY;
+        global.MapRender.panX = panX;
+        global.MapRender.panY = panY;
         renderMap();
+      } else {
+        // Update cursor based on what's under mouse
+        const rect = mapCanvas.getBoundingClientRect();
+        const scale = mapCanvas.width / rect.width;
+        const clickX = (e.clientX - rect.left) * scale;
+        const clickY = (e.clientY - rect.top) * scale;
+        const tileSize = 20 * zoomLevel;
+        const tileX = Math.floor((clickX - panX) / tileSize);
+        const tileY = Math.floor((clickY - panY) / tileSize);
+        
+        // Validate coordinates
+        if (tileX >= 0 && tileX < 50 && tileY >= 0 && tileY < 50) {
+          const monsters = global.MapEntities?.getNearbyMonsters() || [];
+          const monster = monsters.find(m => m.x === tileX && m.y === tileY);
+          if (monster) {
+            mapCanvas.style.cursor = 'crosshair';
+            return;
+          }
+          
+          const players = global.MapEntities?.getNearbyPlayers() || [];
+          const clickedPlayer = players.find(p => {
+            const pTile = p.currentTile || { x: p.x, y: p.y };
+            return pTile && pTile.x === tileX && pTile.y === tileY;
+          });
+          if (clickedPlayer) {
+            mapCanvas.style.cursor = 'pointer';
+            return;
+          }
+        }
+        
+        mapCanvas.style.cursor = 'pointer';
       }
     });
 
-    mapCanvas.addEventListener('mouseup', () => {
-      isDragging = false;
-      mapCanvas.style.cursor = 'grab';
+    mapCanvas.addEventListener('mouseup', (e) => {
+      if (e.button === 2 || e.button === 1) {
+        isDragging = false;
+        mapCanvas.style.cursor = 'pointer';
+      }
     });
 
     mapCanvas.addEventListener('mouseleave', () => {
       isDragging = false;
-      mapCanvas.style.cursor = 'grab';
+      mapCanvas.style.cursor = 'pointer';
+    });
+
+    // Left click to move or interact
+    mapCanvas.addEventListener('click', handleCanvasClick);
+    
+    // Prevent context menu on right click
+    mapCanvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
     });
 
     // Zoom controls
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const centerPlayerBtn = document.getElementById('centerPlayerBtn');
 
     if (zoomInBtn) {
       zoomInBtn.addEventListener('click', () => {
-        zoomLevel = Math.min(3, zoomLevel + 0.2);
+        zoomLevel = Math.min(4, zoomLevel + 0.3);
+        global.MapRender.zoomLevel = zoomLevel;
         renderMap();
       });
     }
 
     if (zoomOutBtn) {
       zoomOutBtn.addEventListener('click', () => {
-        zoomLevel = Math.max(0.5, zoomLevel - 0.2);
+        zoomLevel = Math.max(0.5, zoomLevel - 0.3);
+        global.MapRender.zoomLevel = zoomLevel;
         renderMap();
+      });
+    }
+
+    if (centerPlayerBtn) {
+      centerPlayerBtn.addEventListener('click', () => {
+        centerOnPlayer();
       });
     }
 
@@ -85,7 +146,12 @@
 
     const player = global.State?.getPlayer();
     const worldMap = global.Settlement?.getWorldMap() || [];
-    const tileSize = 16 * zoomLevel;
+    const tileSize = 20 * zoomLevel; // Larger tiles for better visibility
+    
+    // Update exposed values
+    global.MapRender.zoomLevel = zoomLevel;
+    global.MapRender.panX = panX;
+    global.MapRender.panY = panY;
 
     // Clear canvas
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
@@ -130,6 +196,45 @@
           mapCtx.fill();
         }
 
+        // Nearby monsters (draw before player so player is on top)
+        const monsters = global.MapEntities?.getNearbyMonsters() || [];
+        const monsterHere = monsters.find(m => m.x === x && m.y === y);
+        if (monsterHere) {
+          mapCtx.fillStyle = '#ff6666';
+          mapCtx.beginPath();
+          mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+          mapCtx.fill();
+          mapCtx.strokeStyle = '#ff0000';
+          mapCtx.lineWidth = 2;
+          mapCtx.stroke();
+          // Draw monster name
+          mapCtx.fillStyle = '#fff';
+          mapCtx.font = `${tileSize / 2}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+          mapCtx.textAlign = 'center';
+          mapCtx.fillText(monsterHere.monster?.name || 'Monster', screenX + tileSize / 2, screenY - 2);
+        }
+
+        // Nearby players (draw before player so player is on top)
+        const players = global.MapEntities?.getNearbyPlayers() || [];
+        const playerHere = players.find(p => {
+          const pTile = p.currentTile || { x: p.x, y: p.y };
+          return pTile && pTile.x === x && pTile.y === y;
+        });
+        if (playerHere && playerHere.id !== player?.id) {
+          mapCtx.fillStyle = '#44ff44';
+          mapCtx.beginPath();
+          mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+          mapCtx.fill();
+          mapCtx.strokeStyle = '#00ff00';
+          mapCtx.lineWidth = 2;
+          mapCtx.stroke();
+          // Draw player name
+          mapCtx.fillStyle = '#fff';
+          mapCtx.font = `${tileSize / 2}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+          mapCtx.textAlign = 'center';
+          mapCtx.fillText(playerHere.name || 'Player', screenX + tileSize / 2, screenY - 2);
+        }
+
         // Player position
         if (player && player.currentTile && player.currentTile.x === x && player.currentTile.y === y) {
           mapCtx.fillStyle = '#ff4444';
@@ -137,7 +242,7 @@
           mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2.5, 0, Math.PI * 2);
           mapCtx.fill();
           mapCtx.strokeStyle = '#fff';
-          mapCtx.lineWidth = 2;
+          mapCtx.lineWidth = 3;
           mapCtx.stroke();
         }
 
@@ -187,7 +292,7 @@
     const player = global.State?.getPlayer();
     if (!player || !player.currentTile) return;
 
-    const tileSize = 16 * zoomLevel;
+    const tileSize = 20 * zoomLevel;
     const container = mapCanvas?.parentElement;
     if (!container) return;
 
@@ -196,8 +301,50 @@
 
     panX = centerX - (player.currentTile.x * tileSize);
     panY = centerY - (player.currentTile.y * tileSize);
+    
+    global.MapRender.panX = panX;
+    global.MapRender.panY = panY;
 
     renderMap();
+  }
+  
+  function handleCanvasClick(event) {
+    if (isDragging) return; // Don't move if we were dragging
+    
+    const rect = mapCanvas.getBoundingClientRect();
+    const scale = mapCanvas.width / rect.width;
+    
+    const clickX = (event.clientX - rect.left) * scale;
+    const clickY = (event.clientY - rect.top) * scale;
+
+    const tileSize = 20 * zoomLevel;
+    const tileX = Math.floor((clickX - panX) / tileSize);
+    const tileY = Math.floor((clickY - panY) / tileSize);
+
+    // Validate tile coordinates
+    if (tileX < 0 || tileX >= 50 || tileY < 0 || tileY >= 50) return;
+
+    // Check for monster click
+    const monsters = global.MapEntities?.getNearbyMonsters() || [];
+    const monster = monsters.find(m => m.x === tileX && m.y === tileY);
+    if (monster) {
+      global.MapEntities?.attackMonsterAtTile(tileX, tileY);
+      return;
+    }
+
+    // Check for player click
+    const players = global.MapEntities?.getNearbyPlayers() || [];
+    const clickedPlayer = players.find(p => {
+      const pTile = p.currentTile || { x: p.x, y: p.y };
+      return pTile && pTile.x === tileX && pTile.y === tileY;
+    });
+    if (clickedPlayer) {
+      global.NearbyPlayers?.showPlayerMenu(clickedPlayer.id, event);
+      return;
+    }
+
+    // Otherwise, move to tile
+    global.Movement?.moveToTile(tileX, tileY);
   }
 
   // Initialize when DOM is ready
@@ -210,7 +357,10 @@
   const MapRender = {
     renderMap,
     centerOnPlayer,
-    updateMapLegend
+    updateMapLegend,
+    zoomLevel,
+    panX,
+    panY
   };
 
   global.MapRender = MapRender;

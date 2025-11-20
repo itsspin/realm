@@ -85,6 +85,8 @@
     const player = global.State?.getPlayer();
     if (!player) return;
 
+    const skills = getTrainableSkills(player.class, player.level);
+    
     const overlay = document.createElement('div');
     overlay.id = 'classTrainerWindow';
     overlay.className = 'character-creation-overlay';
@@ -98,22 +100,25 @@
         <div>
           <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Available Skills & Spells</h3>
           <div id="trainerSkillsList" style="max-height: 400px; overflow-y: auto;">
-            ${getTrainableSkills(player.class, player.level).map(skill => {
-              const known = player.skills?.[skill.id] ? `Level ${player.skills[skill.id].level}` : 'Not learned';
-              const canLearn = player.level >= skill.requiredLevel;
-              return `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
-                  <div>
-                    <div style="font-weight: 600; color: var(--fg-primary);">${skill.name}</div>
-                    <div style="font-size: 0.85rem; color: var(--fg-secondary);">${skill.description}</div>
-                    <div style="font-size: 0.8rem; color: var(--fg-secondary); font-family: var(--font-mono);">Required Level: ${skill.requiredLevel} | ${known}</div>
-                  </div>
-                  <button class="action-btn" ${!canLearn || player.skills?.[skill.id] ? 'disabled' : ''} onclick="global.NPCs.learnSkill('${skill.id}', ${skill.cost})" style="padding: 0.5rem 1rem;">
-                    Learn (${skill.cost}g)
-                  </button>
-                </div>
-              `;
-            }).join('')}
+            ${skills.length === 0 
+              ? '<p style="color: var(--fg-secondary); font-style: italic; text-align: center;">No new skills available at your level.</p>'
+              : skills.map(skill => {
+                  const known = player.skills?.[skill.id] ? `Level ${player.skills[skill.id].level}` : 'Not learned';
+                  const canLearn = player.level >= skill.requiredLevel && !player.skills?.[skill.id];
+                  return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+                      <div>
+                        <div style="font-weight: 600; color: var(--fg-primary);">${skill.name} <span style="font-size: 0.75rem; color: var(--fg-secondary);">(${skill.type})</span></div>
+                        <div style="font-size: 0.85rem; color: var(--fg-secondary);">${skill.description}</div>
+                        <div style="font-size: 0.8rem; color: var(--fg-secondary); font-family: var(--font-mono);">Required Level: ${skill.requiredLevel} | ${known}</div>
+                      </div>
+                      <button class="action-btn" ${!canLearn ? 'disabled' : ''} onclick="global.NPCs.learnSkill('${skill.id}', ${skill.cost})" style="padding: 0.5rem 1rem;">
+                        ${canLearn ? `Learn (${skill.cost}g)` : known}
+                      </button>
+                    </div>
+                  `;
+                }).join('')
+            }
           </div>
         </div>
         <button class="action-btn" onclick="document.getElementById('classTrainerWindow')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
@@ -124,36 +129,15 @@
   }
 
   function getTrainableSkills(playerClass, playerLevel) {
-    // Skills and spells available at different levels
-    const skills = {
-      warrior: [
-        { id: 'bash', name: 'Bash', description: 'A powerful melee attack that stuns the enemy.', requiredLevel: 1, cost: 10 },
-        { id: 'taunt', name: 'Taunt', description: 'Draw enemy attention to yourself.', requiredLevel: 5, cost: 50 },
-        { id: 'kick', name: 'Kick', description: 'A quick kick that interrupts enemy actions.', requiredLevel: 8, cost: 100 }
-      ],
-      mage: [
-        { id: 'magic_missile', name: 'Magic Missile', description: 'A bolt of arcane energy.', requiredLevel: 1, cost: 10 },
-        { id: 'fireball', name: 'Fireball', description: 'A powerful explosion of fire.', requiredLevel: 5, cost: 50 },
-        { id: 'frost_bolt', name: 'Frost Bolt', description: 'A bolt of ice that slows enemies.', requiredLevel: 8, cost: 100 }
-      ],
-      ranger: [
-        { id: 'track', name: 'Track', description: 'Track nearby creatures.', requiredLevel: 1, cost: 10 },
-        { id: 'arrow_shot', name: 'Arrow Shot', description: 'A precise ranged attack.', requiredLevel: 5, cost: 50 },
-        { id: 'nature_call', name: 'Nature Call', description: 'Summon nature to aid you.', requiredLevel: 8, cost: 100 }
-      ],
-      rogue: [
-        { id: 'backstab', name: 'Backstab', description: 'A devastating attack from behind.', requiredLevel: 1, cost: 10 },
-        { id: 'sneak', name: 'Sneak', description: 'Move silently and avoid detection.', requiredLevel: 5, cost: 50 },
-        { id: 'pick_lock', name: 'Pick Lock', description: 'Unlock doors and chests.', requiredLevel: 8, cost: 100 }
-      ],
-      craftsman: [
-        { id: 'repair', name: 'Repair', description: 'Repair damaged equipment.', requiredLevel: 1, cost: 10 },
-        { id: 'identify', name: 'Identify', description: 'Identify unknown items.', requiredLevel: 5, cost: 50 },
-        { id: 'enchant', name: 'Enchant', description: 'Add magical properties to items.', requiredLevel: 8, cost: 100 }
-      ]
-    };
+    // Load from class-skills.json
+    const classSkills = global.REALM?.data?.classSkills || [];
+    const classData = classSkills.find(cs => cs.class === playerClass);
+    
+    if (classData) {
+      return classData.skills.filter(skill => playerLevel >= skill.requiredLevel);
+    }
 
-    return skills[playerClass] || [];
+    return [];
   }
 
   function learnSkill(skillId, cost) {

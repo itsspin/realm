@@ -1,0 +1,144 @@
+[
+  {
+    "id": "warrior",
+    "name": "Warrior",
+    "role": "tank",
+    "description": "Masters of melee combat and defense. Warriors excel at protecting their allies and holding the front line.",
+    "bonuses": { "atk": 2, "def": 4, "hp": 8 },
+    "skills": ["combat", "defense", "taunt"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "cleric",
+    "name": "Cleric",
+    "role": "healer",
+    "description": "Divine servants who channel the power of the gods to heal wounds and smite the undead.",
+    "bonuses": { "atk": 1, "def": 2, "hp": 4 },
+    "skills": ["healing", "divine_magic", "combat"],
+    "canSolo": true,
+    "soloDifficulty": "hard"
+  },
+  {
+    "id": "paladin",
+    "name": "Paladin",
+    "role": "tank",
+    "description": "Holy warriors who combine martial prowess with divine magic. They protect the innocent and smite evil.",
+    "bonuses": { "atk": 3, "def": 3, "hp": 6 },
+    "skills": ["combat", "healing", "divine_magic"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "shadow_knight",
+    "name": "Shadow Knight",
+    "role": "tank",
+    "description": "Dark warriors who serve death itself. They combine melee combat with dark magic and necromancy.",
+    "bonuses": { "atk": 3, "def": 3, "hp": 7 },
+    "skills": ["combat", "dark_magic", "necromancy"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "ranger",
+    "name": "Ranger",
+    "role": "dps",
+    "description": "Skilled hunters and trackers who are at home in the wilds. They excel at ranged combat and nature magic.",
+    "bonuses": { "atk": 4, "def": 2, "hp": 5 },
+    "skills": ["combat", "tracking", "nature_magic", "fishing", "skinning", "herbalism"],
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "rogue",
+    "name": "Rogue",
+    "role": "dps",
+    "description": "Swift and cunning assassins who strike from the shadows. Masters of stealth and precision.",
+    "bonuses": { "atk": 5, "def": 1, "hp": 3 },
+    "skills": ["combat", "stealth", "pick_lock", "skinning", "poison"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "monk",
+    "name": "Monk",
+    "role": "dps",
+    "description": "Unarmed combat masters who rely on speed, agility, and discipline. They strike with devastating precision.",
+    "bonuses": { "atk": 4, "def": 2, "hp": 4 },
+    "skills": ["combat", "unarmed", "meditation"],
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "mage",
+    "name": "Mage",
+    "role": "dps",
+    "description": "Wielders of destructive arcane power. Mages command the elements and summon powerful creatures.",
+    "bonuses": { "atk": 5, "def": 0, "hp": 2 },
+    "skills": ["arcane", "summoning", "alchemy"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "enchanter",
+    "name": "Enchanter",
+    "role": "support",
+    "description": "Masters of illusion and mind control. Enchanters buff allies, charm enemies, and control the battlefield.",
+    "bonuses": { "atk": 3, "def": 1, "hp": 2 },
+    "skills": ["arcane", "enchantment", "charm", "alchemy"],
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "necromancer",
+    "name": "Necromancer",
+    "role": "dps",
+    "description": "Dark mages who command the dead and drain life from their enemies. They excel at solo play through undead minions.",
+    "bonuses": { "atk": 4, "def": 0, "hp": 3 },
+    "skills": ["dark_magic", "necromancy", "summoning", "alchemy"],
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "wizard",
+    "name": "Wizard",
+    "role": "dps",
+    "description": "Pure destructive magic users. Wizards deal massive damage but are fragile and require protection.",
+    "bonuses": { "atk": 6, "def": 0, "hp": 1 },
+    "skills": ["arcane", "evocation", "alchemy"],
+    "canSolo": true,
+    "soloDifficulty": "hard"
+  },
+  {
+    "id": "druid",
+    "name": "Druid",
+    "role": "healer",
+    "description": "Nature priests who heal with the power of the wilds. They can also shapeshift and teleport.",
+    "bonuses": { "atk": 2, "def": 2, "hp": 4 },
+    "skills": ["healing", "nature_magic", "shapeshift", "fishing", "herbalism"],
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "shaman",
+    "name": "Shaman",
+    "role": "healer",
+    "description": "Spiritual guides who combine healing with powerful buffs and curses. They excel at supporting groups.",
+    "bonuses": { "atk": 2, "def": 2, "hp": 5 },
+    "skills": ["healing", "shamanism", "alchemy", "herbalism"],
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "bard",
+    "name": "Bard",
+    "role": "support",
+    "description": "Jacks-of-all-trades who use songs to buff allies and debuff enemies. Bards can move extremely fast with speed songs.",
+    "bonuses": { "atk": 3, "def": 2, "hp": 4 },
+    "skills": ["combat", "song", "enchantment", "fishing"],
+    "canSolo": true,
+    "soloDifficulty": "medium",
+    "specialAbilities": ["speed_song"]
+  }
+]
+

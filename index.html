@@ -59,48 +59,49 @@
       </div>
 
       <div class="sidebar-section">
-        <h3 class="sidebar-title">Settlements</h3>
-        <div id="settlementList" class="settlement-list"></div>
-      </div>
-
-      <div class="sidebar-section">
         <h3 class="sidebar-title">Nearby Players</h3>
         <div id="nearbyPlayers" class="nearby-players-list"></div>
       </div>
     </aside>
 
-    <!-- Center: Main Game Area (Narrative/Combat) -->
-    <section class="main-game-area" id="narrativeLog" aria-label="Game narrative and combat log">
-      <div class="zone-header" id="zoneHeader">
-        <h2 class="zone-name" id="zoneName">Edgewood Clearing</h2>
-        <p class="zone-description" id="zoneDescription">A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.</p>
-      </div>
-      <div id="narrativeContent" class="narrative-content"></div>
-      <div id="combatPanel" class="combat-panel hidden">
-        <div class="combat-header">
-          <h3 class="monster-name" id="monsterName"></h3>
-          <span class="monster-hp" id="monsterHp"></span>
+    <!-- Center: World Map (Main Focus) -->
+    <section class="main-map-area" id="mainMapArea" aria-label="World map">
+      <div class="map-header">
+        <div class="zone-header" id="zoneHeader">
+          <h2 class="zone-name" id="zoneName">Edgewood Clearing</h2>
+          <p class="zone-description" id="zoneDescription">A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.</p>
         </div>
-        <div class="hp-bar">
-          <div class="hp-bar-fill" id="monsterHpBar"></div>
+        <div class="map-controls-top">
+          <button class="map-zoom-btn" id="zoomInBtn">+</button>
+          <button class="map-zoom-btn" id="zoomOutBtn">-</button>
+          <button class="map-zoom-btn" id="centerPlayerBtn" title="Center on Player">⌂</button>
         </div>
-        <div class="combat-actions" id="combatActions"></div>
       </div>
-      <div class="action-buttons" id="actionButtons"></div>
-    </section>
-
-    <!-- Right Sidebar: World Map -->
-    <aside class="right-sidebar" aria-label="World map">
       <div class="world-map-container" id="worldMapContainer">
         <div class="map-canvas-wrapper" id="mapCanvasWrapper">
           <canvas id="worldMapCanvas" aria-label="Strategic world map" role="img"></canvas>
           <div class="map-overlay" id="mapOverlay"></div>
         </div>
-        <div class="map-controls">
-          <button class="map-zoom-btn" id="zoomInBtn">+</button>
-          <button class="map-zoom-btn" id="zoomOutBtn">-</button>
+      </div>
+      <div class="map-legend" id="mapLegend"></div>
+      <div id="tileTooltip" class="tooltip tooltip--tile hidden" role="tooltip" hidden></div>
+    </section>
+
+    <!-- Right Sidebar: Narrative/Combat Log -->
+    <aside class="right-sidebar" aria-label="Game narrative and combat log">
+      <div class="narrative-log" id="narrativeLog">
+        <div id="narrativeContent" class="narrative-content"></div>
+        <div id="combatPanel" class="combat-panel hidden">
+          <div class="combat-header">
+            <h3 class="monster-name" id="monsterName"></h3>
+            <span class="monster-hp" id="monsterHp"></span>
+          </div>
+          <div class="hp-bar">
+            <div class="hp-bar-fill" id="monsterHpBar"></div>
+          </div>
+          <div class="combat-actions" id="combatActions"></div>
         </div>
-        <div class="map-legend" id="mapLegend"></div>
+        <div class="action-buttons" id="actionButtons"></div>
       </div>
     </aside>
   </main>
@@ -160,6 +161,8 @@
   <script src="src/game/trade.js"></script>
   <script src="src/game/dungeons.js"></script>
   <script src="src/game/npcs.js"></script>
+  <script src="src/game/movement.js"></script>
+  <script src="src/game/map-entities.js"></script>
   <script src="src/ui/toast.js"></script>
   <script src="src/ui/rendering.js"></script>
   <script src="src/ui/map-render.js"></script>

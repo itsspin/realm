@@ -65,6 +65,21 @@
     } catch (error) {
       DIAG.fail('data:factions', error);
     }
+
+    // Load classes
+    try {
+      const classesRes = await fetch('data/classes.json');
+      if (classesRes.ok) {
+        const classes = await classesRes.json();
+        REALM.data.classesById = {};
+        classes.forEach(cls => {
+          REALM.data.classesById[cls.id] = cls;
+        });
+        DIAG.ok('data:classes');
+      }
+    } catch (error) {
+      DIAG.fail('data:classes', error);
+    }
     const files = [
       { key: 'resources', path: 'data/resources.json' },
       { key: 'items', path: 'data/items.json' },
@@ -79,6 +94,8 @@
       { key: 'namedMobs', path: 'data/named-mobs.json' },
       { key: 'dungeons', path: 'data/dungeons.json' },
       { key: 'npcs', path: 'data/npcs.json' },
+      { key: 'classes', path: 'data/classes.json' },
+      { key: 'classSkills', path: 'data/class-skills.json' },
       { key: 'zones', path: 'data/zones.json' },
       { key: 'quests', path: 'data/quests.json' },
       { key: 'lore', path: 'data/lore.json' }

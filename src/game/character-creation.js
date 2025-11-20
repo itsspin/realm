@@ -10,12 +10,22 @@
     { id: 'undead', name: 'Undead', description: 'Deathless and resilient, the undead walk between worlds.', bonuses: { atk: 0, def: 1, hp: 4 } }
   ];
 
+  // Classes are loaded from data/classes.json
   const CLASSES = [
-    { id: 'warrior', name: 'Warrior', description: 'Masters of melee combat, warriors excel in close quarters.', bonuses: { atk: 3, def: 2, hp: 5 }, skills: ['combat'] },
-    { id: 'ranger', name: 'Ranger', description: 'Skilled hunters and trackers, rangers are at home in the wilds.', bonuses: { atk: 2, def: 1, hp: 3 }, skills: ['fishing', 'skinning', 'herbalism'] },
-    { id: 'mage', name: 'Mage', description: 'Wielders of arcane power, mages command the elements.', bonuses: { atk: 4, def: 0, hp: 1 }, skills: ['arcane', 'alchemy'] },
-    { id: 'rogue', name: 'Rogue', description: 'Swift and cunning, rogues strike from the shadows.', bonuses: { atk: 3, def: 1, hp: 2 }, skills: ['skinning', 'alchemy'] },
-    { id: 'craftsman', name: 'Craftsman', description: 'Artisans and builders, craftsmen shape the world.', bonuses: { atk: 1, def: 1, hp: 2 }, skills: ['mining', 'crafting'] }
+    { id: 'warrior', name: 'Warrior', description: 'Masters of melee combat, warriors excel in close quarters.', bonuses: { atk: 2, def: 4, hp: 8 }, skills: ['combat'] },
+    { id: 'cleric', name: 'Cleric', description: 'Divine servants who channel the power of the gods to heal wounds.', bonuses: { atk: 1, def: 2, hp: 4 }, skills: ['healing'] },
+    { id: 'paladin', name: 'Paladin', description: 'Holy warriors who combine martial prowess with divine magic.', bonuses: { atk: 3, def: 3, hp: 6 }, skills: ['combat', 'healing'] },
+    { id: 'ranger', name: 'Ranger', description: 'Skilled hunters and trackers, rangers are at home in the wilds.', bonuses: { atk: 4, def: 2, hp: 5 }, skills: ['combat', 'tracking'] },
+    { id: 'rogue', name: 'Rogue', description: 'Swift and cunning, rogues strike from the shadows.', bonuses: { atk: 5, def: 1, hp: 3 }, skills: ['combat', 'stealth'] },
+    { id: 'monk', name: 'Monk', description: 'Unarmed combat masters who rely on speed and agility.', bonuses: { atk: 4, def: 2, hp: 4 }, skills: ['combat', 'unarmed'] },
+    { id: 'mage', name: 'Mage', description: 'Wielders of destructive arcane power.', bonuses: { atk: 5, def: 0, hp: 2 }, skills: ['arcane'] },
+    { id: 'enchanter', name: 'Enchanter', description: 'Masters of illusion and mind control.', bonuses: { atk: 3, def: 1, hp: 2 }, skills: ['arcane', 'enchantment'] },
+    { id: 'necromancer', name: 'Necromancer', description: 'Dark mages who command the dead.', bonuses: { atk: 4, def: 0, hp: 3 }, skills: ['dark_magic'] },
+    { id: 'wizard', name: 'Wizard', description: 'Pure destructive magic users.', bonuses: { atk: 6, def: 0, hp: 1 }, skills: ['arcane'] },
+    { id: 'druid', name: 'Druid', description: 'Nature priests who heal with the power of the wilds.', bonuses: { atk: 2, def: 2, hp: 4 }, skills: ['healing', 'nature_magic'] },
+    { id: 'shaman', name: 'Shaman', description: 'Spiritual guides who combine healing with powerful buffs.', bonuses: { atk: 2, def: 2, hp: 5 }, skills: ['healing', 'shamanism'] },
+    { id: 'bard', name: 'Bard', description: 'Jacks-of-all-trades who use songs to buff allies. Can move extremely fast.', bonuses: { atk: 3, def: 2, hp: 4 }, skills: ['combat', 'song'] },
+    { id: 'shadow_knight', name: 'Shadow Knight', description: 'Dark warriors who serve death itself.', bonuses: { atk: 3, def: 3, hp: 7 }, skills: ['combat', 'dark_magic'] }
   ];
 
   function showCharacterCreation() {

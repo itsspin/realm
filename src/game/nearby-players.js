@@ -11,16 +11,48 @@
     }
 
     // In real game, fetch from server based on currentTile
-    // For now, simulate some nearby players
+    // For now, simulate some nearby players with positions
+    const currentX = player.currentTile.x;
+    const currentY = player.currentTile.y;
+    
     const simulated = [
-      { id: 'player-2', name: 'TestPlayer', level: 5, class: 'warrior', race: 'human' },
-      { id: 'player-3', name: 'AnotherPlayer', level: 3, class: 'mage', race: 'elf' }
+      { 
+        id: 'player-2', 
+        name: 'TestPlayer', 
+        level: 5, 
+        class: 'warrior', 
+        race: 'human',
+        currentTile: { x: currentX + 2, y: currentY + 1 }
+      },
+      { 
+        id: 'player-3', 
+        name: 'AnotherPlayer', 
+        level: 3, 
+        class: 'mage', 
+        race: 'elf',
+        currentTile: { x: currentX - 1, y: currentY + 2 }
+      }
     ];
 
-    // Filter by proximity (same tile or adjacent)
+    // Filter by proximity (within 5 tiles)
     nearbyPlayers = simulated.filter(p => {
-      // In real game, check distance
-      return true; // For now, show all simulated players
+      if (!p.currentTile) return false;
+      const distance = Math.sqrt(
+        Math.pow(p.currentTile.x - currentX, 2) + 
+        Math.pow(p.currentTile.y - currentY, 2)
+      );
+      return distance <= 5;
+    });
+    
+    // Add self
+    nearbyPlayers.push({
+      id: player.id,
+      name: player.name,
+      level: player.level,
+      class: player.class,
+      race: player.race,
+      currentTile: player.currentTile,
+      isSelf: true
     });
 
     renderNearbyPlayers();
@@ -148,6 +180,7 @@
   const NearbyPlayers = {
     updateNearbyPlayers,
     renderNearbyPlayers,
+    getNearbyPlayers: () => nearbyPlayers,
     showPlayerMenu,
     whisperPlayer,
     inviteToParty,
