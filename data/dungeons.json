@@ -1,0 +1,80 @@
+[
+  {
+    "id": "gloomfang_caverns",
+    "name": "Gloomfang Caverns",
+    "description": "A vast network of twisting tunnels and chambers carved into the mountainside. The deeper you go, the more dangerous it becomes.",
+    "minLevel": 5,
+    "maxLevel": 10,
+    "zones": [
+      {
+        "id": "gloomfang_entrance",
+        "name": "Gloomfang Entrance",
+        "description": "The mouth of the caverns. Foul air and the sound of scraping claws echo from within.",
+        "level": 5,
+        "monsters": ["gloomfang_scout", "cave_rat", "gloomfang_raider"],
+        "connections": ["gloomfang_upper_tunnels"]
+      },
+      {
+        "id": "gloomfang_upper_tunnels",
+        "name": "Upper Tunnels",
+        "description": "Winding passages where goblins have made their home. Torches flicker on the walls, casting dancing shadows.",
+        "level": 5,
+        "monsters": ["gloomfang_raider", "gloomfang_scout", "cave_bat", "gloomfang_shaman"],
+        "connections": ["gloomfang_entrance", "gloomfang_warren", "gloomfang_middle_caverns"]
+      },
+      {
+        "id": "gloomfang_warren",
+        "name": "The Warren",
+        "description": "A large chamber filled with goblin nests and stolen goods. The stench of unwashed goblins is overwhelming.",
+        "level": 6,
+        "monsters": ["gloomfang_raider", "gloomfang_shaman", "gloomfang_warrior"],
+        "namedMobs": ["gloomfang_chieftain"],
+        "connections": ["gloomfang_upper_tunnels"]
+      },
+      {
+        "id": "gloomfang_middle_caverns",
+        "name": "Middle Caverns",
+        "description": "Deeper into the mountain, the tunnels widen into natural caverns. Strange fungi grow on the walls, glowing with an eerie light.",
+        "level": 7,
+        "monsters": ["gloomfang_warrior", "gloomfang_shaman", "cave_troll", "gloomfang_elite"],
+        "connections": ["gloomfang_upper_tunnels", "gloomfang_deep_tunnels", "gloomfang_guard_post"]
+      },
+      {
+        "id": "gloomfang_guard_post",
+        "name": "Guard Post",
+        "description": "A fortified position where goblin guards watch the deeper passages. Weapons and armor are stacked against the walls.",
+        "level": 7,
+        "monsters": ["gloomfang_elite", "gloomfang_warrior", "gloomfang_guard"],
+        "namedMobs": ["gloomfang_captain"],
+        "connections": ["gloomfang_middle_caverns"]
+      },
+      {
+        "id": "gloomfang_deep_tunnels",
+        "name": "Deep Tunnels",
+        "description": "The air grows thick and heavy. The walls are slick with moisture, and strange sounds echo from the darkness ahead.",
+        "level": 8,
+        "monsters": ["gloomfang_elite", "cave_troll", "gloomfang_berserker", "shadow_stalker"],
+        "connections": ["gloomfang_middle_caverns", "gloomfang_deep_caverns"]
+      },
+      {
+        "id": "gloomfang_deep_caverns",
+        "name": "Deep Caverns",
+        "description": "The deepest part of the caverns. The temperature drops, and an ancient evil seems to permeate the very stone.",
+        "level": 9,
+        "monsters": ["gloomfang_berserker", "cave_troll", "gloomfang_shadow_priest", "cave_drake"],
+        "namedMobs": ["gloomfang_dark_shaman"],
+        "connections": ["gloomfang_deep_tunnels", "gloomfang_abyss"]
+      },
+      {
+        "id": "gloomfang_abyss",
+        "name": "The Abyss",
+        "description": "A massive chamber at the very heart of the caverns. A dark altar stands in the center, and the air itself seems to pulse with malevolent energy.",
+        "level": 10,
+        "monsters": ["gloomfang_shadow_priest", "cave_drake", "gloomfang_dark_guardian"],
+        "namedMobs": ["gloomfang_overlord"],
+        "connections": ["gloomfang_deep_caverns"]
+      }
+    ]
+  }
+]
+

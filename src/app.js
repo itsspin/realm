@@ -36,12 +36,49 @@
   REALM.fetchJSON = fetchJSON;
 
   async function loadGameData() {
+    // Load races
+    try {
+      const racesRes = await fetch('data/races.json');
+      if (racesRes.ok) {
+        const races = await racesRes.json();
+        REALM.data.racesById = {};
+        races.forEach(race => {
+          REALM.data.racesById[race.id] = race;
+        });
+        DIAG.ok('data:races');
+      }
+    } catch (error) {
+      DIAG.fail('data:races', error);
+    }
+
+    // Load factions
+    try {
+      const factionsRes = await fetch('data/factions.json');
+      if (factionsRes.ok) {
+        const factions = await factionsRes.json();
+        REALM.data.factionsById = {};
+        factions.forEach(faction => {
+          REALM.data.factionsById[faction.id] = faction;
+        });
+        DIAG.ok('data:factions');
+      }
+    } catch (error) {
+      DIAG.fail('data:factions', error);
+    }
     const files = [
       { key: 'resources', path: 'data/resources.json' },
       { key: 'items', path: 'data/items.json' },
+      { key: 'itemsExtended', path: 'data/items-extended.json' },
       { key: 'structures', path: 'data/structures.json' },
       { key: 'tiles', path: 'data/tiles.json' },
       { key: 'monsters', path: 'data/monsters.json' },
+      { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
+      { key: 'namedMobs', path: 'data/named-mobs.json' },
+      { key: 'dungeons', path: 'data/dungeons.json' },
+      { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
+      { key: 'namedMobs', path: 'data/named-mobs.json' },
+      { key: 'dungeons', path: 'data/dungeons.json' },
+      { key: 'npcs', path: 'data/npcs.json' },
       { key: 'zones', path: 'data/zones.json' },
       { key: 'quests', path: 'data/quests.json' },
       { key: 'lore', path: 'data/lore.json' }
@@ -61,8 +98,72 @@
             }
             return acc;
           }, {});
+        } else if (key === 'itemsExtended') {
+          // Merge extended items into itemsById
+          (REALM.data[key] || []).forEach(entry => {
+            const id = entry?.itemId || entry?.id;
+            if (id) {
+              REALM.data.itemsById[String(id).toLowerCase()] = entry;
+            }
+          });
         } else if (key === 'monsters') {
           REALM.data.monstersById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'dungeonMonsters') {
+          // Merge dungeon monsters into monstersById
+          (REALM.data[key] || []).forEach(entry => {
+            if (entry?.id) {
+              REALM.data.monstersById[String(entry.id).toLowerCase()] = entry;
+            }
+          });
+        } else if (key === 'namedMobs') {
+          REALM.data.namedMobsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'dungeons') {
+          REALM.data.dungeonsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'monsters') {
+          REALM.data.monstersById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'dungeonMonsters') {
+          // Merge dungeon monsters into monstersById
+          (REALM.data[key] || []).forEach(entry => {
+            if (entry?.id) {
+              REALM.data.monstersById[String(entry.id).toLowerCase()] = entry;
+            }
+          });
+        } else if (key === 'namedMobs') {
+          REALM.data.namedMobsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'dungeons') {
+          REALM.data.dungeonsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'npcs') {
+          REALM.data.npcsById = (REALM.data[key] || []).reduce((acc, entry) => {
             if (entry?.id) {
               acc[String(entry.id).toLowerCase()] = entry;
             }
@@ -106,6 +207,17 @@
       // Initialize world map
       if (window.Settlement && typeof window.Settlement.initializeWorldMap === 'function') {
         window.Settlement.initializeWorldMap();
+      }
+
+      // Initialize map renderer
+      if (window.MapRender && typeof window.MapRender.renderMap === 'function') {
+        setTimeout(() => {
+          window.MapRender.renderMap();
+          const player = window.State?.getPlayer();
+          if (player && player.currentTile) {
+            window.MapRender.centerOnPlayer();
+          }
+        }, 200);
       }
 
       // Initialize state

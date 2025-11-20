@@ -1,0 +1,135 @@
+[
+  {
+    "id": "gloomfang_scout",
+    "name": "Gloomfang Scout",
+    "level": 5,
+    "hp": 45,
+    "atk": 12,
+    "def": 4,
+    "xp": 40,
+    "gold": 8,
+    "loot": ["goblin_ear", "tattered_cloth", "rusty_dagger"]
+  },
+  {
+    "id": "gloomfang_raider",
+    "name": "Gloomfang Raider",
+    "level": 6,
+    "hp": 60,
+    "atk": 15,
+    "def": 5,
+    "xp": 55,
+    "gold": 12,
+    "loot": ["goblin_ear", "raider_blade", "leather_scraps"]
+  },
+  {
+    "id": "gloomfang_shaman",
+    "name": "Gloomfang Shaman",
+    "level": 6,
+    "hp": 50,
+    "atk": 18,
+    "def": 3,
+    "xp": 60,
+    "gold": 15,
+    "loot": ["goblin_ear", "shaman_staff", "minor_essence"]
+  },
+  {
+    "id": "gloomfang_warrior",
+    "name": "Gloomfang Warrior",
+    "level": 7,
+    "hp": 75,
+    "atk": 18,
+    "def": 7,
+    "xp": 75,
+    "gold": 18,
+    "loot": ["goblin_ear", "warrior_sword", "leather_armor"]
+  },
+  {
+    "id": "gloomfang_elite",
+    "name": "Gloomfang Elite",
+    "level": 7,
+    "hp": 85,
+    "atk": 20,
+    "def": 8,
+    "xp": 85,
+    "gold": 22,
+    "loot": ["goblin_ear", "elite_blade", "reinforced_leather"]
+  },
+  {
+    "id": "gloomfang_guard",
+    "name": "Gloomfang Guard",
+    "level": 8,
+    "hp": 95,
+    "atk": 22,
+    "def": 10,
+    "xp": 100,
+    "gold": 25,
+    "loot": ["goblin_ear", "guard_spear", "chainmail_piece"]
+  },
+  {
+    "id": "gloomfang_berserker",
+    "name": "Gloomfang Berserker",
+    "level": 8,
+    "hp": 110,
+    "atk": 25,
+    "def": 6,
+    "xp": 110,
+    "gold": 30,
+    "loot": ["goblin_ear", "berserker_axe", "bloodstained_cloth"]
+  },
+  {
+    "id": "gloomfang_shadow_priest",
+    "name": "Gloomfang Shadow Priest",
+    "level": 9,
+    "hp": 90,
+    "atk": 28,
+    "def": 5,
+    "xp": 130,
+    "gold": 35,
+    "loot": ["goblin_ear", "shadow_staff", "dark_essence"]
+  },
+  {
+    "id": "gloomfang_dark_guardian",
+    "name": "Gloomfang Dark Guardian",
+    "level": 10,
+    "hp": 140,
+    "atk": 30,
+    "def": 12,
+    "xp": 160,
+    "gold": 45,
+    "loot": ["goblin_ear", "guardian_mace", "dark_plate"]
+  },
+  {
+    "id": "cave_bat",
+    "name": "Cave Bat",
+    "level": 5,
+    "hp": 35,
+    "atk": 10,
+    "def": 2,
+    "xp": 35,
+    "gold": 5,
+    "loot": ["bat_wing", "bat_fang"]
+  },
+  {
+    "id": "cave_troll",
+    "name": "Cave Troll",
+    "level": 8,
+    "hp": 130,
+    "atk": 24,
+    "def": 11,
+    "xp": 120,
+    "gold": 40,
+    "loot": ["troll_hide", "troll_claw", "rough_ore"]
+  },
+  {
+    "id": "cave_drake",
+    "name": "Cave Drake",
+    "level": 10,
+    "hp": 180,
+    "atk": 32,
+    "def": 14,
+    "xp": 200,
+    "gold": 60,
+    "loot": ["drake_scale", "drake_fang", "drake_essence"]
+  }
+]
+

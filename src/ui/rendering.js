@@ -39,10 +39,16 @@
     const xp = player.xp || 0;
     const xpToNext = player.xpToNext || 100;
 
-    // Update name and level
+    // Update name and level - FORCE UPDATE
     const nameEl = document.getElementById('characterName');
     const levelEl = document.getElementById('characterLevel');
-    if (nameEl) nameEl.textContent = player.name || 'Wanderer';
+    if (nameEl) {
+      nameEl.textContent = player.name || 'Wanderer';
+      // Force re-render
+      nameEl.style.display = 'none';
+      nameEl.offsetHeight; // Trigger reflow
+      nameEl.style.display = '';
+    }
     if (levelEl) levelEl.textContent = `Level ${level}`;
 
     // Update XP bar
@@ -216,6 +222,44 @@
         Explore the area
       </button>
     `;
+
+    // NPCs in current zone
+    const npcs = global.NPCs?.getNPCsInZone(zone?.id) || [];
+    if (npcs.length > 0) {
+      html += '<div style="margin-top: 1rem; padding-top: 1rem; border-top: var(--border-subtle);">';
+      html += '<div style="font-size: 0.9rem; color: var(--fg-secondary); margin-bottom: 0.5rem;">NPCs:</div>';
+      npcs.forEach(npc => {
+        html += `
+          <button class="action-btn" onclick="global.NPCs.interactWithNPC('${npc.id}')">
+            ${npc.type === 'class_trainer' ? '📚' : npc.type === 'merchant' ? '💰' : npc.type === 'guard' ? '🛡️' : npc.type === 'banker' ? '🏦' : npc.type === 'auctioneer' ? '🏛️' : '👤'} ${npc.name}
+          </button>
+        `;
+      });
+      html += '</div>';
+    }
+
+    // Dungeon navigation
+    const dungeon = Object.values(global.REALM?.data?.dungeonsById || {}).find(d => {
+      return d.zones.some(z => z.id === zone?.id);
+    });
+    if (dungeon) {
+      const currentDungeonZone = dungeon.zones.find(z => z.id === zone.id);
+      if (currentDungeonZone && currentDungeonZone.connections) {
+        html += '<div style="margin-top: 1rem; padding-top: 1rem; border-top: var(--border-subtle);">';
+        html += '<div style="font-size: 0.9rem; color: var(--fg-secondary); margin-bottom: 0.5rem;">Dungeon Passages:</div>';
+        currentDungeonZone.connections.forEach(zoneId => {
+          const connectedZone = dungeon.zones.find(z => z.id === zoneId);
+          if (connectedZone) {
+            html += `
+              <button class="action-btn" onclick="global.Zones.changeZone('${zoneId}')">
+                → ${connectedZone.name}
+              </button>
+            `;
+          }
+        });
+        html += '</div>';
+      }
+    }
 
     // Gathering actions if on a tile
     if (currentTile) {

@@ -158,6 +158,11 @@
     return worldMap;
   }
 
+  function getWorldMap() {
+    if (!worldMap) initializeWorldMap();
+    return worldMap;
+  }
+
   const Settlement = {
     initializeWorldMap,
     getTile,

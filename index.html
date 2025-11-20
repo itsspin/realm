@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>REALM — Dark-Fantasy Text RPG</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-chat.css">
 </head>
 <body>
   <header class="app-header" role="banner">
@@ -13,13 +14,68 @@
   </header>
 
   <main class="app-main" role="main">
-    <!-- Narrative Log - Primary Game View -->
-    <section class="narrative-log" id="narrativeLog" aria-label="Game narrative and combat log">
+    <!-- Left Sidebar: Character Info, Inventory, Quests -->
+    <aside class="left-sidebar" aria-label="Character and game information">
+      <div class="sidebar-section character-header-section">
+        <h2 class="character-name" id="characterName">Wanderer</h2>
+        <div class="character-level" id="characterLevel">Level 1</div>
+        <div class="xp-bar-container">
+          <div class="xp-bar-label">
+            <span>Experience</span>
+            <span id="xpText">0 / 100</span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Health</div>
+            <div class="stat-value" id="statHp">20 / 20</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Attack</div>
+            <div class="stat-value" id="statAtk">5</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Defense</div>
+            <div class="stat-value" id="statDef">2</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Gold</div>
+            <div class="stat-value" id="statGold">25</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Inventory</h3>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Active Quests</h3>
+        <div id="questList" class="quest-list"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Settlements</h3>
+        <div id="settlementList" class="settlement-list"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Nearby Players</h3>
+        <div id="nearbyPlayers" class="nearby-players-list"></div>
+      </div>
+    </aside>
+
+    <!-- Center: Main Game Area (Narrative/Combat) -->
+    <section class="main-game-area" id="narrativeLog" aria-label="Game narrative and combat log">
       <div class="zone-header" id="zoneHeader">
         <h2 class="zone-name" id="zoneName">Edgewood Clearing</h2>
         <p class="zone-description" id="zoneDescription">A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.</p>
       </div>
-      <div id="narrativeContent"></div>
+      <div id="narrativeContent" class="narrative-content"></div>
       <div id="combatPanel" class="combat-panel hidden">
         <div class="combat-header">
           <h3 class="monster-name" id="monsterName"></h3>
@@ -33,63 +89,39 @@
       <div class="action-buttons" id="actionButtons"></div>
     </section>
 
-    <!-- Character Panel -->
-    <aside class="character-panel" aria-label="Character information">
-      <div class="character-header">
-        <h2 class="character-name" id="characterName">Wanderer</h2>
-        <div class="character-level" id="characterLevel">Level 1</div>
-      </div>
-
-      <div class="xp-bar-container">
-        <div class="xp-bar-label">
-          <span>Experience</span>
-          <span id="xpText">0 / 100</span>
+    <!-- Right Sidebar: World Map -->
+    <aside class="right-sidebar" aria-label="World map">
+      <div class="world-map-container" id="worldMapContainer">
+        <div class="map-canvas-wrapper" id="mapCanvasWrapper">
+          <canvas id="worldMapCanvas" aria-label="Strategic world map" role="img"></canvas>
+          <div class="map-overlay" id="mapOverlay"></div>
         </div>
-        <div class="xp-bar">
-          <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+        <div class="map-controls">
+          <button class="map-zoom-btn" id="zoomInBtn">+</button>
+          <button class="map-zoom-btn" id="zoomOutBtn">-</button>
         </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-label">Health</div>
-          <div class="stat-value" id="statHp">20 / 20</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Attack</div>
-          <div class="stat-value" id="statAtk">5</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Defense</div>
-          <div class="stat-value" id="statDef">2</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">Gold</div>
-          <div class="stat-value" id="statGold">25</div>
-        </div>
-      </div>
-
-      <div class="inventory-panel">
-        <h3 class="inventory-title">Inventory</h3>
-        <div class="inventory-grid" id="inventoryGrid"></div>
-      </div>
-
-      <div class="quest-log" id="questLog">
-        <h3 class="inventory-title">Active Quests</h3>
-        <div id="questList"></div>
-      </div>
-
-      <div class="skills-panel" id="skillsPanel">
-        <h3 class="inventory-title">Skills</h3>
-        <div id="skillsList"></div>
-      </div>
-
-      <div class="settlement-panel" id="settlementPanel">
-        <h3 class="inventory-title">Settlements</h3>
-        <div id="settlementList"></div>
+        <div class="map-legend" id="mapLegend"></div>
       </div>
     </aside>
   </main>
+
+  <!-- Chat Window: Always Visible -->
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <h3>Chat</h3>
+      <div class="chat-tabs">
+        <button class="chat-tab active" data-tab="all">All</button>
+        <button class="chat-tab" data-tab="say">Say</button>
+        <button class="chat-tab" data-tab="party">Party</button>
+        <button class="chat-tab" data-tab="guild">Guild</button>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-container">
+      <input type="text" id="chatInput" class="chat-input" placeholder="Type /say, /ooc, /shout, /tell [name], /party, /guild..." />
+      <button id="chatSendBtn" class="chat-send-btn">Send</button>
+    </div>
+  </div>
 
   <!-- Toast Notifications -->
   <div class="toast-container" id="toastContainer"></div>
@@ -121,7 +153,15 @@
   <script src="src/game/alchemy.js"></script>
   <script src="src/game/player-shop.js"></script>
   <script src="src/game/reputation.js"></script>
+  <script src="src/game/factions.js"></script>
+  <script src="src/game/chat-system.js"></script>
+  <script src="src/game/nearby-players.js"></script>
+  <script src="src/game/party.js"></script>
+  <script src="src/game/trade.js"></script>
+  <script src="src/game/dungeons.js"></script>
+  <script src="src/game/npcs.js"></script>
   <script src="src/ui/toast.js"></script>
   <script src="src/ui/rendering.js"></script>
+  <script src="src/ui/map-render.js"></script>
 </body>
 </html>

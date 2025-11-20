@@ -1,6 +1,7 @@
 (function (global) {
   function calculateXPForLevel(level) {
-    return Math.floor(100 * Math.pow(1.5, level - 1));
+    // Slow grind - exponential XP curve (similar to EverQuest)
+    return Math.floor(200 * Math.pow(1.8, level - 1));
   }
 
   function addXP(amount) {

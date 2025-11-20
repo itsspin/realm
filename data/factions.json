@@ -1,0 +1,83 @@
+[
+  {
+    "id": "thronehold_citizens",
+    "name": "Citizens of Thronehold",
+    "alignment": "good",
+    "description": "The lawful citizens of the human capital city of Thronehold."
+  },
+  {
+    "id": "thronehold_guards",
+    "name": "Thronehold City Guard",
+    "alignment": "good",
+    "description": "The city guard of Thronehold, protectors of law and order.",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "silverweave_citizens",
+    "name": "Citizens of Silverweave",
+    "alignment": "good",
+    "description": "The graceful elves of the treetop city of Silverweave."
+  },
+  {
+    "id": "silverweave_guards",
+    "name": "Silverweave Wardens",
+    "alignment": "good",
+    "description": "Elven rangers who protect the city from above.",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "ironhold_citizens",
+    "name": "Citizens of Ironhold",
+    "alignment": "good",
+    "description": "The stout dwarves of the mountain fortress city."
+  },
+  {
+    "id": "ironhold_guards",
+    "name": "Ironhold Sentinels",
+    "alignment": "good",
+    "description": "Dwarven warriors who guard the city gates.",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "bloodmire_citizens",
+    "name": "Citizens of Bloodmire",
+    "alignment": "evil",
+    "description": "The fierce orcs of the swamp city of Bloodmire."
+  },
+  {
+    "id": "shadowgrave_citizens",
+    "name": "Citizens of Shadowgrave",
+    "alignment": "evil",
+    "description": "The dark denizens of the underground necropolis."
+  },
+  {
+    "id": "freeport_watch",
+    "name": "Freeport Watch",
+    "alignment": "neutral",
+    "description": "The neutral city guard of Freeport, a haven for all."
+  },
+  {
+    "id": "bloodmire_legion",
+    "name": "Bloodmire Legion",
+    "alignment": "evil",
+    "description": "The organized orc army of Bloodmire."
+  },
+  {
+    "id": "shadowfang_clans",
+    "name": "Shadowfang Clans",
+    "alignment": "evil",
+    "description": "Wild orc tribes of the Shadowfang territories."
+  },
+  {
+    "id": "crimson_marauders",
+    "name": "Crimson Marauders",
+    "alignment": "evil",
+    "description": "Ruthless orc raiders of the Crimson Wastes."
+  },
+  {
+    "id": "gloomfang_tribes",
+    "name": "Gloomfang Tribes",
+    "alignment": "evil",
+    "description": "Chaotic goblin tribes of the Gloomfang Caves."
+  }
+]

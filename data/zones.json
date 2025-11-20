@@ -1,27 +1,92 @@
 [
   {
-    "id": "edgewood_clearing",
-    "name": "Edgewood Clearing",
-    "description": "A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.",
+    "id": "thronehold_gates",
+    "name": "Thronehold Gates",
+    "description": "The outer gates of Thronehold, where new adventurers begin their journey. The great stone walls loom overhead, and the sounds of the city echo from within.",
     "level": 1,
-    "monsters": ["goblin_scout", "shadow_wolf"],
-    "lore": "The Edgewood has stood for centuries, but whispers speak of things that move in the dark between the trees."
+    "monsters": ["goblin_scout", "wild_boar"],
+    "lore": "Thronehold stands as the last bastion of human civilization in the realm. Its gates have withstood countless sieges."
   },
   {
-    "id": "darkened_path",
-    "name": "The Darkened Path",
-    "description": "A narrow trail winding through twisted trees. The air grows cold, and something watches from the shadows.",
-    "level": 2,
-    "monsters": ["shadow_wolf", "corrupted_treant"],
-    "lore": "Few who walk the Darkened Path return unchanged. The corruption runs deep here."
+    "id": "weeping_woods_outskirts",
+    "name": "Weeping Woods Outskirts",
+    "description": "The edge of the ancient Weeping Woods, where the elven city of Silverweave can be glimpsed through the canopy. Strange whispers drift on the wind.",
+    "level": 1,
+    "monsters": ["forest_wolf", "corrupted_sprite"],
+    "lore": "The Weeping Woods are said to remember every tragedy that has befallen the realm. The trees themselves bear witness to ages of sorrow."
   },
   {
-    "id": "ancient_ruins",
-    "name": "Ancient Ruins",
-    "description": "Crumbling stonework rises from the earth. Arcane symbols still pulse with faint power, and the dead do not rest easy.",
-    "level": 3,
-    "monsters": ["corrupted_treant", "wraith"],
-    "lore": "These ruins predate memory. What power was sealed here, and what broke free?"
+    "id": "stonecrag_outskirts",
+    "name": "Stonecrag Outskirts",
+    "description": "The rocky foothills before the great mountain fortress of Ironhold. The air smells of forge-fire and stone dust.",
+    "level": 1,
+    "monsters": ["cave_rat", "stone_golem"],
+    "lore": "Ironhold was carved from the living mountain by the first dwarven king. Its halls have never fallen to siege."
+  },
+  {
+    "id": "boglands_outskirts",
+    "name": "Boglands Outskirts",
+    "description": "The fetid swamplands surrounding Bloodmire. Mist clings to the ground, and the croaking of unseen creatures fills the air.",
+    "level": 1,
+    "monsters": ["swamp_rat", "bog_wisp"],
+    "lore": "Bloodmire rises from the swamps like a fortress of rot and ambition. Few who enter its gates leave unchanged."
+  },
+  {
+    "id": "cryptlands_outskirts",
+    "name": "Cryptlands Outskirts",
+    "description": "The desolate lands surrounding Shadowgrave. Ancient tombstones mark forgotten graves, and the very ground seems to whisper of death.",
+    "level": 1,
+    "monsters": ["skeleton_scout", "grave_wraith"],
+    "lore": "Shadowgrave is a city of the dead, where the living serve the undying. Its spires pierce the perpetual twilight."
+  },
+  {
+    "id": "blackwood_forest",
+    "name": "Blackwood Forest",
+    "description": "A dark, foreboding forest where sunlight rarely penetrates. Twisted trees and shadowy creatures lurk within.",
+    "level": 5,
+    "monsters": ["blackwood_bear", "shadow_stalker", "corrupted_treant"],
+    "lore": "The Blackwood is said to be cursed. Those who enter rarely return, and those who do are never quite the same."
+  },
+  {
+    "id": "shattered_plains",
+    "name": "Shattered Plains",
+    "description": "A vast expanse of broken earth and scattered ruins. The remnants of an ancient war still scar the landscape.",
+    "level": 8,
+    "monsters": ["plains_raider", "dust_elemental", "ruin_ghost"],
+    "lore": "The Shattered Plains were once a great kingdom. Now only ruins and memories remain, haunted by the echoes of the past."
+  },
+  {
+    "id": "crimson_wastes",
+    "name": "Crimson Wastes",
+    "description": "A barren desert of red sand and scorching heat. The bones of travelers and beasts alike litter the dunes.",
+    "level": 12,
+    "monsters": ["sand_scorpion", "waste_bandit", "desert_phantom"],
+    "lore": "The Crimson Wastes are named for the blood spilled in countless battles. The sand itself seems to remember the violence."
+  },
+  {
+    "id": "frostbite_peaks",
+    "name": "Frostbite Peaks",
+    "description": "Towering mountains wreathed in eternal snow. The cold here can freeze a soul as easily as flesh.",
+    "level": 15,
+    "monsters": ["frost_wolf", "ice_elemental", "mountain_troll"],
+    "lore": "The Frostbite Peaks are home to ancient dragons and forgotten treasures. Few dare to climb their heights."
+  },
+  {
+    "id": "voidreach",
+    "name": "Voidreach",
+    "description": "A place where reality itself seems thin. Strange energies pulse through the air, and the laws of nature bend and break.",
+    "level": 20,
+    "monsters": ["void_walker", "reality_tear", "dimensional_horror"],
+    "lore": "Voidreach is where the barriers between worlds are weakest. Those who venture here risk being lost between dimensions forever."
+  },
+  {
+    "id": "gloomfang_caverns_entrance",
+    "name": "Gloomfang Caverns Entrance",
+    "description": "The mouth of a vast network of tunnels. Foul air and the sound of scraping claws echo from within. A sign warns: 'Beware - Level 5+ recommended'",
+    "level": 5,
+    "monsters": [],
+    "lore": "The Gloomfang Caverns are home to a tribe of goblins. Many adventurers have entered, but few have returned from the depths.",
+    "dungeon": "gloomfang_caverns",
+    "dungeonZone": "gloomfang_entrance"
   }
 ]
-

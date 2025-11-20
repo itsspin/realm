@@ -1,0 +1,62 @@
+[
+  {
+    "id": "human",
+    "name": "Human",
+    "description": "Versatile and adaptable, humans excel in all pursuits.",
+    "alignment": "neutral",
+    "startingCity": "thronehold",
+    "startingZone": "thronehold_gates",
+    "startingTile": { "x": 12, "y": 12 },
+    "faction": "thronehold_citizens",
+    "enemyFactions": ["bloodmire_legion", "shadowfang_clans"],
+    "bonuses": { "atk": 0, "def": 0, "hp": 0 }
+  },
+  {
+    "id": "elf",
+    "name": "Elf",
+    "description": "Graceful and long-lived, elves have keen senses and arcane affinity.",
+    "alignment": "good",
+    "startingCity": "silverweave",
+    "startingZone": "weeping_woods_outskirts",
+    "startingTile": { "x": 15, "y": 10 },
+    "faction": "silverweave_citizens",
+    "enemyFactions": ["bloodmire_legion", "crimson_marauders"],
+    "bonuses": { "atk": 1, "def": 0, "hp": -2 }
+  },
+  {
+    "id": "dwarf",
+    "name": "Dwarf",
+    "description": "Stout and hardy, dwarves are natural miners and craftsmen.",
+    "alignment": "good",
+    "startingCity": "ironhold",
+    "startingZone": "stonecrag_outskirts",
+    "startingTile": { "x": 10, "y": 15 },
+    "faction": "ironhold_citizens",
+    "enemyFactions": ["crimson_marauders", "gloomfang_tribes"],
+    "bonuses": { "atk": 0, "def": 2, "hp": 3 }
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "description": "Strong and fierce, orcs are born warriors.",
+    "alignment": "evil",
+    "startingCity": "bloodmire",
+    "startingZone": "boglands_outskirts",
+    "startingTile": { "x": 8, "y": 8 },
+    "faction": "bloodmire_citizens",
+    "enemyFactions": ["thronehold_guards", "silverweave_guards", "ironhold_guards"],
+    "bonuses": { "atk": 2, "def": 0, "hp": 2 }
+  },
+  {
+    "id": "undead",
+    "name": "Undead",
+    "description": "Deathless and resilient, the undead walk between worlds.",
+    "alignment": "evil",
+    "startingCity": "shadowgrave",
+    "startingZone": "cryptlands_outskirts",
+    "startingTile": { "x": 5, "y": 5 },
+    "faction": "shadowgrave_citizens",
+    "enemyFactions": ["thronehold_guards", "silverweave_guards", "ironhold_guards", "freeport_watch"],
+    "bonuses": { "atk": 0, "def": 1, "hp": 4 }
+  }
+]

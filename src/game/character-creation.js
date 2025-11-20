@@ -1,6 +1,7 @@
 (function (global) {
   let creationState = null;
 
+  // Races are loaded from data/races.json
   const RACES = [
     { id: 'human', name: 'Human', description: 'Versatile and adaptable, humans excel in all pursuits.', bonuses: { atk: 0, def: 0, hp: 0 } },
     { id: 'elf', name: 'Elf', description: 'Graceful and long-lived, elves have keen senses and arcane affinity.', bonuses: { atk: 1, def: 0, hp: -2 } },
@@ -198,12 +199,21 @@
       return;
     }
 
+    // Get race data for starting location
+    const raceData = global.REALM?.data?.racesById?.[creationState.race];
+    const startingTile = raceData?.startingTile || { x: 12, y: 12 };
+    const startingZone = raceData?.startingZone || 'edgewood_clearing';
+
     global.State.updatePlayer({
       name: name,
       race: creationState.race,
       class: creationState.class,
       stats: finalStats,
-      skills: skills
+      skills: skills,
+      currentZone: startingZone,
+      currentTile: startingTile,
+      x: startingTile.x,
+      y: startingTile.y
     });
 
     // Force save
@@ -240,9 +250,19 @@
 
     // Re-initialize game now that character is created
     setTimeout(() => {
+      // Initialize factions
+      if (window.Factions && typeof window.Factions.getPlayerFactions === 'function') {
+        window.Factions.getPlayerFactions();
+      }
+
       // Initialize quests
       if (window.Quests && typeof window.Quests.initializeQuests === 'function') {
         window.Quests.initializeQuests();
+      }
+
+      // Update zone to starting zone
+      if (window.Zones && typeof window.Zones.changeZone === 'function') {
+        window.Zones.changeZone(startingZone);
       }
       
       // Update all UI
@@ -256,6 +276,7 @@
         window.Rendering.updateActionButtons();
         window.Rendering.updateResourceBar();
         window.Rendering.updateNarrative();
+        window.Rendering.updateWorldMap(); // Show map with player position
       }
 
       // Add welcome zone entry
@@ -269,7 +290,15 @@
           });
         }
       }
-    }, 300);
+
+        // Render world map with player position
+        if (window.MapRender) {
+          setTimeout(() => {
+            window.MapRender.renderMap();
+            window.MapRender.centerOnPlayer();
+          }, 100);
+        }
+    }, 500);
 
     creationState = null;
   }

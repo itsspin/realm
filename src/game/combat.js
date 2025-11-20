@@ -47,7 +47,10 @@
   }
 
   function startCombat(monsterId) {
-    const monsterData = global.REALM?.data?.monstersById?.[monsterId];
+    // Check both regular monsters and named mobs
+    let monsterData = global.REALM?.data?.monstersById?.[monsterId] || 
+                      global.REALM?.data?.namedMobsById?.[monsterId];
+    
     if (!monsterData) {
       console.error('Monster not found:', monsterId);
       return;
@@ -105,7 +108,7 @@
     // Monster attacks next turn
     setTimeout(() => {
       monsterAttack();
-    }, 800);
+    }, 1000);
   }
 
   function monsterAttack() {
@@ -157,27 +160,39 @@
         gold: (player.gold || 0) + goldGain
       });
 
-      // Roll for loot
-      if (currentMonster.lootTable && currentMonster.lootTable.length > 0) {
-        const roll = Math.random();
-        let cumulative = 0;
-        for (const loot of currentMonster.lootTable) {
-          cumulative += loot.chance;
-          if (roll <= cumulative && loot.itemId) {
-            global.State?.addItem(loot.itemId);
-            global.Toast?.show({
-              type: 'loot',
-              title: 'Loot Obtained',
-              text: `You found: ${loot.itemId.replace(/_/g, ' ')}`
-            });
-            break;
-          }
+      // Check for loot (use dungeon system if in dungeon, otherwise regular loot)
+      const currentZone = global.Zones?.getCurrentZone();
+      const isDungeonZone = currentZone && global.Dungeons?.getDungeonZone('gloomfang_caverns', currentZone.id);
+      
+      let lootItem = null;
+      if (isDungeonZone) {
+        lootItem = global.Dungeons?.getLootFromMonster(currentMonster);
+      } else if (currentMonster.lootTable && currentMonster.lootTable.length > 0) {
+        // Named mob loot table
+        lootItem = global.Dungeons?.rollLoot(currentMonster.lootTable);
+      } else if (currentMonster.loot && currentMonster.loot.length > 0) {
+        // Regular monster loot (15% chance - low drop rate for excitement)
+        if (Math.random() < 0.15) {
+          lootItem = currentMonster.loot[Math.floor(Math.random() * currentMonster.loot.length)];
+        }
+      }
+
+      let lootText = '';
+      if (lootItem) {
+        const itemData = global.REALM?.data?.itemsById?.[lootItem];
+        if (itemData && global.State?.addItem(lootItem)) {
+          lootText = ` You find: ${itemData.name}!`;
+          global.Toast?.show({
+            type: 'success',
+            title: 'Item Found!',
+            text: itemData.name
+          });
         }
       }
 
       global.Narrative?.addEntry({
         type: 'combat',
-        text: `You have defeated the ${currentMonster.name}! Gained ${xpGain} XP and ${goldGain} gold.`,
+        text: `You have defeated the ${currentMonster.name}! Gained ${xpGain} XP and ${goldGain} gold.${lootText}`,
         meta: 'Victory!'
       });
 
@@ -189,20 +204,22 @@
         global.Leaderboards.updatePlayerRanking();
       }
 
-      // Offer skinning option
-      setTimeout(() => {
-        const skinBtn = document.createElement('button');
-        skinBtn.className = 'action-btn';
-        skinBtn.textContent = `🔪 Skin ${currentMonster.name}`;
-        skinBtn.onclick = () => {
-          global.Skinning?.skinMonster(currentMonster.id);
-          skinBtn.remove();
-        };
-        const actionButtons = document.getElementById('actionButtons');
-        if (actionButtons) {
-          actionButtons.insertBefore(skinBtn, actionButtons.firstChild);
-        }
-      }, 500);
+      // Offer skinning option (if applicable)
+      if (currentMonster.loot && currentMonster.loot.some(item => item.includes('hide') || item.includes('pelt'))) {
+        setTimeout(() => {
+          const skinBtn = document.createElement('button');
+          skinBtn.className = 'action-btn';
+          skinBtn.textContent = `🔪 Skin ${currentMonster.name}`;
+          skinBtn.onclick = () => {
+            global.Skinning?.skinMonster(currentMonster.id);
+            skinBtn.remove();
+          };
+          const actionButtons = document.getElementById('actionButtons');
+          if (actionButtons) {
+            actionButtons.insertBefore(skinBtn, actionButtons.firstChild);
+          }
+        }, 500);
+      }
 
       // Update quests
       global.Quests?.checkKillQuest(currentMonster.id);

@@ -24,6 +24,25 @@
     const player = global.State?.getPlayer();
     if (!player || player.id !== sellerId) return false;
 
+    // Check if player is in a city with auction house
+    const currentZone = global.Zones?.getCurrentZone();
+    const npcs = global.REALM?.data?.npcsById || {};
+    const hasAuctioneer = Object.values(npcs).some(npc => 
+      npc.type === 'auctioneer' && npc.zone === currentZone?.id
+    );
+
+    // Premium players can list remotely
+    const isPremium = player.premium || false;
+    
+    if (!hasAuctioneer && !isPremium) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'Not in City',
+        text: 'You must be in a city with an auction house to list items. Premium members can list remotely.'
+      });
+      return false;
+    }
+
     // Check if player has the item
     const itemIndex = player.inventory?.findIndex(item => item.itemId === itemId);
     if (itemIndex === -1) {

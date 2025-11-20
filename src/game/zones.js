@@ -4,18 +4,39 @@
     if (!player) return null;
 
     const zoneId = player.currentZone || 'edgewood_clearing';
+    
+    // Check if it's a dungeon zone
+    const dungeon = Object.values(global.REALM?.data?.dungeonsById || {}).find(d => {
+      return d.zones.some(z => z.id === zoneId);
+    });
+
+    if (dungeon) {
+      return dungeon.zones.find(z => z.id === zoneId) || null;
+    }
+
     return global.REALM?.data?.zonesById?.[zoneId] || null;
   }
 
   function changeZone(zoneId) {
-    const zone = global.REALM?.data?.zonesById?.[zoneId];
+    // Check if it's a dungeon zone first
+    const dungeon = Object.values(global.REALM?.data?.dungeonsById || {}).find(d => {
+      return d.zones.some(z => z.id === zoneId);
+    });
+
+    let zone = null;
+    if (dungeon) {
+      zone = dungeon.zones.find(z => z.id === zoneId);
+    } else {
+      zone = global.REALM?.data?.zonesById?.[zoneId];
+    }
+
     if (!zone) return false;
 
     const player = global.State?.getPlayer();
     if (!player) return false;
 
-    // Check level requirement
-    if (player.level < zone.level) {
+    // Check level requirement (only for regular zones, not dungeon zones)
+    if (!dungeon && player.level < zone.level) {
       global.Toast?.show({
         type: 'error',
         title: 'Zone Locked',
@@ -24,7 +45,24 @@
       return false;
     }
 
+    // Check dungeon level requirement
+    if (dungeon && player.level < dungeon.minLevel) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'Dungeon Locked',
+        text: `You must be level ${dungeon.minLevel} to enter ${dungeon.name}.`
+      });
+      return false;
+    }
+
+    // Update zone (could be dungeon zone or regular zone)
     global.State?.updatePlayer({ currentZone: zoneId });
+    
+    // If it's a dungeon zone, update the zone data structure
+    if (dungeon) {
+      // Store dungeon context
+      global.State?.updatePlayer({ currentDungeon: dungeon.id, currentDungeonZone: zoneId });
+    }
 
     // Track exploration
     if (player.currentTile) {
@@ -63,7 +101,30 @@
     if (!player) return [];
 
     const allZones = global.REALM?.data?.zones || [];
-    return allZones.filter(zone => zone.level <= (player.level || 1));
+    const available = allZones.filter(zone => zone.level <= (player.level || 1));
+    
+    // Add dungeon entrance if player is high enough level
+    const dungeons = Object.values(global.REALM?.data?.dungeonsById || {});
+    dungeons.forEach(dungeon => {
+      if (player.level >= dungeon.minLevel) {
+        // Find entrance zone
+        const entranceZone = dungeon.zones.find(z => z.id.includes('entrance'));
+        if (entranceZone) {
+          // Check if it's already in zones.json, if not add it
+          const exists = allZones.find(z => z.id === entranceZone.id);
+          if (!exists) {
+            available.push({
+              id: entranceZone.id,
+              name: dungeon.name + ' (Entrance)',
+              level: dungeon.minLevel,
+              description: entranceZone.description
+            });
+          }
+        }
+      }
+    });
+    
+    return available;
   }
 
   function getRandomMonster() {

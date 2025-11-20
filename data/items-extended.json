@@ -1,0 +1,372 @@
+[
+  {
+    "itemId": "chieftain_blade",
+    "name": "Chieftain Blade",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 8,
+    "icon": "⚔️",
+    "stats": { "atk": 12 },
+    "durability": 120,
+    "description": "A crude but effective blade taken from a goblin chieftain."
+  },
+  {
+    "itemId": "goblin_chieftain_helm",
+    "name": "Goblin Chieftain Helm",
+    "type": "armor",
+    "tier": "T1",
+    "level": 8,
+    "icon": "🪖",
+    "stats": { "def": 6 },
+    "durability": 100,
+    "description": "A helm fashioned from bone and metal, worn by goblin leaders."
+  },
+  {
+    "itemId": "warren_key",
+    "name": "Warren Key",
+    "type": "quest",
+    "tier": "T0",
+    "icon": "🗝️",
+    "stats": {},
+    "description": "A key that unlocks passages in the Gloomfang Warren."
+  },
+  {
+    "itemId": "minor_healing_potion",
+    "name": "Minor Healing Potion",
+    "type": "consumable",
+    "tier": "T1",
+    "icon": "🧪",
+    "stats": { "restoreHp": 30 },
+    "description": "A small vial of healing liquid."
+  },
+  {
+    "itemId": "captain_sword",
+    "name": "Captain Sword",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 9,
+    "icon": "🗡️",
+    "stats": { "atk": 15 },
+    "durability": 140,
+    "description": "A well-maintained blade used by goblin captains."
+  },
+  {
+    "itemId": "guard_plate",
+    "name": "Guard Plate",
+    "type": "armor",
+    "tier": "T1",
+    "level": 9,
+    "icon": "🛡️",
+    "stats": { "def": 8 },
+    "durability": 120,
+    "description": "Reinforced plate armor from the guard post."
+  },
+  {
+    "itemId": "deep_passage_key",
+    "name": "Deep Passage Key",
+    "type": "quest",
+    "tier": "T0",
+    "icon": "🗝️",
+    "stats": {},
+    "description": "A key that grants access to the deeper passages."
+  },
+  {
+    "itemId": "healing_potion",
+    "name": "Healing Potion",
+    "type": "consumable",
+    "tier": "T1",
+    "icon": "🧪",
+    "stats": { "restoreHp": 50 },
+    "description": "A vial of healing liquid."
+  },
+  {
+    "itemId": "dark_shaman_staff",
+    "name": "Dark Shaman Staff",
+    "type": "weapon",
+    "tier": "T2",
+    "level": 11,
+    "icon": "🪄",
+    "stats": { "atk": 18, "magic": 5 },
+    "durability": 160,
+    "description": "A staff imbued with dark magic, pulsing with shadow energy."
+  },
+  {
+    "itemId": "shadow_robe",
+    "name": "Shadow Robe",
+    "type": "armor",
+    "tier": "T2",
+    "level": 11,
+    "icon": "👘",
+    "stats": { "def": 10, "magic": 3 },
+    "durability": 130,
+    "description": "A robe that seems to drink the light around it."
+  },
+  {
+    "itemId": "dark_essence_crystal",
+    "name": "Dark Essence Crystal",
+    "type": "material",
+    "tier": "T2",
+    "icon": "💎",
+    "stats": {},
+    "description": "A crystal of pure dark essence, valuable to dark mages."
+  },
+  {
+    "itemId": "greater_healing_potion",
+    "name": "Greater Healing Potion",
+    "type": "consumable",
+    "tier": "T2",
+    "icon": "🧪",
+    "stats": { "restoreHp": 100 },
+    "description": "A powerful healing potion that restores significant health."
+  },
+  {
+    "itemId": "overlord_axe",
+    "name": "Overlord Axe",
+    "type": "weapon",
+    "tier": "T2",
+    "level": 12,
+    "icon": "🪓",
+    "stats": { "atk": 22 },
+    "durability": 180,
+    "description": "A massive axe wielded by the Gloomfang Overlord. Its edge never dulls."
+  },
+  {
+    "itemId": "overlord_crown",
+    "name": "Overlord Crown",
+    "type": "armor",
+    "tier": "T2",
+    "level": 12,
+    "icon": "👑",
+    "stats": { "def": 12, "atk": 2 },
+    "durability": 150,
+    "description": "A crown of dark metal, symbol of absolute authority."
+  },
+  {
+    "itemId": "overlord_armor",
+    "name": "Overlord Armor",
+    "type": "armor",
+    "tier": "T2",
+    "level": 12,
+    "icon": "🛡️",
+    "stats": { "def": 15 },
+    "durability": 200,
+    "description": "Masterfully crafted armor fit for a goblin overlord."
+  },
+  {
+    "itemId": "ancient_key",
+    "name": "Ancient Key",
+    "type": "quest",
+    "tier": "T1",
+    "icon": "🗝️",
+    "stats": {},
+    "description": "An ancient key of unknown origin. It hums with old magic."
+  },
+  {
+    "itemId": "rare_gem",
+    "name": "Rare Gem",
+    "type": "material",
+    "tier": "T2",
+    "icon": "💎",
+    "stats": {},
+    "description": "A rare gem of exceptional quality, worth a fortune."
+  },
+  {
+    "itemId": "goblin_ear",
+    "name": "Goblin Ear",
+    "type": "quest",
+    "tier": "T0",
+    "icon": "👂",
+    "stats": {},
+    "description": "A goblin ear, proof of a kill. Some quests require these."
+  },
+  {
+    "itemId": "raider_blade",
+    "name": "Raider Blade",
+    "type": "weapon",
+    "tier": "T0",
+    "level": 6,
+    "icon": "🗡️",
+    "stats": { "atk": 8 },
+    "durability": 80,
+    "description": "A blade favored by goblin raiders."
+  },
+  {
+    "itemId": "leather_scraps",
+    "name": "Leather Scraps",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🧵",
+    "stats": {},
+    "description": "Scraps of leather, useful for basic crafting."
+  },
+  {
+    "itemId": "shaman_staff",
+    "name": "Shaman Staff",
+    "type": "weapon",
+    "tier": "T0",
+    "level": 6,
+    "icon": "🪄",
+    "stats": { "atk": 6, "magic": 3 },
+    "durability": 70,
+    "description": "A simple staff used by goblin shamans."
+  },
+  {
+    "itemId": "warrior_sword",
+    "name": "Warrior Sword",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 7,
+    "icon": "⚔️",
+    "stats": { "atk": 10 },
+    "durability": 100,
+    "description": "A reliable sword used by goblin warriors."
+  },
+  {
+    "itemId": "elite_blade",
+    "name": "Elite Blade",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 7,
+    "icon": "🗡️",
+    "stats": { "atk": 12 },
+    "durability": 110,
+    "description": "A superior blade carried by elite goblin fighters."
+  },
+  {
+    "itemId": "reinforced_leather",
+    "name": "Reinforced Leather",
+    "type": "material",
+    "tier": "T1",
+    "icon": "🛡️",
+    "stats": {},
+    "description": "Tough leather reinforced with metal studs."
+  },
+  {
+    "itemId": "guard_spear",
+    "name": "Guard Spear",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 8,
+    "icon": "🔱",
+    "stats": { "atk": 14 },
+    "durability": 120,
+    "description": "A long spear used by goblin guards."
+  },
+  {
+    "itemId": "chainmail_piece",
+    "name": "Chainmail Piece",
+    "type": "material",
+    "tier": "T1",
+    "icon": "⛓️",
+    "stats": {},
+    "description": "A piece of chainmail armor, can be repaired or reforged."
+  },
+  {
+    "itemId": "berserker_axe",
+    "name": "Berserker Axe",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 8,
+    "icon": "🪓",
+    "stats": { "atk": 16 },
+    "durability": 100,
+    "description": "A brutal axe favored by goblin berserkers."
+  },
+  {
+    "itemId": "bloodstained_cloth",
+    "name": "Bloodstained Cloth",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🧵",
+    "stats": {},
+    "description": "Cloth stained with the blood of many battles."
+  },
+  {
+    "itemId": "shadow_staff",
+    "name": "Shadow Staff",
+    "type": "weapon",
+    "tier": "T1",
+    "level": 9,
+    "icon": "🪄",
+    "stats": { "atk": 10, "magic": 5 },
+    "durability": 130,
+    "description": "A staff that channels shadow magic."
+  },
+  {
+    "itemId": "dark_essence",
+    "name": "Dark Essence",
+    "type": "material",
+    "tier": "T1",
+    "icon": "💎",
+    "stats": {},
+    "description": "Essence tainted by dark magic."
+  },
+  {
+    "itemId": "guardian_mace",
+    "name": "Guardian Mace",
+    "type": "weapon",
+    "tier": "T2",
+    "level": 10,
+    "icon": "🔨",
+    "stats": { "atk": 20 },
+    "durability": 150,
+    "description": "A heavy mace wielded by dark guardians."
+  },
+  {
+    "itemId": "dark_plate",
+    "name": "Dark Plate",
+    "type": "armor",
+    "tier": "T2",
+    "level": 10,
+    "icon": "🛡️",
+    "stats": { "def": 14 },
+    "durability": 160,
+    "description": "Plate armor forged in darkness, offering excellent protection."
+  },
+  {
+    "itemId": "bat_wing",
+    "name": "Bat Wing",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦇",
+    "stats": {},
+    "description": "A leathery wing from a cave bat."
+  },
+  {
+    "itemId": "bat_fang",
+    "name": "Bat Fang",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦷",
+    "stats": {},
+    "description": "A sharp fang from a cave bat."
+  },
+  {
+    "itemId": "drake_scale",
+    "name": "Drake Scale",
+    "type": "material",
+    "tier": "T2",
+    "icon": "🐉",
+    "stats": {},
+    "description": "A tough scale from a cave drake, valuable for crafting."
+  },
+  {
+    "itemId": "drake_fang",
+    "name": "Drake Fang",
+    "type": "material",
+    "tier": "T2",
+    "icon": "🦷",
+    "stats": {},
+    "description": "A massive fang from a cave drake."
+  },
+  {
+    "itemId": "drake_essence",
+    "name": "Drake Essence",
+    "type": "material",
+    "tier": "T2",
+    "icon": "💎",
+    "stats": {},
+    "description": "Pure essence extracted from a drake, pulsing with power."
+  }
+]
+

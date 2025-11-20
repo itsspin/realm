@@ -1,0 +1,160 @@
+[
+  {
+    "id": "thronehold_class_trainer_warrior",
+    "name": "Master Valdric",
+    "type": "class_trainer",
+    "class": "warrior",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A grizzled veteran warrior who has seen countless battles.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_class_trainer_mage",
+    "name": "Archmage Elara",
+    "type": "class_trainer",
+    "class": "mage",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A wise mage who has studied the arcane arts for decades.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_class_trainer_ranger",
+    "name": "Ranger Kaelen",
+    "type": "class_trainer",
+    "class": "ranger",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A skilled ranger who knows the wilds like the back of his hand.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_class_trainer_rogue",
+    "name": "Shadowmaster Vex",
+    "type": "class_trainer",
+    "class": "rogue",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A master of shadows and stealth, known for his cunning.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_class_trainer_craftsman",
+    "name": "Master Smith Torin",
+    "type": "class_trainer",
+    "class": "craftsman",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A master craftsman whose work is renowned throughout the realm.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_guard",
+    "name": "Thronehold Guard",
+    "type": "guard",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A city guard keeping watch over the gates.",
+    "faction": "thronehold_guards",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "thronehold_merchant",
+    "name": "Merchant Garth",
+    "type": "merchant",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A friendly merchant selling basic supplies.",
+    "services": ["buy", "sell"]
+  },
+  {
+    "id": "thronehold_banker",
+    "name": "Banker Aldric",
+    "type": "banker",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "The city banker, keeper of vaults and gold.",
+    "services": ["deposit", "withdraw"]
+  },
+  {
+    "id": "thronehold_auctioneer",
+    "name": "Auctioneer Marcus",
+    "type": "auctioneer",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "The city auctioneer, managing the auction house.",
+    "services": ["auction_house"]
+  },
+  {
+    "id": "silverweave_class_trainer_warrior",
+    "name": "Blade Master Sylas",
+    "type": "class_trainer",
+    "class": "warrior",
+    "city": "silverweave",
+    "zone": "weeping_woods_outskirts",
+    "description": "An elven warrior who has mastered the art of the blade.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "silverweave_class_trainer_mage",
+    "name": "Archmage Lyra",
+    "type": "class_trainer",
+    "class": "mage",
+    "city": "silverweave",
+    "zone": "weeping_woods_outskirts",
+    "description": "An ancient elven mage with deep knowledge of arcane magic.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "silverweave_guard",
+    "name": "Silverweave Warden",
+    "type": "guard",
+    "city": "silverweave",
+    "zone": "weeping_woods_outskirts",
+    "description": "An elven ranger guarding the city.",
+    "faction": "silverweave_guards",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "ironhold_class_trainer_warrior",
+    "name": "Battlemaster Dorn",
+    "type": "class_trainer",
+    "class": "warrior",
+    "city": "ironhold",
+    "zone": "stonecrag_outskirts",
+    "description": "A dwarven warrior whose axe has never failed him.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "ironhold_guard",
+    "name": "Ironhold Sentinel",
+    "type": "guard",
+    "city": "ironhold",
+    "zone": "stonecrag_outskirts",
+    "description": "A dwarven guard standing watch at the city gates.",
+    "faction": "ironhold_guards",
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "bloodmire_class_trainer_warrior",
+    "name": "Warlord Grot",
+    "type": "class_trainer",
+    "class": "warrior",
+    "city": "bloodmire",
+    "zone": "boglands_outskirts",
+    "description": "A fierce orc warrior who has claimed many victories.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "shadowgrave_class_trainer_mage",
+    "name": "Necromancer Zara",
+    "type": "class_trainer",
+    "class": "mage",
+    "city": "shadowgrave",
+    "zone": "cryptlands_outskirts",
+    "description": "A dark mage who has mastered the arts of death and shadow.",
+    "services": ["train_skills", "train_spells"]
+  }
+]
+

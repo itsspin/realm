@@ -155,26 +155,89 @@ h3 {
   background-clip: text;
 }
 
-/* Main Layout */
+/* Main Layout - 3 Column: Left Sidebar | Main Game | Right Sidebar (Map) */
 .app-main {
   position: relative;
   z-index: 2;
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  padding-bottom: 8rem;
+  grid-template-columns: 280px 1fr 320px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  padding-bottom: 12rem; /* Space for chat window */
+  height: calc(100vh - 64px);
+  overflow: hidden;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 1400px) {
   .app-main {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 250px 1fr 280px;
   }
 }
 
-/* Narrative Log - Primary Game View */
-.narrative-log {
+@media (max-width: 1200px) {
+  .app-main {
+    grid-template-columns: 220px 1fr 250px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .app-main {
+    grid-template-columns: 200px 1fr;
+  }
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    padding-bottom: 14rem;
+  }
+  .left-sidebar {
+    display: none;
+  }
+}
+
+/* Left Sidebar */
+.left-sidebar {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  overflow-y: auto;
+  height: 100%;
+}
+
+.sidebar-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold-muted);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.character-header-section {
+  border-bottom: var(--border-medium);
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Main Game Area */
+.main-game-area {
   background: 
     linear-gradient(135deg, rgba(26, 31, 46, 0.85) 0%, rgba(42, 37, 32, 0.9) 100%),
     radial-gradient(circle at top left, rgba(201, 125, 61, 0.1), transparent 50%);
@@ -184,8 +247,25 @@ h3 {
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(212, 196, 168, 0.1);
   position: relative;
   overflow-y: auto;
-  max-height: calc(100vh - 200px);
-  min-height: 400px;
+  height: 100%;
+}
+
+.narrative-content {
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+/* Right Sidebar - Map */
+.right-sidebar {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.9) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .narrative-log::before {
@@ -839,6 +919,77 @@ h3 {
 }
 
 /* World Map */
+.right-sidebar .world-map-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.map-canvas-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  background: var(--ink-deep);
+  cursor: grab;
+}
+
+.map-canvas-wrapper.dragging {
+  cursor: grabbing;
+}
+
+#worldMapCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map-controls {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  justify-content: center;
+}
+
+.map-zoom-btn {
+  padding: 0.25rem 0.5rem;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  color: var(--fg-primary);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.map-zoom-btn:hover {
+  background: rgba(201, 125, 61, 0.3);
+  border-color: var(--ember-orange);
+}
+
+.map-legend {
+  padding: var(--spacing-xs);
+  font-size: 0.8rem;
+  color: var(--fg-secondary);
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
 .world-map-container {
   background: rgba(26, 31, 46, 0.9);
   border: var(--border-medium);

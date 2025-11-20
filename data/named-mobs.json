@@ -1,0 +1,89 @@
+[
+  {
+    "id": "gloomfang_chieftain",
+    "name": "Gloomfang Chieftain",
+    "level": 8,
+    "hp": 150,
+    "maxHp": 150,
+    "atk": 25,
+    "def": 12,
+    "xp": 500,
+    "gold": 50,
+    "spawnZone": "gloomfang_warren",
+    "respawnTime": 3600000,
+    "lootTable": [
+      { "itemId": "chieftain_blade", "chance": 0.15 },
+      { "itemId": "goblin_chieftain_helm", "chance": 0.12 },
+      { "itemId": "warren_key", "chance": 0.20 },
+      { "itemId": "minor_healing_potion", "chance": 0.30 },
+      { "itemId": null, "chance": 0.23 }
+    ],
+    "description": "The leader of the Gloomfang goblin tribe. His eyes burn with cunning and cruelty."
+  },
+  {
+    "id": "gloomfang_captain",
+    "name": "Gloomfang Captain",
+    "level": 9,
+    "hp": 180,
+    "maxHp": 180,
+    "atk": 28,
+    "def": 15,
+    "xp": 650,
+    "gold": 75,
+    "spawnZone": "gloomfang_guard_post",
+    "respawnTime": 3600000,
+    "lootTable": [
+      { "itemId": "captain_sword", "chance": 0.12 },
+      { "itemId": "guard_plate", "chance": 0.10 },
+      { "itemId": "deep_passage_key", "chance": 0.25 },
+      { "itemId": "healing_potion", "chance": 0.25 },
+      { "itemId": null, "chance": 0.28 }
+    ],
+    "description": "A hardened goblin warrior who commands the guard post. His armor is scarred from countless battles."
+  },
+  {
+    "id": "gloomfang_dark_shaman",
+    "name": "Gloomfang Dark Shaman",
+    "level": 11,
+    "hp": 200,
+    "maxHp": 200,
+    "atk": 22,
+    "def": 10,
+    "xp": 800,
+    "gold": 100,
+    "spawnZone": "gloomfang_deep_caverns",
+    "respawnTime": 5400000,
+    "lootTable": [
+      { "itemId": "dark_shaman_staff", "chance": 0.10 },
+      { "itemId": "shadow_robe", "chance": 0.08 },
+      { "itemId": "dark_essence_crystal", "chance": 0.15 },
+      { "itemId": "greater_healing_potion", "chance": 0.20 },
+      { "itemId": null, "chance": 0.47 }
+    ],
+    "description": "A goblin shaman corrupted by dark magic. Shadows writhe around him like living things."
+  },
+  {
+    "id": "gloomfang_overlord",
+    "name": "Gloomfang Overlord",
+    "level": 12,
+    "hp": 300,
+    "maxHp": 300,
+    "atk": 35,
+    "def": 18,
+    "xp": 1200,
+    "gold": 200,
+    "spawnZone": "gloomfang_abyss",
+    "respawnTime": 7200000,
+    "lootTable": [
+      { "itemId": "overlord_axe", "chance": 0.08 },
+      { "itemId": "overlord_crown", "chance": 0.06 },
+      { "itemId": "overlord_armor", "chance": 0.05 },
+      { "itemId": "ancient_key", "chance": 0.10 },
+      { "itemId": "greater_healing_potion", "chance": 0.15 },
+      { "itemId": "rare_gem", "chance": 0.10 },
+      { "itemId": null, "chance": 0.46 }
+    ],
+    "description": "The ultimate ruler of the Gloomfang tribe. His presence alone is enough to make lesser goblins cower in fear."
+  }
+]
+

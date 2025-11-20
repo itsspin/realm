@@ -1,26 +1,178 @@
-
 [
   {
-    "itemId": "short_spear",
-    "name": "Short Spear",
+    "itemId": "rusty_dagger",
+    "name": "Rusty Dagger",
     "type": "weapon",
     "tier": "T0",
     "icon": "🗡️",
     "stats": {
-      "atk": 2
+      "atk": 1
     },
-    "recipe": [
-      ["ore", 2],
-      ["timber", 1]
-    ],
-    "durability": 60,
-    "makerMark": true,
+    "recipe": null,
+    "durability": 40,
+    "makerMark": false,
     "affixes": [],
-    "description": "A crude but effective weapon, forged from basic materials."
+    "description": "A worn and rusted blade, barely serviceable."
   },
   {
-    "itemId": "iron_sword",
-    "name": "Iron Sword",
+    "itemId": "tattered_cloth",
+    "name": "Tattered Cloth",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🧵",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Scraps of worn fabric, useful for basic crafting."
+  },
+  {
+    "itemId": "boar_hide",
+    "name": "Boar Hide",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦌",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Tough hide from a wild boar."
+  },
+  {
+    "itemId": "raw_meat",
+    "name": "Raw Meat",
+    "type": "consumable",
+    "tier": "T0",
+    "icon": "🥩",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Fresh meat that can be cooked or eaten raw."
+  },
+  {
+    "itemId": "wolf_pelt",
+    "name": "Wolf Pelt",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🐺",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "A thick pelt from a forest wolf."
+  },
+  {
+    "itemId": "fangs",
+    "name": "Fangs",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦷",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Sharp fangs that can be used in crafting."
+  },
+  {
+    "itemId": "sprite_dust",
+    "name": "Sprite Dust",
+    "type": "material",
+    "tier": "T1",
+    "icon": "✨",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Glowing dust left behind by sprites, rich in arcane energy."
+  },
+  {
+    "itemId": "minor_essence",
+    "name": "Minor Essence",
+    "type": "material",
+    "tier": "T1",
+    "icon": "💎",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "A small crystal of pure magical essence."
+  },
+  {
+    "itemId": "stone_core",
+    "name": "Stone Core",
+    "type": "material",
+    "tier": "T1",
+    "icon": "🪨",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "The magical core of a stone golem."
+  },
+  {
+    "itemId": "rough_ore",
+    "name": "Rough Ore",
+    "type": "material",
+    "tier": "T0",
+    "icon": "⛏️",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Unrefined ore that can be smelted."
+  },
+  {
+    "itemId": "bone_fragment",
+    "name": "Bone Fragment",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦴",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "A fragment of bone, useful for dark crafting."
+  },
+  {
+    "itemId": "wraith_essence",
+    "name": "Wraith Essence",
+    "type": "material",
+    "tier": "T1",
+    "icon": "👻",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "The ethereal essence of a wraith, pulsing with dark energy."
+  },
+  {
+    "itemId": "soul_shard",
+    "name": "Soul Shard",
+    "type": "material",
+    "tier": "T2",
+    "icon": "💀",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "A fragment of a trapped soul, valuable to dark mages."
+  },
+  {
+    "itemId": "iron_blade",
+    "name": "Iron Blade",
     "type": "weapon",
     "tier": "T1",
     "icon": "⚔️",
@@ -34,10 +186,28 @@
     "durability": 100,
     "makerMark": true,
     "affixes": [],
-    "description": "A well-crafted blade of iron, balanced and sharp."
+    "description": "A well-crafted iron blade, reliable and sharp."
   },
   {
-    "itemId": "charm_minor",
+    "itemId": "leather_vest",
+    "name": "Leather Vest",
+    "type": "armor",
+    "tier": "T1",
+    "icon": "🛡️",
+    "stats": {
+      "def": 3
+    },
+    "recipe": [
+      ["hide", 3],
+      ["timber", 1]
+    ],
+    "durability": 80,
+    "makerMark": true,
+    "affixes": [],
+    "description": "Light armor crafted from beast hide."
+  },
+  {
+    "itemId": "minor_charm",
     "name": "Minor Charm",
     "type": "charm",
     "tier": "T1",
@@ -67,21 +237,58 @@
     "description": "Tough hide from a slain beast, useful for crafting."
   },
   {
-    "itemId": "leather_armor",
-    "name": "Leather Armor",
-    "type": "armor",
-    "tier": "T1",
-    "icon": "🛡️",
+    "itemId": "steel_longsword",
+    "name": "Steel Longsword",
+    "type": "weapon",
+    "tier": "T2",
+    "icon": "🗡️",
     "stats": {
-      "def": 3
+      "atk": 10
     },
     "recipe": [
-      ["hide", 3],
-      ["timber", 1]
+      ["ore", 10],
+      ["timber", 2],
+      ["essence", 1]
     ],
-    "durability": 80,
+    "durability": 150,
     "makerMark": true,
     "affixes": [],
-    "description": "Light armor crafted from beast hide."
+    "description": "A masterfully crafted steel blade, balanced and deadly."
+  },
+  {
+    "itemId": "chainmail_coat",
+    "name": "Chainmail Coat",
+    "type": "armor",
+    "tier": "T2",
+    "icon": "🛡️",
+    "stats": {
+      "def": 8
+    },
+    "recipe": [
+      ["ore", 15],
+      ["hide", 5]
+    ],
+    "durability": 120,
+    "makerMark": true,
+    "affixes": [],
+    "description": "Interlocking metal rings provide excellent protection."
+  },
+  {
+    "itemId": "greater_charm",
+    "name": "Greater Charm",
+    "type": "charm",
+    "tier": "T2",
+    "icon": "💎",
+    "stats": {
+      "all": 3
+    },
+    "recipe": [
+      ["essence", 5],
+      ["sprite_dust", 2]
+    ],
+    "durability": null,
+    "makerMark": true,
+    "affixes": [],
+    "description": "A powerful talisman that radiates arcane energy."
   }
 ]

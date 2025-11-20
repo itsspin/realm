@@ -4,64 +4,274 @@
     "name": "Goblin Scout",
     "level": 1,
     "hp": 15,
-    "maxHp": 15,
     "atk": 3,
     "def": 1,
     "xp": 10,
-    "gold": 5,
-    "lootTable": [
-      { "itemId": "short_spear", "chance": 0.15 },
-      { "itemId": null, "chance": 0.85 }
-    ],
-    "description": "A wiry goblin with keen eyes, scouting the edges of the realm."
+    "gold": 2,
+    "loot": ["rusty_dagger", "tattered_cloth"]
   },
   {
-    "id": "shadow_wolf",
-    "name": "Shadow Wolf",
+    "id": "wild_boar",
+    "name": "Wild Boar",
+    "level": 1,
+    "hp": 20,
+    "atk": 4,
+    "def": 2,
+    "xp": 12,
+    "gold": 3,
+    "loot": ["boar_hide", "raw_meat"]
+  },
+  {
+    "id": "forest_wolf",
+    "name": "Forest Wolf",
     "level": 2,
     "hp": 25,
-    "maxHp": 25,
     "atk": 5,
     "def": 2,
-    "xp": 20,
-    "gold": 10,
-    "lootTable": [
-      { "itemId": "iron_sword", "chance": 0.1 },
-      { "itemId": null, "chance": 0.9 }
-    ],
-    "description": "A creature of darkness, its eyes gleam with malevolent hunger."
+    "xp": 15,
+    "gold": 4,
+    "loot": ["wolf_pelt", "fangs"]
+  },
+  {
+    "id": "corrupted_sprite",
+    "name": "Corrupted Sprite",
+    "level": 2,
+    "hp": 18,
+    "atk": 6,
+    "def": 1,
+    "xp": 18,
+    "gold": 5,
+    "loot": ["sprite_dust", "minor_essence"]
+  },
+  {
+    "id": "cave_rat",
+    "name": "Cave Rat",
+    "level": 1,
+    "hp": 12,
+    "atk": 2,
+    "def": 1,
+    "xp": 8,
+    "gold": 1,
+    "loot": ["rat_tail", "filthy_rag"]
+  },
+  {
+    "id": "stone_golem",
+    "name": "Stone Golem",
+    "level": 3,
+    "hp": 40,
+    "atk": 6,
+    "def": 5,
+    "xp": 25,
+    "gold": 8,
+    "loot": ["stone_core", "rough_ore"]
+  },
+  {
+    "id": "swamp_rat",
+    "name": "Swamp Rat",
+    "level": 1,
+    "hp": 14,
+    "atk": 3,
+    "def": 1,
+    "xp": 9,
+    "gold": 2,
+    "loot": ["diseased_hide", "mud_clump"]
+  },
+  {
+    "id": "bog_wisp",
+    "name": "Bog Wisp",
+    "level": 2,
+    "hp": 16,
+    "atk": 5,
+    "def": 0,
+    "xp": 14,
+    "gold": 4,
+    "loot": ["bog_essence", "foul_mist"]
+  },
+  {
+    "id": "skeleton_scout",
+    "name": "Skeleton Scout",
+    "level": 2,
+    "hp": 22,
+    "atk": 4,
+    "def": 3,
+    "xp": 16,
+    "gold": 5,
+    "loot": ["bone_fragment", "tattered_armor"]
+  },
+  {
+    "id": "grave_wraith",
+    "name": "Grave Wraith",
+    "level": 3,
+    "hp": 28,
+    "atk": 7,
+    "def": 2,
+    "xp": 22,
+    "gold": 7,
+    "loot": ["wraith_essence", "soul_shard"]
+  },
+  {
+    "id": "blackwood_bear",
+    "name": "Blackwood Bear",
+    "level": 5,
+    "hp": 60,
+    "atk": 12,
+    "def": 6,
+    "xp": 50,
+    "gold": 15,
+    "loot": ["bear_hide", "bear_claw", "raw_meat"]
+  },
+  {
+    "id": "shadow_stalker",
+    "name": "Shadow Stalker",
+    "level": 6,
+    "hp": 45,
+    "atk": 14,
+    "def": 4,
+    "xp": 60,
+    "gold": 18,
+    "loot": ["shadow_essence", "dark_cloth"]
   },
   {
     "id": "corrupted_treant",
     "name": "Corrupted Treant",
-    "level": 3,
-    "hp": 40,
-    "maxHp": 40,
-    "atk": 6,
-    "def": 4,
-    "xp": 35,
+    "level": 7,
+    "hp": 80,
+    "atk": 10,
+    "def": 8,
+    "xp": 75,
     "gold": 20,
-    "lootTable": [
-      { "itemId": "charm_minor", "chance": 0.2 },
-      { "itemId": null, "chance": 0.8 }
-    ],
-    "description": "An ancient tree twisted by dark magic, its bark oozes with corruption."
+    "loot": ["corrupted_wood", "ancient_bark"]
   },
   {
-    "id": "wraith",
-    "name": "Wraith",
-    "level": 4,
-    "hp": 35,
-    "maxHp": 35,
-    "atk": 8,
+    "id": "plains_raider",
+    "name": "Plains Raider",
+    "level": 8,
+    "hp": 55,
+    "atk": 16,
+    "def": 5,
+    "xp": 85,
+    "gold": 25,
+    "loot": ["raider_blade", "leather_armor", "stolen_gold"]
+  },
+  {
+    "id": "dust_elemental",
+    "name": "Dust Elemental",
+    "level": 9,
+    "hp": 70,
+    "atk": 18,
     "def": 3,
-    "xp": 50,
+    "xp": 100,
     "gold": 30,
-    "lootTable": [
-      { "itemId": "charm_minor", "chance": 0.3 },
-      { "itemId": null, "chance": 0.7 }
-    ],
-    "description": "A spectral entity, its form flickers between worlds."
+    "loot": ["elemental_core", "dust_essence"]
+  },
+  {
+    "id": "ruin_ghost",
+    "name": "Ruin Ghost",
+    "level": 10,
+    "hp": 50,
+    "atk": 20,
+    "def": 2,
+    "xp": 110,
+    "gold": 35,
+    "loot": ["ghostly_essence", "ancient_relic"]
+  },
+  {
+    "id": "sand_scorpion",
+    "name": "Sand Scorpion",
+    "level": 12,
+    "hp": 90,
+    "atk": 22,
+    "def": 7,
+    "xp": 150,
+    "gold": 40,
+    "loot": ["scorpion_stinger", "chitin_plate"]
+  },
+  {
+    "id": "waste_bandit",
+    "name": "Waste Bandit",
+    "level": 13,
+    "hp": 75,
+    "atk": 24,
+    "def": 6,
+    "xp": 170,
+    "gold": 50,
+    "loot": ["bandit_blade", "stolen_supplies", "bandit_gold"]
+  },
+  {
+    "id": "desert_phantom",
+    "name": "Desert Phantom",
+    "level": 14,
+    "hp": 65,
+    "atk": 26,
+    "def": 4,
+    "xp": 190,
+    "gold": 55,
+    "loot": ["phantom_essence", "mirage_cloth"]
+  },
+  {
+    "id": "frost_wolf",
+    "name": "Frost Wolf",
+    "level": 15,
+    "hp": 100,
+    "atk": 28,
+    "def": 8,
+    "xp": 220,
+    "gold": 60,
+    "loot": ["frost_pelt", "ice_fang"]
+  },
+  {
+    "id": "ice_elemental",
+    "name": "Ice Elemental",
+    "level": 16,
+    "hp": 120,
+    "atk": 30,
+    "def": 10,
+    "xp": 250,
+    "gold": 70,
+    "loot": ["ice_core", "frozen_essence"]
+  },
+  {
+    "id": "mountain_troll",
+    "name": "Mountain Troll",
+    "level": 17,
+    "hp": 150,
+    "atk": 32,
+    "def": 12,
+    "xp": 280,
+    "gold": 80,
+    "loot": ["troll_hide", "massive_claw"]
+  },
+  {
+    "id": "void_walker",
+    "name": "Void Walker",
+    "level": 20,
+    "hp": 200,
+    "atk": 40,
+    "def": 15,
+    "xp": 400,
+    "gold": 120,
+    "loot": ["void_essence", "dimensional_shard", "reality_fragment"]
+  },
+  {
+    "id": "reality_tear",
+    "name": "Reality Tear",
+    "level": 22,
+    "hp": 180,
+    "atk": 45,
+    "def": 12,
+    "xp": 450,
+    "gold": 140,
+    "loot": ["tear_fragment", "chaos_essence"]
+  },
+  {
+    "id": "dimensional_horror",
+    "name": "Dimensional Horror",
+    "level": 25,
+    "hp": 300,
+    "atk": 50,
+    "def": 18,
+    "xp": 600,
+    "gold": 200,
+    "loot": ["horror_essence", "dimensional_core", "ancient_artifact"]
   }
 ]
-
