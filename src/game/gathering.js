@@ -44,6 +44,14 @@
       meta: skillId ? `${global.Skills?.SKILL_DEFINITIONS[skillId]?.name || skillId} +${amount * 2} XP` : ''
     });
 
+    // Track gathering stats
+    global.PlayerStats?.incrementStat('resourcesGathered', amount);
+    if (resourceType === 'ore') global.PlayerStats?.incrementStat('oreMined', amount);
+    if (resourceType === 'food') global.PlayerStats?.incrementStat('fishCaught', amount);
+    if (resourceType === 'timber') global.PlayerStats?.incrementStat('herbsGathered', amount);
+    if (resourceType === 'essence') global.PlayerStats?.incrementStat('essenceHarvested', amount);
+    global.Leaderboards?.updatePlayerRanking();
+
     return true;
   }
 
@@ -52,9 +60,14 @@
       ore: 'mining',
       timber: 'herbalism',
       food: 'fishing',
-      essence: 'arcane'
+      essence: 'arcane',
+      herb: 'herbalism'
     };
     return mapping[resourceType] || null;
+  }
+
+  function gatherHerbs(tile) {
+    return gatherResource('herb', tile);
   }
 
   function calculateGatherAmount(resourceType, skillId) {
@@ -85,7 +98,8 @@
     mine,
     fish,
     harvest,
-    gatherEssence
+    gatherEssence,
+    gatherHerbs
   };
 
   global.Gathering = Gathering;

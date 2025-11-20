@@ -15,6 +15,7 @@
       atk: 5,
       def: 2
     },
+    playerStats: {}, // Separate stats for achievements/leaderboards
     gold: 25,
     inventory: [],
     equipment: {
@@ -30,7 +31,9 @@
     faction: null,
     activeQuests: [],
     completedQuests: [],
-    discoveredLore: []
+    discoveredLore: [],
+    achievements: [],
+    shop: null
   };
 
   const DEFAULT_RESOURCES = {
@@ -57,6 +60,12 @@
     }
     if (!state.player.equipment) {
       state.player.equipment = { ...DEFAULT_PLAYER.equipment };
+    }
+    if (!state.player.achievements) {
+      state.player.achievements = [];
+    }
+    if (!state.player.playerStats) {
+      state.player.playerStats = {}; // Player statistics object (separate from combat stats)
     }
     state.resources = state.resources
       ? { ...DEFAULT_RESOURCES, ...state.resources }

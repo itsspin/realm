@@ -25,6 +25,11 @@
       }
     });
 
+    // Track guild creation
+    if (global.PlayerStats) {
+      global.PlayerStats.incrementStat('guildsCreated', 1);
+    }
+
     global.Narrative?.addEntry({
       type: 'system',
       text: `You have founded the guild "${name}". May it stand strong in the realm.`,
@@ -81,6 +86,14 @@
     global.State?.updatePlayer({ guild: player.guild });
     if (global.Settlement && typeof global.Settlement.saveWorldMap === 'function') {
       global.Settlement.saveWorldMap();
+    }
+
+    // Track territory claiming
+    if (global.PlayerStats) {
+      global.PlayerStats.incrementStat('territoryClaimed', 1);
+    }
+    if (global.Leaderboards) {
+      global.Leaderboards.updatePlayerRanking();
     }
 
     global.Narrative?.addEntry({

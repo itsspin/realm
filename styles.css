@@ -963,3 +963,44 @@ h3 {
   font-size: 0.85rem;
   color: var(--fg-secondary);
 }
+
+/* Toast Types */
+.toast--achievement {
+  border-color: var(--gold-bright);
+  box-shadow: var(--shadow-medium), 0 0 20px rgba(212, 184, 138, 0.6);
+}
+
+.toast--skill {
+  border-color: var(--teal-arcane);
+  box-shadow: var(--shadow-medium), var(--glow-teal);
+}
+
+.toast--victory {
+  border-color: var(--gold-bright);
+  box-shadow: var(--shadow-medium), 0 0 20px rgba(212, 184, 138, 0.5);
+}
+
+.toast--quest {
+  border-color: var(--ember-bright);
+  box-shadow: var(--shadow-medium), var(--glow-ember);
+}
+
+.toast--craft {
+  border-color: var(--teal-arcane);
+  box-shadow: var(--shadow-medium), var(--glow-teal);
+}
+
+.toast--error {
+  border-color: #c44;
+  box-shadow: var(--shadow-medium), 0 0 12px rgba(204, 68, 68, 0.4);
+}
+
+.toast--success {
+  border-color: var(--teal-bright);
+  box-shadow: var(--shadow-medium), var(--glow-teal);
+}
+
+.toast--info {
+  border-color: var(--gold-muted);
+  box-shadow: var(--shadow-medium), 0 0 12px rgba(184, 154, 107, 0.3);
+}

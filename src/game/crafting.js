@@ -52,6 +52,10 @@
       text: `Created: ${itemId.replace(/_/g, ' ')}`
     });
 
+    // Track crafting stats
+    global.PlayerStats?.incrementStat('itemsCrafted', 1);
+    global.Leaderboards?.updatePlayerRanking();
+
     global.Rendering?.updateResourceBar();
     global.Rendering?.updateInventory();
 

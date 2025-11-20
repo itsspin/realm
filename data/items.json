@@ -52,5 +52,36 @@
     "makerMark": true,
     "affixes": [],
     "description": "A small talisman that hums with faint arcane power."
+  },
+  {
+    "itemId": "hide",
+    "name": "Hide",
+    "type": "material",
+    "tier": "T0",
+    "icon": "🦌",
+    "stats": {},
+    "recipe": null,
+    "durability": null,
+    "makerMark": false,
+    "affixes": [],
+    "description": "Tough hide from a slain beast, useful for crafting."
+  },
+  {
+    "itemId": "leather_armor",
+    "name": "Leather Armor",
+    "type": "armor",
+    "tier": "T1",
+    "icon": "🛡️",
+    "stats": {
+      "def": 3
+    },
+    "recipe": [
+      ["hide", 3],
+      ["timber", 1]
+    ],
+    "durability": 80,
+    "makerMark": true,
+    "affixes": [],
+    "description": "Light armor crafted from beast hide."
   }
 ]

@@ -233,6 +233,7 @@
       }
       if (currentTile.terrain === 'forest' || currentTile.terrain === 'plains') {
         html += `<button class="action-btn" onclick="global.Gathering.gatherEssence(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">✨ Gather Essence</button>`;
+        html += `<button class="action-btn" onclick="global.Gathering.gatherHerbs(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">🌿 Gather Herbs</button>`;
       }
       
       // Settlement placement
@@ -268,6 +269,27 @@
       html += `<button class="action-btn" onclick="global.showGuildCreation()">⚔️ Create Guild</button>`;
     } else if (player && player.guild) {
       html += `<button class="action-btn" onclick="global.showGuildInfo()">⚔️ Guild: ${player.guild.name}</button>`;
+    }
+    
+    // Auction House
+    html += `<button class="action-btn" onclick="global.Rendering.showAuctionHouse()">🏛️ Auction House</button>`;
+    
+    // Leaderboards
+    html += `<button class="action-btn" onclick="global.Rendering.showLeaderboardsMenu()">📊 Leaderboards</button>`;
+    
+    // Player Profile
+    html += `<button class="action-btn" onclick="global.Rendering.showPlayerProfile()">👤 Your Profile</button>`;
+    
+    // Alchemy (if has alchemy skill)
+    if (player && player.skills && player.skills.alchemy) {
+      html += `<button class="action-btn" onclick="global.Rendering.showAlchemy()">⚗️ Alchemy</button>`;
+    }
+
+    // Player Shop
+    if (player && player.shop) {
+      html += `<button class="action-btn" onclick="global.showShopManagement()">🏪 Manage Shop: ${player.shop.name}</button>`;
+    } else if (player) {
+      html += `<button class="action-btn" onclick="global.showShopCreation()">🏪 Open Player Shop</button>`;
     }
     
     html += '</div>';
@@ -385,6 +407,300 @@
     });
   };
 
+  global.showShopCreation = function() {
+    const name = prompt('Enter a name for your shop:');
+    if (name && name.trim().length >= 3) {
+      global.PlayerShop?.createPlayerShop(name.trim());
+      global.Rendering?.updateActionButtons();
+    } else if (name) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'Invalid Name',
+        text: 'Shop name must be at least 3 characters.'
+      });
+    }
+  };
+
+  global.showShopManagement = function() {
+    const player = global.State?.getPlayer();
+    if (!player || !player.shop) return;
+
+    global.Narrative?.addEntry({
+      type: 'system',
+      text: `Shop: ${player.shop.name} | Items Listed: ${player.shop.items?.length || 0} | Sales: ${player.shop.sales || 0} | Revenue: ${player.shop.revenue || 0} gold`,
+      meta: 'Shop Management'
+    });
+  };
+
+  function showAuctionHouse() {
+    const player = global.State?.getPlayer();
+    if (!player) return;
+
+    const myListings = global.AuctionHouse?.getMyListings(player.id) || [];
+    const allListings = global.AuctionHouse?.getListings() || [];
+
+    const overlay = document.createElement('div');
+    overlay.id = 'auctionHouseOverlay';
+    overlay.className = 'character-creation-overlay';
+    
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 800px;">
+        <h2 class="creation-title">Auction House</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">List Item</h3>
+            <select id="auctionItemSelect" class="creation-input" style="margin-bottom: 0.5rem;">
+              <option value="">Select item...</option>
+              ${(player.inventory || []).map(item => {
+                const itemData = global.REALM?.data?.itemsById?.[item.itemId];
+                return `<option value="${item.itemId}">${itemData?.name || item.itemId.replace(/_/g, ' ')}</option>`;
+              }).join('')}
+            </select>
+            <input type="number" id="auctionQuantity" class="creation-input" placeholder="Quantity" value="1" min="1" style="margin-bottom: 0.5rem;">
+            <input type="number" id="auctionPrice" class="creation-input" placeholder="Price per unit" min="1" style="margin-bottom: 0.5rem;">
+            <button class="action-btn" onclick="global.Rendering.listAuctionItem()" style="width: 100%;">List Item</button>
+          </div>
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">My Listings (${myListings.length})</h3>
+            <div style="max-height: 300px; overflow-y: auto;">
+              ${myListings.length === 0 
+                ? '<p style="color: var(--fg-secondary); font-style: italic;">No active listings</p>'
+                : myListings.map(listing => {
+                    const itemData = global.REALM?.data?.itemsById?.[listing.itemId];
+                    return `
+                      <div style="padding: 0.5rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">${itemData?.name || listing.itemId.replace(/_/g, ' ')} x${listing.quantity}</div>
+                        <div style="font-size: 0.85rem; color: var(--fg-secondary);">${listing.pricePerUnit} gold each (${listing.pricePerUnit * listing.quantity} total)</div>
+                      </div>
+                    `;
+                  }).join('')
+              }
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 1rem;">
+          <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Browse Listings (${allListings.length})</h3>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${allListings.length === 0
+              ? '<p style="color: var(--fg-secondary); font-style: italic;">No items for sale</p>'
+              : allListings.slice(0, 20).map(listing => {
+                  const itemData = global.REALM?.data?.itemsById?.[listing.itemId];
+                  const totalPrice = listing.pricePerUnit * listing.quantity;
+                  const canAfford = player.gold >= totalPrice;
+                  return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+                      <div>
+                        <div style="font-weight: 600;">${itemData?.name || listing.itemId.replace(/_/g, ' ')} x${listing.quantity}</div>
+                        <div style="font-size: 0.85rem; color: var(--fg-secondary);">Seller: ${listing.sellerName} | ${listing.pricePerUnit} gold each</div>
+                      </div>
+                      <button class="action-btn" ${!canAfford ? 'disabled' : ''} onclick="global.AuctionHouse.buyItem('${listing.id}', '${player.id}'); global.Rendering.showAuctionHouse();" style="padding: 0.5rem 1rem;">
+                        Buy (${totalPrice}g)
+                      </button>
+                    </div>
+                  `;
+                }).join('')
+            }
+          </div>
+        </div>
+        <button class="action-btn" onclick="document.getElementById('auctionHouseOverlay')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  function listAuctionItem() {
+    const itemSelect = document.getElementById('auctionItemSelect');
+    const quantityInput = document.getElementById('auctionQuantity');
+    const priceInput = document.getElementById('auctionPrice');
+
+    if (!itemSelect || !quantityInput || !priceInput) return;
+
+    const itemId = itemSelect.value;
+    const quantity = parseInt(quantityInput.value) || 1;
+    const price = parseInt(priceInput.value);
+
+    if (!itemId || !price || price < 1) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'Invalid Input',
+        text: 'Please select an item and enter a valid price.'
+      });
+      return;
+    }
+
+    const player = global.State?.getPlayer();
+    if (global.AuctionHouse?.listItem(itemId, quantity, price, player.id)) {
+      showAuctionHouse(); // Refresh
+    }
+  }
+
+  function showLeaderboardsMenu() {
+    const overlay = document.createElement('div');
+    overlay.id = 'leaderboardsMenuOverlay';
+    overlay.className = 'character-creation-overlay';
+    
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 500px;">
+        <h2 class="creation-title">Leaderboards</h2>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('level'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Highest Level</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('gold'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Wealthiest</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('monstersKilled'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Most Monsters Slain</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('itemsCrafted'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Master Craftsmen</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('tradesCompleted'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Top Traders</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('oreMined'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Master Miners</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('settlementsFounded'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Greatest Founders</button>
+          <button class="action-btn" onclick="global.Leaderboards.showLeaderboard('fame'); document.getElementById('leaderboardsMenuOverlay')?.remove();">Most Famous</button>
+        </div>
+        <button class="action-btn" onclick="document.getElementById('leaderboardsMenuOverlay')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  function showPlayerProfile() {
+    const player = global.State?.getPlayer();
+    if (!player) return;
+
+    const stats = global.PlayerStats?.getPlayerStats() || {};
+    const reputation = global.Reputation?.getPlayerReputation() || global.PlayerStats?.getPlayerReputation() || { title: null, fame: 0, specialization: 'none' };
+    const achievements = global.Achievements?.getAchievements() || [];
+
+    const overlay = document.createElement('div');
+    overlay.id = 'playerProfileOverlay';
+    overlay.className = 'character-creation-overlay';
+    
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 700px;">
+        <h2 class="creation-title">${player.name}${reputation.title ? `, ${reputation.title}` : ''}</h2>
+        <p style="text-align: center; color: var(--fg-secondary); margin-bottom: 1.5rem;">
+          ${player.race ? RACES.find(r => r.id === player.race)?.name : ''} ${player.class ? CLASSES.find(c => c.id === player.class)?.name : ''} | Level ${player.level || 1}
+        </p>
+        <p style="text-align: center; color: var(--gold-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+          Fame: ${reputation.fame || 0} | Reputation Level: ${reputation.level || 0}${reputation.specialization ? ` | Known for: ${reputation.specialization}` : ''}
+        </p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Combat</h3>
+            <div style="font-size: 0.9rem; color: var(--fg-secondary);">
+              <div>Monsters Killed: ${stats.monstersKilled || 0}</div>
+              <div>Deaths: ${stats.deaths || 0}</div>
+            </div>
+          </div>
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Gathering</h3>
+            <div style="font-size: 0.9rem; color: var(--fg-secondary);">
+              <div>Ore Mined: ${stats.oreMined || 0}</div>
+              <div>Fish Caught: ${stats.fishCaught || 0}</div>
+              <div>Resources: ${stats.resourcesGathered || 0}</div>
+            </div>
+          </div>
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Crafting</h3>
+            <div style="font-size: 0.9rem; color: var(--fg-secondary);">
+              <div>Items Crafted: ${stats.itemsCrafted || 0}</div>
+            </div>
+          </div>
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Trading</h3>
+            <div style="font-size: 0.9rem; color: var(--fg-secondary);">
+              <div>Trades: ${stats.tradesCompleted || 0}</div>
+              <div>Profit: ${(stats.profit || 0).toLocaleString()}g</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Achievements (${achievements.length})</h3>
+          <div style="max-height: 200px; overflow-y: auto;">
+            ${achievements.length === 0
+              ? '<p style="color: var(--fg-secondary); font-style: italic;">No achievements yet</p>'
+              : achievements.map(a => `
+                  <div style="padding: 0.5rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem; border-left: 2px solid var(--gold-bright);">
+                    <div style="font-weight: 600; color: var(--gold-bright);">${a.name}</div>
+                    <div style="font-size: 0.85rem; color: var(--fg-secondary);">${a.description}</div>
+                  </div>
+                `).join('')
+            }
+          </div>
+        </div>
+
+        <button class="action-btn" onclick="document.getElementById('playerProfileOverlay')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  // Need to import RACES and CLASSES for profile
+  const RACES = [
+    { id: 'human', name: 'Human' },
+    { id: 'elf', name: 'Elf' },
+    { id: 'dwarf', name: 'Dwarf' },
+    { id: 'orc', name: 'Orc' },
+    { id: 'undead', name: 'Undead' }
+  ];
+
+  const CLASSES = [
+    { id: 'warrior', name: 'Warrior' },
+    { id: 'ranger', name: 'Ranger' },
+    { id: 'mage', name: 'Mage' },
+    { id: 'rogue', name: 'Rogue' },
+    { id: 'craftsman', name: 'Craftsman' }
+  ];
+
+  function showAlchemy() {
+    const player = global.State?.getPlayer();
+    if (!player) return;
+
+    const potions = global.Alchemy?.POTIONS || [];
+    const resources = global.State?.data?.resources || {};
+
+    const overlay = document.createElement('div');
+    overlay.id = 'alchemyOverlay';
+    overlay.className = 'character-creation-overlay';
+    
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 700px;">
+        <h2 class="creation-title">Alchemy Lab</h2>
+        <p style="text-align: center; color: var(--fg-secondary); margin-bottom: 1.5rem;">
+          Brew potions and elixirs using your alchemical knowledge
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+          ${potions.map(potion => {
+            const canBrew = potion.recipe.every(([material, amount]) => {
+              return (resources[material] || 0) >= amount;
+            });
+            return `
+              <div style="padding: 1rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.5rem; border: var(--border-medium);">
+                <h3 style="color: var(--ember-bright); margin-bottom: 0.5rem;">${potion.name}</h3>
+                <p style="font-size: 0.9rem; color: var(--fg-secondary); margin-bottom: 0.75rem;">${potion.description}</p>
+                <div style="font-size: 0.85rem; color: var(--fg-secondary); margin-bottom: 0.75rem;">
+                  <div style="margin-bottom: 0.25rem;">Recipe:</div>
+                  ${potion.recipe.map(([material, amount]) => {
+                    const hasEnough = (resources[material] || 0) >= amount;
+                    return `<div style="color: ${hasEnough ? 'var(--fg-primary)' : '#c44'};">
+                      ${material}: ${amount} ${hasEnough ? '✓' : '✗'}
+                    </div>`;
+                  }).join('')}
+                </div>
+                <button class="action-btn" ${!canBrew ? 'disabled' : ''} onclick="global.Alchemy.brewPotion('${potion.id}'); global.Rendering.showAlchemy();" style="width: 100%;">
+                  Brew Potion
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <button class="action-btn" onclick="document.getElementById('alchemyOverlay')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
   global.Rendering.showWorldMap = showWorldMap;
 
   function updateResourceBar() {
@@ -497,7 +813,12 @@
     updateResourceBar,
     updateSkillsPanel,
     updateSettlementPanel,
-    showWorldMap
+    showWorldMap,
+    showAuctionHouse,
+    listAuctionItem,
+    showLeaderboardsMenu,
+    showPlayerProfile,
+    showAlchemy
   };
 
   global.Rendering = Rendering;

@@ -181,6 +181,29 @@
         meta: 'Victory!'
       });
 
+      // Track combat stats
+      if (global.PlayerStats) {
+        global.PlayerStats.incrementStat('monstersKilled', 1);
+      }
+      if (global.Leaderboards) {
+        global.Leaderboards.updatePlayerRanking();
+      }
+
+      // Offer skinning option
+      setTimeout(() => {
+        const skinBtn = document.createElement('button');
+        skinBtn.className = 'action-btn';
+        skinBtn.textContent = `🔪 Skin ${currentMonster.name}`;
+        skinBtn.onclick = () => {
+          global.Skinning?.skinMonster(currentMonster.id);
+          skinBtn.remove();
+        };
+        const actionButtons = document.getElementById('actionButtons');
+        if (actionButtons) {
+          actionButtons.insertBefore(skinBtn, actionButtons.firstChild);
+        }
+      }, 500);
+
       // Update quests
       global.Quests?.checkKillQuest(currentMonster.id);
 

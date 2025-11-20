@@ -26,6 +26,11 @@
 
     global.State?.updatePlayer({ currentZone: zoneId });
 
+    // Track exploration
+    if (player.currentTile) {
+      global.PlayerStats?.incrementStat('tilesExplored', 1);
+    }
+
     global.Narrative?.addEntry({
       type: 'zone',
       text: `You enter ${zone.name}. ${zone.description}`,

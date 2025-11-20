@@ -128,6 +128,10 @@
       text: `${tile.settlement.name} established at (${x}, ${y})`
     });
 
+    // Track settlement stats
+    global.PlayerStats?.incrementStat('settlementsFounded', 1);
+    global.Leaderboards?.updatePlayerRanking();
+
     global.Rendering?.updateWorldMap();
     return true;
   }

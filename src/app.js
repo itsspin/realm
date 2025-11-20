@@ -101,7 +101,7 @@
     }
   }
 
-  async function initializeGame() {
+  window.initializeGame = async function initializeGame() {
     try {
       // Initialize world map
       if (window.Settlement && typeof window.Settlement.initializeWorldMap === 'function') {
@@ -126,7 +126,11 @@
             window.CharacterCreation.showCharacterCreation();
           }
         }, 500);
-        return; // Don't initialize game until character is created
+        // Still initialize basic systems for character creation UI
+        if (window.Rendering) {
+          window.Rendering.updateResourceBar();
+        }
+        return; // Don't initialize full game until character is created
       }
 
       // Initialize quests
@@ -178,6 +182,11 @@
 
       await initializeGame();
       DIAG.ok('game:initialized');
+      
+      // Update leaderboards on load
+      if (window.Leaderboards && typeof window.Leaderboards.updatePlayerRanking === 'function') {
+        window.Leaderboards.updatePlayerRanking();
+      }
     } catch (err) {
       DIAG.fail('app:boot', err);
     }

@@ -90,8 +90,8 @@
             </p>
           </div>
           <div style="display: flex; gap: 1rem;">
-            <button class="action-btn" onclick="global.CharacterCreation.goBack()">← Back</button>
-            <button class="action-btn" onclick="global.CharacterCreation.finishCreation()">Begin Your Journey</button>
+            <button class="action-btn" onclick="window.CharacterCreation.goBack()">← Back</button>
+            <button class="action-btn" id="finishCreationBtn" onclick="window.CharacterCreation.finishCreation()">Begin Your Journey</button>
           </div>
         </div>
       `;
@@ -101,7 +101,7 @@
           input.focus();
           input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-              global.CharacterCreation.finishCreation();
+              window.CharacterCreation.finishCreation();
             }
           });
         }
@@ -146,19 +146,31 @@
   }
 
   function finishCreation() {
+    console.log('finishCreation called', creationState);
+    
     const nameInput = document.getElementById('characterNameInput');
     const name = nameInput ? nameInput.value.trim() : creationState.name;
     
     if (!name || name.length < 2) {
-      global.Toast?.show({
-        type: 'error',
-        title: 'Invalid Name',
-        text: 'Your name must be at least 2 characters long.'
-      });
+      if (global.Toast && typeof global.Toast.show === 'function') {
+        global.Toast.show({
+          type: 'error',
+          title: 'Invalid Name',
+          text: 'Your name must be at least 2 characters long.'
+        });
+      }
       return;
     }
 
-    if (!creationState.race || !creationState.class) {
+    if (!creationState || !creationState.race || !creationState.class) {
+      console.error('Missing race or class', creationState);
+      if (global.Toast && typeof global.Toast.show === 'function') {
+        global.Toast.show({
+          type: 'error',
+          title: 'Selection Incomplete',
+          text: 'Please select both a race and class.'
+        });
+      }
       return;
     }
 
@@ -181,7 +193,12 @@
     });
 
     // Update player
-    global.State?.updatePlayer({
+    if (!global.State || !global.State.updatePlayer) {
+      console.error('State system not available');
+      return;
+    }
+
+    global.State.updatePlayer({
       name: name,
       race: creationState.race,
       class: creationState.class,
@@ -189,18 +206,70 @@
       skills: skills
     });
 
+    // Force save
+    if (global.State && typeof global.State.save === 'function') {
+      global.State.save();
+    }
+
+    // Verify save
+    const savedPlayer = global.State.getPlayer();
+    if (!savedPlayer || !savedPlayer.race || !savedPlayer.class) {
+      console.error('Character creation failed to save properly');
+      if (global.Toast && typeof global.Toast.show === 'function') {
+        global.Toast.show({
+          type: 'error',
+          title: 'Save Failed',
+          text: 'Failed to save character. Please try again.'
+        });
+      }
+      return;
+    }
+
     // Remove overlay
     const overlay = document.getElementById('characterCreationOverlay');
     if (overlay) overlay.remove();
 
-    global.Narrative?.addEntry({
-      type: 'system',
-      text: `Welcome, ${name}. You are a ${race.name} ${cls.name}. Your journey in the realm begins now.`,
-      meta: 'Character Created'
-    });
+    // Add welcome message
+    if (global.Narrative && typeof global.Narrative.addEntry === 'function') {
+      global.Narrative.addEntry({
+        type: 'system',
+        text: `Welcome, ${name}. You are a ${race.name} ${cls.name}. Your journey in the realm begins now.`,
+        meta: 'Character Created'
+      });
+    }
 
-    global.Rendering?.updateCharacterPanel();
-    global.Rendering?.updateActionButtons();
+    // Re-initialize game now that character is created
+    setTimeout(() => {
+      // Initialize quests
+      if (window.Quests && typeof window.Quests.initializeQuests === 'function') {
+        window.Quests.initializeQuests();
+      }
+      
+      // Update all UI
+      if (window.Rendering) {
+        window.Rendering.updateZoneHeader();
+        window.Rendering.updateCharacterPanel();
+        window.Rendering.updateInventory();
+        window.Rendering.updateQuestLog();
+        window.Rendering.updateSkillsPanel();
+        window.Rendering.updateSettlementPanel();
+        window.Rendering.updateActionButtons();
+        window.Rendering.updateResourceBar();
+        window.Rendering.updateNarrative();
+      }
+
+      // Add welcome zone entry
+      if (window.Zones && window.Zones.getCurrentZone) {
+        const zone = window.Zones.getCurrentZone();
+        if (zone) {
+          window.Narrative?.addEntry({
+            type: 'zone',
+            text: `You stand in ${zone.name}. ${zone.description}`,
+            meta: 'Welcome to REALM'
+          });
+        }
+      }
+    }, 300);
 
     creationState = null;
   }
@@ -212,5 +281,6 @@
   };
 
   global.CharacterCreation = CharacterCreation;
+  window.CharacterCreation = CharacterCreation;
 })(window);
 
