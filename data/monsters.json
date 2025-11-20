@@ -1,0 +1,67 @@
+[
+  {
+    "id": "goblin_scout",
+    "name": "Goblin Scout",
+    "level": 1,
+    "hp": 15,
+    "maxHp": 15,
+    "atk": 3,
+    "def": 1,
+    "xp": 10,
+    "gold": 5,
+    "lootTable": [
+      { "itemId": "short_spear", "chance": 0.15 },
+      { "itemId": null, "chance": 0.85 }
+    ],
+    "description": "A wiry goblin with keen eyes, scouting the edges of the realm."
+  },
+  {
+    "id": "shadow_wolf",
+    "name": "Shadow Wolf",
+    "level": 2,
+    "hp": 25,
+    "maxHp": 25,
+    "atk": 5,
+    "def": 2,
+    "xp": 20,
+    "gold": 10,
+    "lootTable": [
+      { "itemId": "iron_sword", "chance": 0.1 },
+      { "itemId": null, "chance": 0.9 }
+    ],
+    "description": "A creature of darkness, its eyes gleam with malevolent hunger."
+  },
+  {
+    "id": "corrupted_treant",
+    "name": "Corrupted Treant",
+    "level": 3,
+    "hp": 40,
+    "maxHp": 40,
+    "atk": 6,
+    "def": 4,
+    "xp": 35,
+    "gold": 20,
+    "lootTable": [
+      { "itemId": "charm_minor", "chance": 0.2 },
+      { "itemId": null, "chance": 0.8 }
+    ],
+    "description": "An ancient tree twisted by dark magic, its bark oozes with corruption."
+  },
+  {
+    "id": "wraith",
+    "name": "Wraith",
+    "level": 4,
+    "hp": 35,
+    "maxHp": 35,
+    "atk": 8,
+    "def": 3,
+    "xp": 50,
+    "gold": 30,
+    "lootTable": [
+      { "itemId": "charm_minor", "chance": 0.3 },
+      { "itemId": null, "chance": 0.7 }
+    ],
+    "description": "A spectral entity, its form flickers between worlds."
+  }
+]
+

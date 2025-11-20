@@ -3,58 +3,102 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>REALM</title>
+  <title>REALM — Dark-Fantasy Text RPG</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="app-header" role="banner">
     <h1>REALM</h1>
+    <div class="resource-bar" id="resourceBar" role="status" aria-live="polite"></div>
   </header>
 
   <main class="app-main" role="main">
-    <section class="map-area" aria-label="World Map">
-      <div class="map-frame">
-        <canvas id="mapCanvas" aria-label="Strategic world map" role="img"></canvas>
-        <div id="tooltip" class="tooltip hidden" role="tooltip" hidden></div>
+    <!-- Narrative Log - Primary Game View -->
+    <section class="narrative-log" id="narrativeLog" aria-label="Game narrative and combat log">
+      <div class="zone-header" id="zoneHeader">
+        <h2 class="zone-name" id="zoneName">Edgewood Clearing</h2>
+        <p class="zone-description" id="zoneDescription">A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.</p>
       </div>
+      <div id="narrativeContent"></div>
+      <div id="combatPanel" class="combat-panel hidden">
+        <div class="combat-header">
+          <h3 class="monster-name" id="monsterName"></h3>
+          <span class="monster-hp" id="monsterHp"></span>
+        </div>
+        <div class="hp-bar">
+          <div class="hp-bar-fill" id="monsterHpBar"></div>
+        </div>
+        <div class="combat-actions" id="combatActions"></div>
+      </div>
+      <div class="action-buttons" id="actionButtons"></div>
     </section>
-    <aside class="sidebar" aria-label="Player information and actions">
-      <section class="stats" aria-label="Player stats"></section>
-      <section class="actions" aria-label="Available actions">
-        <h2>Actions</h2>
-        <button id="buildFarmBtn" type="button">Build Farm</button>
-      </section>
+
+    <!-- Character Panel -->
+    <aside class="character-panel" aria-label="Character information">
+      <div class="character-header">
+        <h2 class="character-name" id="characterName">Wanderer</h2>
+        <div class="character-level" id="characterLevel">Level 1</div>
+      </div>
+
+      <div class="xp-bar-container">
+        <div class="xp-bar-label">
+          <span>Experience</span>
+          <span id="xpText">0 / 100</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Health</div>
+          <div class="stat-value" id="statHp">20 / 20</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Attack</div>
+          <div class="stat-value" id="statAtk">5</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Defense</div>
+          <div class="stat-value" id="statDef">2</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Gold</div>
+          <div class="stat-value" id="statGold">25</div>
+        </div>
+      </div>
+
+      <div class="inventory-panel">
+        <h3 class="inventory-title">Inventory</h3>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+      </div>
+
+      <div class="quest-log" id="questLog">
+        <h3 class="inventory-title">Active Quests</h3>
+        <div id="questList"></div>
+      </div>
     </aside>
   </main>
 
-  <section class="chat-dock" aria-label="REALM communications">
-    <nav class="chat-tabs" aria-label="Chat channels" role="tablist">
-      <button id="tab-global" type="button" aria-controls="chat-global" aria-selected="true" role="tab">Global</button>
-      <button id="tab-order" type="button" aria-controls="chat-order" aria-selected="false" role="tab">Order</button>
-      <button id="tab-area" type="button" aria-controls="chat-area" aria-selected="false" role="tab">Area</button>
-      <button id="tab-trade" type="button" aria-controls="chat-trade" aria-selected="false" role="tab">Trade</button>
-    </nav>
-    <div class="chat-body">
-      <div class="chat-panels" role="tabpanel" id="chat-global" aria-labelledby="tab-global" aria-live="polite"></div>
-      <div class="chat-panels" role="tabpanel" id="chat-order" aria-labelledby="tab-order" aria-live="polite" hidden></div>
-      <div class="chat-panels" role="tabpanel" id="chat-area" aria-labelledby="tab-area" aria-live="polite" hidden></div>
-      <div class="chat-panels" role="tabpanel" id="chat-trade" aria-labelledby="tab-trade" aria-live="polite" hidden></div>
-    </div>
-    <form id="chatComposer" class="chat-composer" aria-label="Send chat message">
-      <label for="chatInput" class="sr-only">Message</label>
-      <input id="chatInput" name="message" type="text" autocomplete="off" placeholder="Type a message" required>
-      <button type="submit">Send</button>
-    </form>
-    <div id="resourceBar" class="resource-bar" role="status" aria-live="polite"></div>
-  </section>
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
 
+  <!-- Tooltips -->
   <div id="itemTooltip" class="tooltip tooltip--item hidden" role="tooltip" hidden></div>
 
+  <!-- Scripts -->
   <script src="src/app.js"></script>
-  <script src="src/map/map-core.js"></script>
-  <script src="src/map/map-render.js"></script>
   <script src="src/game/state.js"></script>
-  <script src="src/game/economy.js"></script>
-  <script src="src/game/chat.js"></script>
+  <script src="src/game/combat.js"></script>
+  <script src="src/game/quests.js"></script>
+  <script src="src/game/leveling.js"></script>
+  <script src="src/game/inventory.js"></script>
+  <script src="src/game/crafting.js"></script>
+  <script src="src/game/narrative.js"></script>
+  <script src="src/game/zones.js"></script>
+  <script src="src/game/pvp.js"></script>
+  <script src="src/ui/toast.js"></script>
+  <script src="src/ui/rendering.js"></script>
 </body>
 </html>

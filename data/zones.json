@@ -1,0 +1,27 @@
+[
+  {
+    "id": "edgewood_clearing",
+    "name": "Edgewood Clearing",
+    "description": "A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.",
+    "level": 1,
+    "monsters": ["goblin_scout", "shadow_wolf"],
+    "lore": "The Edgewood has stood for centuries, but whispers speak of things that move in the dark between the trees."
+  },
+  {
+    "id": "darkened_path",
+    "name": "The Darkened Path",
+    "description": "A narrow trail winding through twisted trees. The air grows cold, and something watches from the shadows.",
+    "level": 2,
+    "monsters": ["shadow_wolf", "corrupted_treant"],
+    "lore": "Few who walk the Darkened Path return unchanged. The corruption runs deep here."
+  },
+  {
+    "id": "ancient_ruins",
+    "name": "Ancient Ruins",
+    "description": "Crumbling stonework rises from the earth. Arcane symbols still pulse with faint power, and the dead do not rest easy.",
+    "level": 3,
+    "monsters": ["corrupted_treant", "wraith"],
+    "lore": "These ruins predate memory. What power was sealed here, and what broke free?"
+  }
+]
+

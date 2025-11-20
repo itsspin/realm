@@ -1,0 +1,27 @@
+[
+  {
+    "id": "realm_origins",
+    "title": "The Realm's Origins",
+    "text": "The Realm was not always a place of darkness. Once, it was a land of light and prosperity, where kingdoms flourished and magic flowed freely. But the Great Sundering changed everything. The barriers between worlds weakened, and dark forces seeped through. Now, only the strong survive, and only the wise remember what was lost.",
+    "unlockLevel": 1
+  },
+  {
+    "id": "edgewood_history",
+    "title": "The Edgewood's Secret",
+    "text": "The Edgewood Clearing was once a sacred grove, a place where druids communed with nature. But when the corruption came, the trees themselves began to remember the darkness. Now, the clearing serves as a warning—nature remembers, and it does not forget those who trespass.",
+    "unlockLevel": 1
+  },
+  {
+    "id": "darkened_path_legend",
+    "title": "The Path's Curse",
+    "text": "Legends speak of a traveler who walked the Darkened Path and never returned. Some say they became one with the shadows. Others claim they found a power too great to control. The truth? The Path remembers every soul that treads upon it, and it hungers for more.",
+    "unlockLevel": 2
+  },
+  {
+    "id": "ancient_ruins_mystery",
+    "title": "The Ruins' Secret",
+    "text": "The Ancient Ruins predate all recorded history. The symbols carved into the stonework speak a language no living scholar can decipher. But those who have studied them report strange dreams, visions of a time before the Sundering, when the Realm was whole.",
+    "unlockLevel": 3
+  }
+]
+

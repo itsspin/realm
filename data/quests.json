@@ -1,0 +1,59 @@
+[
+  {
+    "id": "first_steps",
+    "title": "First Steps",
+    "description": "A wanderer must learn to survive. Defeat your first foe and claim your place in the realm.",
+    "type": "kill",
+    "target": "goblin_scout",
+    "targetCount": 1,
+    "rewards": {
+      "xp": 25,
+      "gold": 15,
+      "items": []
+    },
+    "prerequisites": []
+  },
+  {
+    "id": "edgewood_clearing",
+    "title": "Clearing the Edgewood",
+    "description": "The goblins grow bold. Clear the Edgewood Clearing of threats.",
+    "type": "kill",
+    "target": "goblin_scout",
+    "targetCount": 3,
+    "rewards": {
+      "xp": 50,
+      "gold": 30,
+      "items": ["short_spear"]
+    },
+    "prerequisites": ["first_steps"]
+  },
+  {
+    "id": "shadow_hunt",
+    "title": "Shadow Hunt",
+    "description": "The Shadow Wolves stalk the Darkened Path. Hunt them down before they hunt you.",
+    "type": "kill",
+    "target": "shadow_wolf",
+    "targetCount": 2,
+    "rewards": {
+      "xp": 75,
+      "gold": 50,
+      "items": []
+    },
+    "prerequisites": ["edgewood_clearing"]
+  },
+  {
+    "id": "corruption_roots",
+    "title": "Roots of Corruption",
+    "description": "The Corrupted Treants spread their blight. Strike at the source.",
+    "type": "kill",
+    "target": "corrupted_treant",
+    "targetCount": 1,
+    "rewards": {
+      "xp": 100,
+      "gold": 75,
+      "items": ["charm_minor"]
+    },
+    "prerequisites": ["shadow_hunt"]
+  }
+]
+
