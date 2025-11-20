@@ -63,7 +63,10 @@
 
   function getRandomMonster() {
     const zone = getCurrentZone();
-    if (!zone || !zone.monsters || zone.monsters.length === 0) return null;
+    if (!zone || !zone.monsters || zone.monsters.length === 0) {
+      // Fallback: return a basic monster if zone has no monsters defined
+      return global.REALM?.data?.monstersById?.['goblin_scout'] || null;
+    }
 
     const monsterId = zone.monsters[Math.floor(Math.random() * zone.monsters.length)];
     return global.REALM?.data?.monstersById?.[monsterId] || null;

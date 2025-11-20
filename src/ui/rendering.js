@@ -206,15 +206,42 @@
     const zone = global.Zones?.getCurrentZone();
     const availableZones = global.Zones?.getAvailableZones() || [];
     const player = global.State?.getPlayer();
+    const currentTile = player?.currentTile ? global.Settlement?.getTile(player.currentTile.x, player.currentTile.y) : null;
 
     let html = '';
 
     // Explore/Encounter button
     html += `
-      <button class="action-btn" onclick="global.handleExplore()">
+      <button class="action-btn" onclick="window.handleExplore()">
         Explore the area
       </button>
     `;
+
+    // Gathering actions if on a tile
+    if (currentTile) {
+      html += '<div class="gathering-actions">';
+      html += '<div class="gathering-actions-title">Gathering</div>';
+      
+      if (currentTile.resources?.ore > 0) {
+        html += `<button class="action-btn" onclick="global.Gathering.mine(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">⛏️ Mine Ore</button>`;
+      }
+      if (currentTile.resources?.timber > 0) {
+        html += `<button class="action-btn" onclick="global.Gathering.harvest(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">🌿 Harvest Timber</button>`;
+      }
+      if (currentTile.resources?.food > 0 || currentTile.terrain === 'water') {
+        html += `<button class="action-btn" onclick="global.Gathering.fish(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">🎣 Fish</button>`;
+      }
+      if (currentTile.terrain === 'forest' || currentTile.terrain === 'plains') {
+        html += `<button class="action-btn" onclick="global.Gathering.gatherEssence(global.Settlement.getTile(${currentTile.x}, ${currentTile.y}))">✨ Gather Essence</button>`;
+      }
+      
+      // Settlement placement
+      if (!currentTile.settlement && !currentTile.owner) {
+        html += `<button class="action-btn" onclick="global.showSettlementPlacement(${currentTile.x}, ${currentTile.y})">🏰 Found Settlement</button>`;
+      }
+      
+      html += '</div>';
+    }
 
     // Zone travel buttons
     if (availableZones.length > 1) {
@@ -232,8 +259,133 @@
       html += '</div>';
     }
 
+    // World Map button
+    html += '<div style="margin-top: 1rem; padding-top: 1rem; border-top: var(--border-subtle);">';
+    html += `<button class="action-btn" onclick="global.Rendering.showWorldMap()">🗺️ View World Map</button>`;
+    
+    // Guild actions
+    if (player && !player.guild) {
+      html += `<button class="action-btn" onclick="global.showGuildCreation()">⚔️ Create Guild</button>`;
+    } else if (player && player.guild) {
+      html += `<button class="action-btn" onclick="global.showGuildInfo()">⚔️ Guild: ${player.guild.name}</button>`;
+    }
+    
+    html += '</div>';
+
     buttonsEl.innerHTML = html;
   }
+
+  function updateSkillsPanel() {
+    const player = global.State?.getPlayer();
+    if (!player || !player.skills) return;
+
+    // This will be called when skills update
+    // Skills display can be added to character panel
+  }
+
+  function showWorldMap() {
+    const worldMap = global.Settlement?.getWorldMap();
+    if (!worldMap) return;
+
+    const player = global.State?.getPlayer();
+    const currentTile = player?.currentTile;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'worldMapOverlay';
+    overlay.className = 'character-creation-overlay';
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 90vw; max-height: 90vh;">
+        <h2 class="creation-title">World Map</h2>
+        <div class="world-map-container">
+          <div class="world-map-grid" id="worldMapGrid"></div>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; font-size: 0.85rem;">
+          <span style="color: var(--fg-secondary);">Legend:</span>
+          <span>🟩 Plains</span>
+          <span>🟫 Forest</span>
+          <span>🟨 Hills</span>
+          <span>🟦 Water</span>
+          <span>🟧 Desert</span>
+          <span style="color: var(--gold-bright);">● Owned</span>
+          <span style="color: var(--ember-orange);">● Settlement</span>
+          <span style="color: var(--teal-bright);">● Your Location</span>
+        </div>
+        <button class="action-btn" onclick="document.getElementById('worldMapOverlay')?.remove()" style="margin-top: 1rem; width: 100%;">Close Map</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const grid = document.getElementById('worldMapGrid');
+    if (!grid) return;
+
+    const size = global.Settlement?.WORLD_SIZE || { width: 50, height: 50 };
+    grid.style.gridTemplateColumns = `repeat(${size.width}, 12px)`;
+
+    worldMap.forEach(tile => {
+      const tileEl = document.createElement('div');
+      tileEl.className = `world-map-tile world-map-tile--${tile.terrain}`;
+      
+      if (tile.owner === player?.id) {
+        tileEl.classList.add('world-map-tile--owned');
+      }
+      if (tile.settlement) {
+        tileEl.classList.add('world-map-tile--settlement');
+      }
+      if (currentTile && tile.x === currentTile.x && tile.y === currentTile.y) {
+        tileEl.classList.add('world-map-tile--current');
+      }
+
+      tileEl.title = `(${tile.x}, ${tile.y}) - ${tile.terrain}${tile.settlement ? ' - ' + tile.settlement.name : ''}`;
+      tileEl.addEventListener('click', () => {
+        // Travel to tile
+        global.State?.updatePlayer({ currentTile: { x: tile.x, y: tile.y } });
+        global.Narrative?.addEntry({
+          type: 'zone',
+          text: `You travel to coordinates (${tile.x}, ${tile.y}). ${tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1)} stretches before you.`,
+          meta: ''
+        });
+        overlay.remove();
+        global.Rendering?.updateActionButtons();
+      });
+
+      grid.appendChild(tileEl);
+    });
+  }
+
+  global.showSettlementPlacement = function(x, y) {
+    const name = prompt('Enter a name for your settlement:');
+    if (name && name.trim().length > 0) {
+      global.Settlement?.placeSettlement(x, y, global.State?.getPlayer()?.id, name.trim());
+    }
+  };
+
+  global.showGuildCreation = function() {
+    const name = prompt('Enter a name for your guild:');
+    if (name && name.trim().length >= 3) {
+      global.Guilds?.createGuild(name.trim(), global.State?.getPlayer()?.id);
+      global.Rendering?.updateActionButtons();
+    } else if (name) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'Invalid Name',
+        text: 'Guild name must be at least 3 characters.'
+      });
+    }
+  };
+
+  global.showGuildInfo = function() {
+    const player = global.State?.getPlayer();
+    if (!player || !player.guild) return;
+
+    global.Narrative?.addEntry({
+      type: 'system',
+      text: `Guild: ${player.guild.name} | Members: ${player.guild.members?.length || 1} | Territory: ${player.guild.territory?.length || 0} tiles`,
+      meta: 'Guild Information'
+    });
+  };
+
+  global.Rendering.showWorldMap = showWorldMap;
 
   function updateResourceBar() {
     const resources = global.State?.data?.resources || {};
@@ -261,7 +413,14 @@
 
   // Global explore handler
   global.handleExplore = function() {
-    if (global.Combat?.isInCombat()) return;
+    if (global.Combat?.isInCombat()) {
+      global.Toast?.show({
+        type: 'error',
+        title: 'In Combat',
+        text: 'You cannot explore while in combat.'
+      });
+      return;
+    }
 
     const monster = global.Zones?.getRandomMonster();
     if (monster) {
@@ -269,11 +428,63 @@
     } else {
       global.Narrative?.addEntry({
         type: 'zone',
-        text: 'You explore the area but find nothing of interest.',
+        text: 'You explore the area but find nothing of interest. Perhaps you should try again, or venture to a different location.',
         meta: ''
       });
     }
   };
+
+  // Make sure it's available globally
+  window.handleExplore = global.handleExplore;
+
+  function updateSkillsPanel() {
+    const player = global.State?.getPlayer();
+    const skillsList = document.getElementById('skillsList');
+    if (!skillsList || !player || !player.skills) return;
+
+    const skills = player.skills;
+    const definitions = global.Skills?.SKILL_DEFINITIONS || {};
+
+    if (Object.keys(skills).length === 0) {
+      skillsList.innerHTML = '<p style="color: var(--fg-secondary); font-style: italic; font-size: 0.9rem;">No skills yet. Practice your craft to develop skills.</p>';
+      return;
+    }
+
+    skillsList.innerHTML = Object.entries(skills).map(([skillId, skillData]) => {
+      const def = definitions[skillId];
+      return `
+        <div class="skill-item">
+          <div class="skill-name">
+            <span>${def?.icon || '📦'}</span>
+            <span>${def?.name || skillId}</span>
+          </div>
+          <div class="skill-level">Lv. ${skillData.level || 1}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateSettlementPanel() {
+    const player = global.State?.getPlayer();
+    const settlementList = document.getElementById('settlementList');
+    if (!settlementList || !player) return;
+
+    const settlements = player.settlements || [];
+
+    if (settlements.length === 0) {
+      settlementList.innerHTML = '<p style="color: var(--fg-secondary); font-style: italic; font-size: 0.9rem;">No settlements founded. Explore the world map to find a location.</p>';
+      return;
+    }
+
+    settlementList.innerHTML = settlements.map(settlement => {
+      return `
+        <div class="settlement-item">
+          <div class="settlement-name">${settlement.name}</div>
+          <div class="settlement-coords">(${settlement.x}, ${settlement.y})</div>
+        </div>
+      `;
+    }).join('');
+  }
 
   const Rendering = {
     updateNarrative,
@@ -283,7 +494,10 @@
     updateQuestLog,
     updateCombatUI,
     updateActionButtons,
-    updateResourceBar
+    updateResourceBar,
+    updateSkillsPanel,
+    updateSettlementPanel,
+    showWorldMap
   };
 
   global.Rendering = Rendering;

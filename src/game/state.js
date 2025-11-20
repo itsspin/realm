@@ -4,6 +4,8 @@
   const DEFAULT_PLAYER = {
     id: 'player-1',
     name: 'Wanderer',
+    race: null,
+    class: null,
     level: 1,
     xp: 0,
     xpToNext: 100,
@@ -20,7 +22,12 @@
       armor: null,
       charm: null
     },
+    skills: {},
     currentZone: 'edgewood_clearing',
+    currentTile: null,
+    settlements: [],
+    guild: null,
+    faction: null,
     activeQuests: [],
     completedQuests: [],
     discoveredLore: []

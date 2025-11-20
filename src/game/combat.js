@@ -149,6 +149,9 @@
       // Award XP
       global.Leveling?.addXP(xpGain);
 
+      // Award combat skill XP
+      global.Skills?.addSkillXP('combat', Math.floor(xpGain / 2));
+
       // Award gold
       global.State?.updatePlayer({
         gold: (player.gold || 0) + goldGain

@@ -103,6 +103,11 @@
 
   async function initializeGame() {
     try {
+      // Initialize world map
+      if (window.Settlement && typeof window.Settlement.initializeWorldMap === 'function') {
+        window.Settlement.initializeWorldMap();
+      }
+
       // Initialize state
       if (window.State && typeof window.State.init === 'function') {
         const stateData = window.State.init();
@@ -110,6 +115,18 @@
           REALM.state = stateData;
           window.GameState = stateData;
         }
+      }
+
+      // Check for character creation
+      const player = window.State?.getPlayer();
+      if (!player || !player.race || !player.class) {
+        // Show character creation
+        setTimeout(() => {
+          if (window.CharacterCreation && typeof window.CharacterCreation.showCharacterCreation === 'function') {
+            window.CharacterCreation.showCharacterCreation();
+          }
+        }, 500);
+        return; // Don't initialize game until character is created
       }
 
       // Initialize quests
@@ -141,6 +158,8 @@
         window.Rendering.updateCharacterPanel();
         window.Rendering.updateInventory();
         window.Rendering.updateQuestLog();
+        window.Rendering.updateSkillsPanel();
+        window.Rendering.updateSettlementPanel();
         window.Rendering.updateActionButtons();
         window.Rendering.updateResourceBar();
         window.Rendering.updateNarrative();
