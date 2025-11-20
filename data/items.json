@@ -2,8 +2,10 @@
 [
   {
     "itemId": "short_spear",
+    "name": "Short Spear",
     "type": "weapon",
     "tier": "T0",
+    "icon": "🗡️",
     "stats": {
       "atk": 2
     },
@@ -13,12 +15,15 @@
     ],
     "durability": 60,
     "makerMark": true,
-    "affixes": []
+    "affixes": [],
+    "description": "A crude but effective weapon, forged from basic materials."
   },
   {
     "itemId": "iron_sword",
+    "name": "Iron Sword",
     "type": "weapon",
     "tier": "T1",
+    "icon": "⚔️",
     "stats": {
       "atk": 5
     },
@@ -28,12 +33,15 @@
     ],
     "durability": 100,
     "makerMark": true,
-    "affixes": []
+    "affixes": [],
+    "description": "A well-crafted blade of iron, balanced and sharp."
   },
   {
     "itemId": "charm_minor",
+    "name": "Minor Charm",
     "type": "charm",
     "tier": "T1",
+    "icon": "✨",
     "stats": {
       "all": 1
     },
@@ -42,6 +50,7 @@
     ],
     "durability": null,
     "makerMark": true,
-    "affixes": []
+    "affixes": [],
+    "description": "A small talisman that hums with faint arcane power."
   }
 ]
