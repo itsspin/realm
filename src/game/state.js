@@ -1,3 +1,25 @@
+/**
+ * Game State Management
+ * 
+ * Handles player state persistence to localStorage.
+ * 
+ * CURRENT STATE STRUCTURE:
+ * {
+ *   player: { id, name, race, class, level, xp, stats, inventory, equipment, skills, currentZone, currentTile, ... },
+ *   resources: { food, ore, timber, essence, gold },
+ *   ownedTiles: [],
+ *   structures: [],
+ *   visibility: []
+ * }
+ * 
+ * LIMITATIONS:
+ * - No account system (single character per browser)
+ * - No character slots
+ * - No cloud save/backend integration
+ * - All state stored in localStorage (limited to ~5-10MB)
+ * 
+ * FUTURE: Should integrate with backend API for cloud saves and multi-character support
+ */
 (function (global) {
   const STORAGE_KEY = 'REALM_SAVE_V2';
   

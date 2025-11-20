@@ -1,3 +1,24 @@
+/**
+ * Combat System
+ * 
+ * Turn-based combat between player and monsters.
+ * 
+ * FLOW:
+ * 1. Player clicks monster on map or encounters during movement
+ * 2. Start combat (load monster stats)
+ * 3. Turn-based combat (player turn, then monster turn)
+ * 4. Calculate damage (atk vs def with variance)
+ * 5. Check for victory/defeat
+ * 6. Award XP and loot on victory
+ * 
+ * CURRENT FEATURES:
+ * - Basic turn-based combat
+ * - Critical hits (15% chance)
+ * - Equipment bonuses applied
+ * - XP and loot rewards
+ * 
+ * FUTURE: Add skills, spells, status effects, party combat
+ */
 (function (global) {
   let currentMonster = null;
   let combatState = null;

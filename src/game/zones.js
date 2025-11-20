@@ -1,3 +1,23 @@
+/**
+ * Zone Management System
+ * 
+ * Handles zone loading, zone changes, and zone-specific data.
+ * 
+ * ZONE TYPES:
+ * - Regular zones: Outdoor areas, cities (from zones.json)
+ * - Dungeon zones: Indoor dungeon areas (from dungeons.json)
+ * 
+ * FLOW:
+ * 1. Get current zone from player.currentZone
+ * 2. Check if zone is dungeon or regular
+ * 3. Load zone data (monsters, NPCs, description)
+ * 4. Handle zone changes (level requirements, lore unlocks)
+ * 
+ * CURRENT LIMITATIONS:
+ * - Zone boundaries not defined in tile coordinates
+ * - No zone-specific spawn points
+ * - Monsters spawn randomly (not static)
+ */
 (function (global) {
   function getCurrentZone() {
     const player = global.State?.getPlayer();

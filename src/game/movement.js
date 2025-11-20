@@ -1,3 +1,21 @@
+/**
+ * Player Movement System
+ * 
+ * Handles grid-based movement on the world map.
+ * 
+ * FLOW:
+ * 1. Player clicks tile on map
+ * 2. Calculate distance and validate move
+ * 3. Update player position (currentTile)
+ * 4. Check for zone changes
+ * 5. Check for nearby enemies/NPCs
+ * 6. Update map rendering
+ * 
+ * CURRENT LIMITATIONS:
+ * - No pathfinding (moves one tile at a time)
+ * - Zone boundaries not defined in tile coordinates
+ * - Movement speed is fixed (except bard speed song)
+ */
 (function (global) {
   let isMoving = false;
   let movementQueue = [];

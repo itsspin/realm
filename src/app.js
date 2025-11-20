@@ -1,3 +1,20 @@
+/**
+ * REALM - Main Application Entry Point
+ * 
+ * WORLD FLOW:
+ * 1. Load game data (races, classes, items, zones, etc.)
+ * 2. Initialize game state (load from localStorage or create new)
+ * 3. Initialize world map (50x50 tile grid)
+ * 4. Render map and UI
+ * 5. Check for character creation (if no character exists)
+ * 6. Initialize game systems (quests, narrative, rendering)
+ * 
+ * CURRENT LIMITATIONS:
+ * - No account system (single character per browser)
+ * - No cloud save/backend integration
+ * - Map size hardcoded to 50x50
+ * - Monsters spawn randomly (not static spawn points)
+ */
 (function () {
   const PATHNAME = location.pathname.endsWith('/')
     ? location.pathname
@@ -35,6 +52,11 @@
 
   REALM.fetchJSON = fetchJSON;
 
+  /**
+   * Load all game data from JSON files
+   * Creates lookup maps (e.g., itemsById, zonesById) for fast access
+   * Data is stored in REALM.data namespace
+   */
   async function loadGameData() {
     // Load races
     try {
@@ -219,6 +241,16 @@
     }
   }
 
+  /**
+   * Initialize the game after data is loaded
+   * 
+   * FLOW:
+   * 1. Initialize world map (create or load from localStorage)
+   * 2. Render map canvas
+   * 3. Initialize game state (load player from localStorage)
+   * 4. Check if character exists, show creation if not
+   * 5. Initialize quests, narrative, and UI systems
+   */
   window.initializeGame = async function initializeGame() {
     try {
       // Initialize world map

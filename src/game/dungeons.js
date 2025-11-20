@@ -1,3 +1,21 @@
+/**
+ * Dungeon System
+ * 
+ * Handles dungeon-specific logic: zones, connections, named mobs, loot.
+ * 
+ * DUNGEON STRUCTURE:
+ * - Dungeons contain multiple zones (entrance, tunnels, chambers, etc.)
+ * - Zones have connections to other zones
+ * - Named mobs spawn in specific zones
+ * - Loot tables for named mobs
+ * 
+ * CURRENT LIMITATIONS:
+ * - No static spawn points (monsters spawn randomly)
+ * - No respawn timers
+ * - No dungeon-specific mechanics (traps, puzzles, etc.)
+ * 
+ * FUTURE: Each dungeon zone should have defined spawn points with respawn timers
+ */
 (function (global) {
   function getDungeon(dungeonId) {
     return global.REALM?.data?.dungeonsById?.[dungeonId] || null;

@@ -1,3 +1,20 @@
+/**
+ * Map Entity Management
+ * 
+ * Handles monsters and players visible on the map.
+ * 
+ * CURRENT IMPLEMENTATION:
+ * - Monsters spawn randomly on nearby tiles (10% chance per tile)
+ * - Updates every 2 seconds
+ * - Monsters are temporary (not persistent)
+ * 
+ * ISSUES:
+ * - Monsters not static in dungeons (should have fixed spawn points)
+ * - No respawn timers
+ * - No persistent mob positions
+ * 
+ * FUTURE: Should implement static spawn points per zone with respawn timers
+ */
 (function (global) {
   let nearbyMonsters = [];
   let nearbyPlayers = [];
