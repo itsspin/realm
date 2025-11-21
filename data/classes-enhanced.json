@@ -1,0 +1,111 @@
+[
+  {
+    "id": "warden",
+    "name": "Warden",
+    "role": "tank",
+    "description": "Stalwart defenders who stand as unbreakable shields for their allies. Masters of melee combat and protection.",
+    "primaryStats": {
+      "str": 90,
+      "sta": 95,
+      "agi": 70,
+      "dex": 75,
+      "wis": 60,
+      "int": 50,
+      "cha": 55
+    },
+    "armorTypes": ["plate", "chain", "mail"],
+    "weaponTypes": ["sword", "mace", "axe", "shield"],
+    "resourceType": "rage",
+    "skillIdsByLevel": {
+      "1": ["bash"],
+      "5": ["taunt"],
+      "8": ["kick"],
+      "10": ["defensive_stance"]
+    },
+    "bonuses": { "atk": 2, "def": 4, "hp": 8 },
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "stalker",
+    "name": "Stalker",
+    "role": "dps",
+    "description": "Swift shadows who strike from the darkness. Masters of stealth and precision, dealing devastating blows when least expected.",
+    "primaryStats": {
+      "str": 80,
+      "sta": 75,
+      "agi": 105,
+      "dex": 110,
+      "wis": 60,
+      "int": 55,
+      "cha": 50
+    },
+    "armorTypes": ["leather", "cloth"],
+    "weaponTypes": ["dagger", "sword", "throwing"],
+    "resourceType": "energy",
+    "skillIdsByLevel": {
+      "1": ["backstab"],
+      "4": ["sneak"],
+      "7": ["poison_strike"],
+      "10": ["evasion"]
+    },
+    "bonuses": { "atk": 5, "def": 1, "hp": 3 },
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "arcanist",
+    "name": "Arcanist",
+    "role": "dps",
+    "description": "Wielders of raw elemental power who channel devastating arcane energy. They command fire, ice, and lightning to obliterate their foes.",
+    "primaryStats": {
+      "str": 50,
+      "sta": 60,
+      "agi": 70,
+      "dex": 75,
+      "wis": 80,
+      "int": 110,
+      "cha": 65
+    },
+    "armorTypes": ["cloth"],
+    "weaponTypes": ["staff", "wand", "orb"],
+    "resourceType": "mana",
+    "skillIdsByLevel": {
+      "1": ["minor_nuke"],
+      "4": ["flame_bolt"],
+      "7": ["frost_snare"],
+      "10": ["lightning_strike"]
+    },
+    "bonuses": { "atk": 5, "def": 0, "hp": 2 },
+    "canSolo": true,
+    "soloDifficulty": "medium"
+  },
+  {
+    "id": "templar",
+    "name": "Templar",
+    "role": "healer",
+    "description": "Divine servants blessed with the power to mend wounds and smite the undead. They channel holy light to protect and restore.",
+    "primaryStats": {
+      "str": 65,
+      "sta": 75,
+      "agi": 65,
+      "dex": 70,
+      "wis": 110,
+      "int": 80,
+      "cha": 90
+    },
+    "armorTypes": ["plate", "chain", "cloth"],
+    "weaponTypes": ["mace", "hammer", "staff"],
+    "resourceType": "mana",
+    "skillIdsByLevel": {
+      "1": ["minor_heal"],
+      "4": ["light_heal"],
+      "7": ["smite_undead"],
+      "10": ["cure_disease"]
+    },
+    "bonuses": { "atk": 1, "def": 2, "hp": 4 },
+    "canSolo": true,
+    "soloDifficulty": "hard"
+  }
+]
+

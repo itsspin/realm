@@ -1,0 +1,154 @@
+[
+  {
+    "id": "wildlife_loot",
+    "name": "Wildlife Loot",
+    "entries": [
+      {
+        "itemId": "raw_meat",
+        "chance": 0.6,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      },
+      {
+        "itemId": "boar_hide",
+        "chance": 0.3,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "wolf_pelt",
+        "chance": 0.25,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "fangs",
+        "chance": 0.15,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "goblin_loot",
+    "name": "Goblin Loot",
+    "entries": [
+      {
+        "itemId": "rusty_dagger",
+        "chance": 0.25,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "tattered_cloth",
+        "chance": 0.4,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      },
+      {
+        "itemId": "copper_ore",
+        "chance": 0.2,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "bandit_loot",
+    "name": "Bandit Loot",
+    "entries": [
+      {
+        "itemId": "rusty_sword",
+        "chance": 0.15,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "starter_cloth_robe",
+        "chance": 0.1,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "minor_healing_potion",
+        "chance": 0.3,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "copper_ore",
+        "chance": 0.25,
+        "minQuantity": 1,
+        "maxQuantity": 3
+      }
+    ]
+  },
+  {
+    "id": "corrupted_loot",
+    "name": "Corrupted Loot",
+    "entries": [
+      {
+        "itemId": "sprite_dust",
+        "chance": 0.4,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      },
+      {
+        "itemId": "minor_essence",
+        "chance": 0.2,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "wild_herb",
+        "chance": 0.3,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      }
+    ]
+  },
+  {
+    "id": "shadow_loot",
+    "name": "Shadow Loot",
+    "entries": [
+      {
+        "itemId": "minor_essence",
+        "chance": 0.35,
+        "minQuantity": 1,
+        "maxQuantity": 2
+      },
+      {
+        "itemId": "apprentice_staff",
+        "chance": 0.08,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      },
+      {
+        "itemId": "enchanted_staff",
+        "chance": 0.02,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ]
+  },
+  {
+    "id": "guard_loot",
+    "name": "Guard Loot",
+    "entries": [
+      {
+        "itemId": "chainmail_shirt",
+        "chance": 0.1,
+        "minQuantity": 1,
+        "maxQuantity": 1,
+        "flags": ["noDrop"]
+      },
+      {
+        "itemId": "bronze_sword",
+        "chance": 0.05,
+        "minQuantity": 1,
+        "maxQuantity": 1
+      }
+    ]
+  }
+]
+

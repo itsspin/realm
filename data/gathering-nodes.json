@@ -1,0 +1,75 @@
+[
+  {
+    "id": "thronehold_gates_herbs",
+    "zoneId": "thronehold_gates",
+    "nodeType": "foraging",
+    "name": "Wild Herbs",
+    "resourceTypes": ["herbs"],
+    "levelRange": { "min": 1, "max": 10 },
+    "tilePositions": [
+      { "x": 15, "y": 20 },
+      { "x": 25, "y": 30 },
+      { "x": 35, "y": 15 },
+      { "x": 20, "y": 35 }
+    ],
+    "respawnSeconds": 120,
+    "possibleItems": [
+      { "itemId": "wild_herb", "chance": 0.7 },
+      { "itemId": "medicinal_root", "chance": 0.3 }
+    ]
+  },
+  {
+    "id": "thronehold_gates_ore",
+    "zoneId": "thronehold_gates",
+    "nodeType": "mining",
+    "name": "Copper Ore Vein",
+    "resourceTypes": ["ore"],
+    "levelRange": { "min": 3, "max": 10 },
+    "tilePositions": [
+      { "x": 10, "y": 12 },
+      { "x": 40, "y": 25 }
+    ],
+    "respawnSeconds": 180,
+    "possibleItems": [
+      { "itemId": "copper_ore", "chance": 0.8 },
+      { "itemId": "iron_ore", "chance": 0.2 }
+    ]
+  },
+  {
+    "id": "thronehold_plains_herbs",
+    "zoneId": "thronehold_plains",
+    "nodeType": "foraging",
+    "name": "Field Herbs",
+    "resourceTypes": ["herbs"],
+    "levelRange": { "min": 2, "max": 10 },
+    "tilePositions": [
+      { "x": 20, "y": 20 },
+      { "x": 40, "y": 40 },
+      { "x": 15, "y": 45 }
+    ],
+    "respawnSeconds": 150,
+    "possibleItems": [
+      { "itemId": "wild_herb", "chance": 0.6 },
+      { "itemId": "medicinal_root", "chance": 0.4 }
+    ]
+  },
+  {
+    "id": "weeping_woods_outskirts_herbs",
+    "zoneId": "weeping_woods_outskirts",
+    "nodeType": "foraging",
+    "name": "Forest Herbs",
+    "resourceTypes": ["herbs"],
+    "levelRange": { "min": 1, "max": 10 },
+    "tilePositions": [
+      { "x": 20, "y": 25 },
+      { "x": 30, "y": 35 },
+      { "x": 40, "y": 20 }
+    ],
+    "respawnSeconds": 120,
+    "possibleItems": [
+      { "itemId": "wild_herb", "chance": 0.7 },
+      { "itemId": "forest_berry", "chance": 0.3 }
+    ]
+  }
+]
+

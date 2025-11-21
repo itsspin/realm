@@ -1,0 +1,323 @@
+[
+  {
+    "id": "bash",
+    "name": "Bash",
+    "description": "A powerful melee strike that stuns the enemy briefly.",
+    "classId": "warden",
+    "requiredLevel": 1,
+    "type": "ability",
+    "cooldown": 8,
+    "cost": {
+      "rage": 15
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "atk * 1.5",
+      "bonusDamage": 5,
+      "stunDuration": 2
+    },
+    "range": 1
+  },
+  {
+    "id": "taunt",
+    "name": "Taunt",
+    "description": "Draw enemy attention to yourself, generating high threat.",
+    "classId": "warden",
+    "requiredLevel": 5,
+    "type": "ability",
+    "cooldown": 5,
+    "cost": {
+      "rage": 20
+    },
+    "effect": {
+      "type": "threat",
+      "threatMultiplier": 3.0
+    },
+    "range": 1
+  },
+  {
+    "id": "kick",
+    "name": "Kick",
+    "description": "A quick kick that interrupts enemy actions and deals damage.",
+    "classId": "warden",
+    "requiredLevel": 8,
+    "type": "ability",
+    "cooldown": 6,
+    "cost": {
+      "rage": 25
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "atk * 1.2",
+      "bonusDamage": 3,
+      "interrupt": true
+    },
+    "range": 1
+  },
+  {
+    "id": "defensive_stance",
+    "name": "Defensive Stance",
+    "description": "Enter a defensive posture, increasing your defense significantly.",
+    "classId": "warden",
+    "requiredLevel": 10,
+    "type": "buff",
+    "cooldown": 30,
+    "cost": {
+      "rage": 30
+    },
+    "effect": {
+      "type": "buff",
+      "statModifier": {
+        "def": 0.5
+      },
+      "duration": 30
+    },
+    "range": 0
+  },
+  {
+    "id": "backstab",
+    "name": "Backstab",
+    "description": "A devastating attack from behind that deals massive damage.",
+    "classId": "stalker",
+    "requiredLevel": 1,
+    "type": "ability",
+    "cooldown": 6,
+    "cost": {
+      "energy": 20
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "atk * 2.5",
+      "bonusDamage": 8,
+      "requiresPositioning": "behind"
+    },
+    "range": 1
+  },
+  {
+    "id": "sneak",
+    "name": "Sneak",
+    "description": "Move silently and avoid detection by enemies.",
+    "classId": "stalker",
+    "requiredLevel": 4,
+    "type": "buff",
+    "cooldown": 10,
+    "cost": {
+      "energy": 15
+    },
+    "effect": {
+      "type": "buff",
+      "stealth": true,
+      "duration": 60
+    },
+    "range": 0
+  },
+  {
+    "id": "poison_strike",
+    "name": "Poison Strike",
+    "description": "Coat your weapon with poison, dealing damage over time.",
+    "classId": "stalker",
+    "requiredLevel": 7,
+    "type": "ability",
+    "cooldown": 12,
+    "cost": {
+      "energy": 25
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "atk * 1.3",
+      "dot": {
+        "damage": 3,
+        "duration": 15,
+        "ticks": 3
+      }
+    },
+    "range": 1
+  },
+  {
+    "id": "evasion",
+    "name": "Evasion",
+    "description": "Dodge incoming attacks with enhanced agility.",
+    "classId": "stalker",
+    "requiredLevel": 10,
+    "type": "buff",
+    "cooldown": 45,
+    "cost": {
+      "energy": 30
+    },
+    "effect": {
+      "type": "buff",
+      "dodgeChance": 0.5,
+      "duration": 20
+    },
+    "range": 0
+  },
+  {
+    "id": "minor_nuke",
+    "name": "Minor Nuke",
+    "description": "A basic arcane blast that deals moderate damage.",
+    "classId": "arcanist",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 3,
+    "cost": {
+      "mana": 15
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.5",
+      "bonusDamage": 8,
+      "resistType": "magic"
+    },
+    "range": 6,
+    "castTime": 2
+  },
+  {
+    "id": "flame_bolt",
+    "name": "Flame Bolt",
+    "description": "A searing bolt of fire that deals fire damage.",
+    "classId": "arcanist",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 4,
+    "cost": {
+      "mana": 25
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 2.0",
+      "bonusDamage": 12,
+      "resistType": "fire"
+    },
+    "range": 8,
+    "castTime": 2.5
+  },
+  {
+    "id": "frost_snare",
+    "name": "Frost Snare",
+    "description": "Encases the target in ice, dealing damage and slowing movement.",
+    "classId": "arcanist",
+    "requiredLevel": 7,
+    "type": "spell",
+    "cooldown": 12,
+    "cost": {
+      "mana": 30
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.2",
+      "bonusDamage": 5,
+      "resistType": "cold",
+      "snare": {
+        "movementSpeed": -0.5,
+        "duration": 20
+      }
+    },
+    "range": 10,
+    "castTime": 2
+  },
+  {
+    "id": "lightning_strike",
+    "name": "Lightning Strike",
+    "description": "Calls down a bolt of lightning that deals massive damage.",
+    "classId": "arcanist",
+    "requiredLevel": 10,
+    "type": "spell",
+    "cooldown": 15,
+    "cost": {
+      "mana": 40
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 3.0",
+      "bonusDamage": 20,
+      "resistType": "magic"
+    },
+    "range": 12,
+    "castTime": 3
+  },
+  {
+    "id": "minor_heal",
+    "name": "Minor Heal",
+    "description": "A gentle healing spell that restores a small amount of health.",
+    "classId": "templar",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 2,
+    "cost": {
+      "mana": 12
+    },
+    "effect": {
+      "type": "heal",
+      "formula": "wis * 1.2",
+      "bonusHealing": 10
+    },
+    "range": 5,
+    "castTime": 2,
+    "canTargetSelf": true
+  },
+  {
+    "id": "light_heal",
+    "name": "Light Heal",
+    "description": "A moderate healing spell that restores health.",
+    "classId": "templar",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 3,
+    "cost": {
+      "mana": 25
+    },
+    "effect": {
+      "type": "heal",
+      "formula": "wis * 2.0",
+      "bonusHealing": 20
+    },
+    "range": 8,
+    "castTime": 2.5,
+    "canTargetSelf": true
+  },
+  {
+    "id": "smite_undead",
+    "name": "Smite Undead",
+    "description": "A powerful strike that deals extra damage to undead creatures.",
+    "classId": "templar",
+    "requiredLevel": 7,
+    "type": "spell",
+    "cooldown": 6,
+    "cost": {
+      "mana": 30
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "wis * 2.5",
+      "bonusDamage": 15,
+      "resistType": "holy",
+      "bonusVsUndead": 2.0
+    },
+    "range": 6,
+    "castTime": 2
+  },
+  {
+    "id": "cure_disease",
+    "name": "Cure Disease",
+    "description": "Removes disease effects and restores a small amount of health.",
+    "classId": "templar",
+    "requiredLevel": 10,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 35
+    },
+    "effect": {
+      "type": "cure",
+      "cures": ["disease", "poison"],
+      "heal": {
+        "formula": "wis * 1.0",
+        "bonusHealing": 15
+      }
+    },
+    "range": 8,
+    "castTime": 2,
+    "canTargetSelf": true
+  }
+]
+

@@ -149,12 +149,14 @@
     const level = levelRange.min + Math.floor(Math.random() * (levelRange.max - levelRange.min + 1));
     
     // Scale stats by level
-    const levelMultiplier = 1 + (level - 1) * 0.1;
+    const levelMultiplier = 1 + (level - levelRange.min) * 0.15;
     const stats = {
       hp: Math.floor(mobTemplate.baseStats.maxHp * levelMultiplier),
       maxHp: Math.floor(mobTemplate.baseStats.maxHp * levelMultiplier),
       atk: Math.floor(mobTemplate.baseStats.atk * levelMultiplier),
-      def: Math.floor(mobTemplate.baseStats.def * levelMultiplier)
+      def: Math.floor(mobTemplate.baseStats.def * levelMultiplier),
+      agi: Math.floor((mobTemplate.baseStats.agi || 50) * levelMultiplier),
+      magicResist: Math.floor((mobTemplate.baseStats.magicResist || 0) * levelMultiplier)
     };
 
     return {
@@ -168,7 +170,9 @@
       level: level,
       stats: stats,
       alive: true,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
+      xp: mobTemplate.xp || 10,
+      gold: mobTemplate.gold || 5
     };
   }
 

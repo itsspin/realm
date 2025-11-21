@@ -20,21 +20,51 @@
       currentLevel++;
       xpToNext = calculateXPForLevel(currentLevel);
 
-      // Level up bonuses
+      // Level up bonuses (class-based stat gains)
       const stats = player.stats || {};
       const maxHp = stats.maxHp || 20;
       const atk = stats.atk || 5;
       const def = stats.def || 2;
+      
+      // Get class data for stat gains
+      const classData = global.REALM?.data?.classesEnhancedById?.[player.class?.toLowerCase()] || 
+                        global.REALM?.data?.classesById?.[player.class?.toLowerCase()];
+      
+      // Stat gains per level based on class
+      let hpGain = 3;
+      let atkGain = 1;
+      let defGain = 1;
+      
+      if (classData) {
+        // Tanks get more HP and DEF
+        if (classData.role === 'tank') {
+          hpGain = 5;
+          defGain = 2;
+          atkGain = 0.5;
+        }
+        // DPS get more ATK
+        else if (classData.role === 'dps') {
+          hpGain = 2;
+          atkGain = 2;
+          defGain = 0.5;
+        }
+        // Healers get balanced
+        else if (classData.role === 'healer') {
+          hpGain = 3;
+          atkGain = 0.5;
+          defGain = 1;
+        }
+      }
 
       global.State?.updatePlayer({
         level: currentLevel,
         xp: currentXP,
         xpToNext: xpToNext,
         stats: {
-          hp: maxHp + 3, // Restore HP on level up
-          maxHp: maxHp + 3,
-          atk: atk + 1,
-          def: def + 1
+          hp: maxHp + hpGain, // Restore HP on level up
+          maxHp: maxHp + hpGain,
+          atk: atk + atkGain,
+          def: def + defGain
         }
       });
 

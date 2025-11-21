@@ -113,6 +113,12 @@
       { key: 'spawnGroups', path: 'data/spawn-groups.json' },
       { key: 'mobTemplates', path: 'data/mob-templates.json' },
       { key: 'territoryRegions', path: 'data/territory-regions.json' },
+      { key: 'classesEnhanced', path: 'data/classes-enhanced.json' },
+      { key: 'skillsEnhanced', path: 'data/skills-enhanced.json' },
+      { key: 'professions', path: 'data/professions.json' },
+      { key: 'itemsStarter', path: 'data/items-starter.json' },
+      { key: 'lootTables', path: 'data/loot-tables.json' },
+      { key: 'gatheringNodes', path: 'data/gathering-nodes.json' },
       { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
       { key: 'namedMobs', path: 'data/named-mobs.json' },
       { key: 'dungeons', path: 'data/dungeons.json' },
@@ -229,6 +235,35 @@
         } else if (key === 'resources') {
           REALM.data.resourceMap = (REALM.data[key] || []).reduce((acc, entry) => {
             if (entry && entry.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'classesEnhanced') {
+          REALM.data.classesEnhancedById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'skillsEnhanced') {
+          REALM.data.skillsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
+        } else if (key === 'itemsStarter') {
+          // Merge starter items into itemsById
+          (REALM.data[key] || []).forEach(entry => {
+            const id = entry?.itemId || entry?.id;
+            if (id) {
+              REALM.data.itemsById[String(id).toLowerCase()] = entry;
+            }
+          });
+        } else if (key === 'lootTables') {
+          REALM.data.lootTablesById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
               acc[String(entry.id).toLowerCase()] = entry;
             }
             return acc;

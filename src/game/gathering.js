@@ -1,3 +1,10 @@
+/**
+ * Gathering System
+ * 
+ * Handles resource gathering from nodes in zones.
+ * Supports foraging, mining, and other gathering professions.
+ */
+
 (function (global) {
   function gatherResource(resourceType, tile) {
     const player = global.State?.getPlayer();

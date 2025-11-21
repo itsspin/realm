@@ -1,0 +1,84 @@
+[
+  {
+    "id": "foraging",
+    "name": "Foraging",
+    "description": "The art of gathering natural resources from the wilderness. Find herbs, roots, and other materials in the wild.",
+    "type": "gathering",
+    "relatedSkills": ["herbalism", "fishing", "skinning"],
+    "resourceTypes": ["herbs", "roots", "berries", "mushrooms"],
+    "gatheringNodes": [
+      {
+        "id": "wild_herbs",
+        "name": "Wild Herbs",
+        "resourceTypes": ["herbs"],
+        "levelRange": { "min": 1, "max": 10 },
+        "respawnSeconds": 120,
+        "possibleItems": ["wild_herb", "medicinal_root", "forest_berry"]
+      },
+      {
+        "id": "ore_vein",
+        "name": "Ore Vein",
+        "resourceTypes": ["ore"],
+        "levelRange": { "min": 3, "max": 10 },
+        "respawnSeconds": 180,
+        "possibleItems": ["copper_ore", "iron_ore"]
+      }
+    ]
+  },
+  {
+    "id": "basic_crafting",
+    "name": "Basic Crafting",
+    "description": "Transform raw materials into useful items. Create weapons, armor, and consumables from gathered resources.",
+    "type": "crafting",
+    "relatedSkills": ["smithing", "alchemy", "cooking"],
+    "resourceTypes": ["ore", "leather", "herbs", "cloth"],
+    "recipes": [
+      {
+        "id": "crude_sword",
+        "name": "Crude Sword",
+        "requiredLevel": 2,
+        "materials": [
+          { "itemId": "copper_ore", "quantity": 3 },
+          { "itemId": "wood_scrap", "quantity": 1 }
+        ],
+        "produces": {
+          "itemId": "crude_sword",
+          "quantity": 1
+        },
+        "skillRequired": "smithing",
+        "skillLevel": 1
+      },
+      {
+        "id": "minor_healing_potion",
+        "name": "Minor Healing Potion",
+        "requiredLevel": 3,
+        "materials": [
+          { "itemId": "wild_herb", "quantity": 2 },
+          { "itemId": "water_vial", "quantity": 1 }
+        ],
+        "produces": {
+          "itemId": "minor_healing_potion",
+          "quantity": 1
+        },
+        "skillRequired": "alchemy",
+        "skillLevel": 1
+      },
+      {
+        "id": "leather_armor",
+        "name": "Leather Armor",
+        "requiredLevel": 4,
+        "materials": [
+          { "itemId": "boar_hide", "quantity": 3 },
+          { "itemId": "thread", "quantity": 2 }
+        ],
+        "produces": {
+          "itemId": "leather_armor",
+          "quantity": 1
+        },
+        "skillRequired": "smithing",
+        "skillLevel": 2
+      }
+    ]
+  }
+]
+

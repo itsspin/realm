@@ -1,0 +1,407 @@
+[
+  {
+    "itemId": "starter_cloth_robe",
+    "name": "Starter Cloth Robe",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "cloth",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "👕",
+    "stats": {
+      "def": 2,
+      "hp": 5
+    },
+    "description": "A simple cloth robe given to new adventurers.",
+    "value": 5
+  },
+  {
+    "itemId": "starter_leather_jacket",
+    "name": "Starter Leather Jacket",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "leather",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "🧥",
+    "stats": {
+      "def": 3,
+      "hp": 8
+    },
+    "description": "Basic leather protection for new adventurers.",
+    "value": 8
+  },
+  {
+    "itemId": "starter_chain_vest",
+    "name": "Starter Chain Vest",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "chain",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "🛡️",
+    "stats": {
+      "def": 4,
+      "hp": 10
+    },
+    "description": "Light chainmail for aspiring defenders.",
+    "value": 12
+  },
+  {
+    "itemId": "starter_wooden_sword",
+    "name": "Starter Wooden Sword",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "sword",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "⚔️",
+    "stats": {
+      "atk": 2
+    },
+    "description": "A training sword made of sturdy wood.",
+    "value": 5,
+    "hands": 1
+  },
+  {
+    "itemId": "starter_dagger",
+    "name": "Starter Dagger",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "dagger",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "🗡️",
+    "stats": {
+      "atk": 3
+    },
+    "description": "A small but reliable blade.",
+    "value": 5,
+    "hands": 1
+  },
+  {
+    "itemId": "starter_staff",
+    "name": "Starter Staff",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "staff",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "🪄",
+    "stats": {
+      "atk": 1,
+      "int": 2
+    },
+    "description": "A simple staff that channels arcane energy.",
+    "value": 8,
+    "hands": 2
+  },
+  {
+    "itemId": "starter_mace",
+    "name": "Starter Mace",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "mace",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": ["starter"],
+    "icon": "🔨",
+    "stats": {
+      "atk": 2,
+      "wis": 1
+    },
+    "description": "A basic mace blessed by the clergy.",
+    "value": 6,
+    "hands": 1
+  },
+  {
+    "itemId": "rusty_sword",
+    "name": "Rusty Sword",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "sword",
+    "levelReq": 2,
+    "rarity": "common",
+    "flags": [],
+    "icon": "⚔️",
+    "stats": {
+      "atk": 4
+    },
+    "description": "An old sword, worn but still serviceable.",
+    "value": 15
+  },
+  {
+    "itemId": "crude_sword",
+    "name": "Crude Sword",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "sword",
+    "levelReq": 3,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "⚔️",
+    "stats": {
+      "atk": 6
+    },
+    "description": "A roughly forged blade, better than nothing.",
+    "value": 30
+  },
+  {
+    "itemId": "sharp_dagger",
+    "name": "Sharp Dagger",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "dagger",
+    "levelReq": 3,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "🗡️",
+    "stats": {
+      "atk": 7
+    },
+    "description": "A well-sharpened blade that strikes true.",
+    "value": 35
+  },
+  {
+    "itemId": "leather_armor",
+    "name": "Leather Armor",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "leather",
+    "levelReq": 4,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "🧥",
+    "stats": {
+      "def": 6,
+      "hp": 15
+    },
+    "description": "Sturdy leather armor crafted from beast hides.",
+    "value": 50
+  },
+  {
+    "itemId": "chainmail_shirt",
+    "name": "Chainmail Shirt",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "chain",
+    "levelReq": 5,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "🛡️",
+    "stats": {
+      "def": 8,
+      "hp": 20
+    },
+    "description": "Interlocked metal rings provide solid protection.",
+    "value": 75
+  },
+  {
+    "itemId": "apprentice_staff",
+    "name": "Apprentice Staff",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "staff",
+    "levelReq": 5,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "🪄",
+    "stats": {
+      "atk": 3,
+      "int": 4
+    },
+    "description": "A staff imbued with minor arcane power.",
+    "value": 60
+  },
+  {
+    "itemId": "bronze_sword",
+    "name": "Bronze Sword",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "sword",
+    "levelReq": 6,
+    "rarity": "uncommon",
+    "flags": [],
+    "icon": "⚔️",
+    "stats": {
+      "atk": 9
+    },
+    "description": "A well-crafted blade of bronze.",
+    "value": 100
+  },
+  {
+    "itemId": "iron_mace",
+    "name": "Iron Mace",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "mace",
+    "levelReq": 7,
+    "rarity": "rare",
+    "flags": [],
+    "icon": "🔨",
+    "stats": {
+      "atk": 8,
+      "wis": 2
+    },
+    "description": "A heavy mace forged from pure iron.",
+    "value": 120
+  },
+  {
+    "itemId": "iron_chainmail",
+    "name": "Iron Chainmail",
+    "type": "armor",
+    "slot": "chest",
+    "armorType": "chain",
+    "levelReq": 8,
+    "rarity": "rare",
+    "flags": [],
+    "icon": "🛡️",
+    "stats": {
+      "def": 12,
+      "hp": 30
+    },
+    "description": "Strong chainmail made from iron rings.",
+    "value": 200
+  },
+  {
+    "itemId": "enchanted_staff",
+    "name": "Enchanted Staff",
+    "type": "weapon",
+    "slot": "weapon",
+    "weaponType": "staff",
+    "levelReq": 10,
+    "rarity": "rare",
+    "flags": [],
+    "icon": "🪄",
+    "stats": {
+      "atk": 5,
+      "int": 8
+    },
+    "description": "A staff crackling with arcane energy.",
+    "value": 300
+  },
+  {
+    "itemId": "minor_healing_potion",
+    "name": "Minor Healing Potion",
+    "type": "consumable",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🧪",
+    "stats": {},
+    "effect": {
+      "type": "heal",
+      "amount": 30
+    },
+    "description": "A small red potion that restores health.",
+    "value": 10,
+    "noDrop": false
+  },
+  {
+    "itemId": "wild_herb",
+    "name": "Wild Herb",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🌿",
+    "description": "A common herb found in the wilds.",
+    "value": 2,
+    "noDrop": false
+  },
+  {
+    "itemId": "copper_ore",
+    "name": "Copper Ore",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "⛏️",
+    "description": "Raw copper ore ready for smithing.",
+    "value": 5,
+    "noDrop": false
+  },
+  {
+    "itemId": "water_vial",
+    "name": "Water Vial",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "💧",
+    "description": "A vial of pure water for alchemy.",
+    "value": 1,
+    "noDrop": false
+  },
+  {
+    "itemId": "thread",
+    "name": "Thread",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🧵",
+    "description": "Strong thread for sewing and crafting.",
+    "value": 1,
+    "noDrop": false
+  },
+  {
+    "itemId": "wood_scrap",
+    "name": "Wood Scrap",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🪵",
+    "description": "A piece of wood suitable for crafting.",
+    "value": 1,
+    "noDrop": false
+  },
+  {
+    "itemId": "medicinal_root",
+    "name": "Medicinal Root",
+    "type": "material",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🌱",
+    "description": "A root with healing properties, used in alchemy.",
+    "value": 3,
+    "noDrop": false
+  },
+  {
+    "itemId": "forest_berry",
+    "name": "Forest Berry",
+    "type": "consumable",
+    "levelReq": 1,
+    "rarity": "common",
+    "flags": [],
+    "icon": "🫐",
+    "description": "A sweet berry found in the forest. Restores a small amount of health.",
+    "effect": {
+      "type": "heal",
+      "amount": 10
+    },
+    "value": 2,
+    "noDrop": false
+  },
+  {
+    "itemId": "iron_ore",
+    "name": "Iron Ore",
+    "type": "material",
+    "levelReq": 3,
+    "rarity": "common",
+    "flags": [],
+    "icon": "⛏️",
+    "description": "Raw iron ore ready for smithing.",
+    "value": 8,
+    "noDrop": false
+  }
+]
+
