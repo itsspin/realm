@@ -23,9 +23,12 @@
   let activeMobs = new Map(); // Map<entityId, mobEntity>
   let spawnTimers = new Map(); // Map<spawnPointId, timestamp>
   let roamingMobs = new Map(); // Map<entityId, roamingState>
+  let chasingMobs = new Map(); // Map<entityId, {playerId, spawnX, spawnY, lastUpdate}>
   
   // Leash radius for static spawns (tiles they can wander from spawn point)
   const LEASH_RADIUS = 5;
+  // Chase reset distance - mob resets when player gets this far away
+  const CHASE_RESET_DISTANCE = 4; // 3-5 tiles (using 4 as middle)
 
   /**
    * Initialize spawn system for current zone
@@ -51,6 +54,7 @@
     activeMobs.clear();
     spawnTimers.clear();
     roamingMobs.clear();
+    chasingMobs.clear();
     
     // Also clear corpses when changing zones
     if (global.CorpseSystem) {
@@ -318,6 +322,140 @@
         spawnRoamingMob(spawnGroup, zone);
       }
     });
+
+    // Handle chasing mobs (mobs that are chasing the player)
+    handleChasingMobs(player, zone);
+  }
+
+  /**
+   * Handle mobs that are chasing the player
+   */
+  function handleChasingMobs(player, zone) {
+    if (!player || !player.currentTile) return;
+
+    const playerX = player.currentTile.x;
+    const playerY = player.currentTile.y;
+
+    // Check if player is in combat
+    const isInCombat = global.Combat?.isInCombat?.() || false;
+    const currentTarget = global.Targeting?.getTarget();
+    const currentMonster = global.Combat?.currentMonster;
+
+    chasingMobs.forEach((chaseState, entityId) => {
+      const mob = activeMobs.get(entityId);
+      if (!mob || !mob.alive || mob.zoneId !== zone.id) {
+        // Mob is dead or in different zone, remove from chasing
+        chasingMobs.delete(entityId);
+        return;
+      }
+
+      // Calculate distance to player
+      const distance = Math.abs(mob.x - playerX) + Math.abs(mob.y - playerY);
+
+      // Check if player is still in combat with this mob
+      const isTargetingThisMob = currentTarget && currentTarget.id === mob.id;
+      const isCombatWithThisMob = isInCombat && currentMonster && currentMonster.mobEntity && currentMonster.mobEntity.id === mob.id;
+
+      // If player got too far away, reset mob to spawn
+      if (distance > CHASE_RESET_DISTANCE) {
+        // Reset mob to spawn position
+        if (chaseState.spawnX !== undefined && chaseState.spawnY !== undefined) {
+          mob.x = chaseState.spawnX;
+          mob.y = chaseState.spawnY;
+          activeMobs.set(entityId, mob);
+          
+          // Remove from chasing
+          chasingMobs.delete(entityId);
+          
+          // Update map rendering
+          if (global.WorldMapRender) {
+            global.WorldMapRender.renderMap();
+          }
+        }
+        return;
+      }
+
+      // If player is not in combat with this mob anymore, reset after a delay
+      if (!isTargetingThisMob && !isCombatWithThisMob) {
+        // Wait a bit before resetting (player might be switching targets)
+        if (!chaseState.resetTimer) {
+          chaseState.resetTimer = setTimeout(() => {
+            if (chaseState.spawnX !== undefined && chaseState.spawnY !== undefined) {
+              mob.x = chaseState.spawnX;
+              mob.y = chaseState.spawnY;
+              activeMobs.set(entityId, mob);
+              chasingMobs.delete(entityId);
+              
+              if (global.WorldMapRender) {
+                global.WorldMapRender.renderMap();
+              }
+            }
+          }, 3000); // Reset after 3 seconds of not being in combat
+        }
+        return;
+      }
+
+      // Clear reset timer if mob is still in combat
+      if (chaseState.resetTimer) {
+        clearTimeout(chaseState.resetTimer);
+        chaseState.resetTimer = null;
+      }
+
+      // Chase player if mob is not adjacent
+      if (distance > 1) {
+        // Move mob towards player
+        const dx = playerX > mob.x ? 1 : playerX < mob.x ? -1 : 0;
+        const dy = playerY > mob.y ? 1 : playerY < mob.y ? -1 : 0;
+
+        const newX = mob.x + dx;
+        const newY = mob.y + dy;
+
+        // Check if new position is walkable and not occupied
+        if (global.World?.isTileWalkable(zone.id, newX, newY)) {
+          const mobsAtTile = Array.from(activeMobs.values()).filter(m => 
+            m.x === newX && m.y === newY && m.zoneId === zone.id && m.id !== mob.id
+          );
+
+          if (mobsAtTile.length === 0) {
+            // Move mob
+            mob.x = newX;
+            mob.y = newY;
+            activeMobs.set(entityId, mob);
+            
+            // Update map rendering
+            if (global.WorldMapRender) {
+              global.WorldMapRender.renderMap();
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Start chasing player (called when mob is attacked)
+   */
+  function startChasing(mobEntity) {
+    if (!mobEntity || !mobEntity.alive) return;
+
+    const player = global.State?.getPlayer();
+    if (!player || !player.currentZone || mobEntity.zoneId !== player.currentZone) return;
+
+    // Store spawn position if not already chasing
+    if (!chasingMobs.has(mobEntity.id)) {
+      const spawnX = mobEntity.spawnX || mobEntity.x;
+      const spawnY = mobEntity.spawnY || mobEntity.y;
+      
+      chasingMobs.set(mobEntity.id, {
+        playerId: player.id || 'player',
+        spawnX: spawnX,
+        spawnY: spawnY,
+        lastUpdate: Date.now()
+      });
+
+      // Remove from roaming while chasing
+      roamingMobs.delete(mobEntity.id);
+    }
   }
 
   /**

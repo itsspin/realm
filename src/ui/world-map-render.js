@@ -240,12 +240,10 @@
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
     
     // Calculate viewport offset to center it on screen
-    
-    // Calculate viewport offset to center it on screen
     const viewportPixelWidth = VIEW_SIZE * tileSize;
     const viewportPixelHeight = VIEW_SIZE * tileSize;
-    const offsetX = (containerWidth - viewportPixelWidth) / 2;
-    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+    const offsetX = (mapContainerWidth - viewportPixelWidth) / 2;
+    const offsetY = (mapContainerHeight - viewportPixelHeight) / 2;
 
     // Get all mobs and players once for efficiency
     const allMobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];

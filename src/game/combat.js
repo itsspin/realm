@@ -126,6 +126,11 @@
    */
   function startCombatWithMob(mobEntity) {
     if (!mobEntity || !mobEntity.alive) return;
+
+    // Start mob chasing player
+    if (global.SpawnSystem && global.SpawnSystem.startChasing) {
+      global.SpawnSystem.startChasing(mobEntity);
+    }
     
     const mobTemplate = mobEntity.mobTemplate;
     if (!mobTemplate) return;

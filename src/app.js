@@ -456,15 +456,22 @@
       // Initialize equipment UI
       if (window.EquipmentUI && typeof window.EquipmentUI.init === 'function') {
         window.EquipmentUI.init();
-        
-        // Add button handler
+      }
+      
+      // Add button handler (separate from init to ensure it's always set up)
+      setTimeout(() => {
         const equipmentBtn = document.getElementById('equipmentToggleBtn');
         if (equipmentBtn) {
           equipmentBtn.addEventListener('click', () => {
-            window.EquipmentUI.toggle();
+            if (window.EquipmentUI && typeof window.EquipmentUI.toggle === 'function') {
+              window.EquipmentUI.toggle();
+            }
           });
+          console.log('[App] Equipment button handler attached');
+        } else {
+          console.warn('[App] Equipment button not found');
         }
-      }
+      }, 500);
 
       // Render initial UI
       if (window.Rendering) {
