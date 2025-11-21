@@ -51,6 +51,14 @@
     activeMobs.clear();
     spawnTimers.clear();
     roamingMobs.clear();
+    
+    // Also clear corpses when changing zones
+    if (global.CorpseSystem) {
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone) {
+        global.CorpseSystem.clearZone(player.currentZone);
+      }
+    }
   }
 
   /**

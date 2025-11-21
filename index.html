@@ -105,7 +105,10 @@
 
         <!-- Inventory -->
         <div class="inventory-container">
-          <h3 class="panel-subtitle">Inventory</h3>
+          <div class="inventory-header">
+            <h3 class="panel-subtitle">Inventory</h3>
+            <button class="equipment-toggle-btn" id="equipmentToggleBtn" title="Toggle Equipment Panel">⚔️ Equipment</button>
+          </div>
           <div class="inventory-grid" id="inventoryGrid"></div>
         </div>
       </div>
@@ -251,6 +254,7 @@
   <script src="src/ui/character-select.js"></script>
   <script src="src/core/world.js"></script>
   <script src="src/core/spawn-system.js"></script>
+  <script src="src/core/corpse-system.js"></script>
   <script src="src/core/combat-enhanced.js"></script>
   <script src="src/core/faction-system.js"></script>
   <script src="src/core/guard-system.js"></script>

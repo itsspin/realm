@@ -370,14 +370,18 @@
         gold: (player.gold || 0) + goldGain
       });
 
-      // Kill the mob in spawn system
-      if (currentMonster.mobEntity) {
-        global.SpawnSystem?.killMob(currentMonster.mobEntity.id);
-      } else {
+      // Get mob entity before killing it (needed for corpse creation)
+      let mobEntity = currentMonster.mobEntity;
+      if (!mobEntity) {
         const currentTarget = global.Targeting?.getTarget();
         if (currentTarget && currentTarget.mobTemplateId === currentMonster.mobTemplateId) {
-          global.SpawnSystem?.killMob(currentTarget.id);
+          mobEntity = currentTarget;
         }
+      }
+
+      // Kill the mob in spawn system (but keep reference for corpse)
+      if (mobEntity) {
+        global.SpawnSystem?.killMob(mobEntity.id);
       }
       global.Targeting?.clearTarget();
 
@@ -396,14 +400,11 @@
         }
       }
 
-      // Check for loot (use dungeon system if in dungeon, otherwise regular loot)
-      const currentZone = global.Zones?.getCurrentZone();
-      const isDungeonZone = currentZone && global.Dungeons?.getDungeonZone('gloomfang_caverns', currentZone.id);
-      
-      // Roll loot from loot table
+      // Roll loot from loot table (but don't auto-loot - create corpse instead)
       const lootItems = rollLootFromTable(currentMonster);
-      let lootText = '';
       
+      // Filter out noDrop items
+      const validLootItems = [];
       if (lootItems && lootItems.length > 0) {
         lootItems.forEach(itemId => {
           const itemData = global.REALM?.data?.itemsById?.[itemId.toLowerCase()];
@@ -413,28 +414,41 @@
               // Skip noDrop items (guards, etc.)
               return;
             }
-            
-            if (global.State?.addItem(itemId)) {
-              if (lootText) lootText += ', ';
-              lootText += itemData.name;
-              global.Toast?.show({
-                type: 'success',
-                title: 'Item Found!',
-                text: itemData.name
-              });
-              // Update inventory UI
-              global.Rendering?.updateInventory();
-            }
+            validLootItems.push(itemId);
           }
         });
-        if (lootText) lootText = ' You find: ' + lootText + '!';
       }
 
-      global.Narrative?.addEntry({
-        type: 'combat',
-        text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.${lootText}`,
-        meta: 'Victory!'
-      });
+      // Create corpse with loot (mobEntity was captured before killing)
+      if (mobEntity && global.CorpseSystem) {
+        if (validLootItems.length > 0) {
+          global.CorpseSystem.createCorpse(mobEntity, validLootItems);
+          global.Narrative?.addEntry({
+            type: 'combat',
+            text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold. A corpse lies on the ground.`,
+            meta: 'Victory!'
+          });
+        } else {
+          // Create empty corpse (no loot) - still shows corpse
+          global.CorpseSystem.createCorpse(mobEntity, []);
+          global.Narrative?.addEntry({
+            type: 'combat',
+            text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.`,
+            meta: 'Victory!'
+          });
+        }
+        
+        // Re-render map to show corpse
+        if (global.WorldMapRender) {
+          setTimeout(() => global.WorldMapRender.renderMap(), 100);
+        }
+      } else {
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.`,
+          meta: 'Victory!'
+        });
+      }
 
       // Track combat stats
       if (global.PlayerStats) {

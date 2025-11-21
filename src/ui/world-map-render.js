@@ -128,8 +128,8 @@
       }
     });
 
-    // Prevent context menu
-    mapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    // Right-click to loot corpses
+    mapCanvas.addEventListener('contextmenu', handleCanvasRightClick);
 
     // Zoom controls
     const zoomInBtn = document.getElementById('zoomInBtn');
@@ -473,6 +473,50 @@
       }
     }
 
+    // Draw corpses first (so they appear under mobs)
+    if (global.CorpseSystem && player && player.currentZone) {
+      const allCorpses = global.CorpseSystem.getCorpsesInZone(player.currentZone) || [];
+      allCorpses.forEach(corpse => {
+        if (!corpse || typeof corpse.x !== 'number' || typeof corpse.y !== 'number') return;
+        
+        // Check if corpse is in viewport
+        const dx = corpse.x - playerX;
+        const dy = corpse.y - playerY;
+        if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
+
+        const vx = VIEW_CENTER + dx;
+        const vy = VIEW_CENTER + dy;
+        const screenX = vx * tileSize + offsetX;
+        const screenY = vy * tileSize + offsetY;
+        
+        // Draw corpse (gray/brown color, different from mobs)
+        mapCtx.fillStyle = '#8b7355';
+        mapCtx.beginPath();
+        mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3.5, 0, Math.PI * 2);
+        mapCtx.fill();
+        mapCtx.strokeStyle = '#6b5b4f';
+        mapCtx.lineWidth = 2;
+        mapCtx.stroke();
+
+        // Draw corpse name
+        if (tileSize >= 20) {
+          mapCtx.save();
+          mapCtx.fillStyle = '#d4c4a8';
+          mapCtx.strokeStyle = '#000';
+          mapCtx.lineWidth = 2;
+          mapCtx.font = `italic ${Math.max(9, Math.floor(tileSize / 3.5))}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+          mapCtx.textAlign = 'center';
+          mapCtx.textBaseline = 'bottom';
+          const name = corpse.corpseName || 'Corpse';
+          const textX = Math.round(screenX + tileSize / 2);
+          const textY = Math.round(screenY - 2);
+          mapCtx.strokeText(name, textX, textY);
+          mapCtx.fillText(name, textX, textY);
+          mapCtx.restore();
+        }
+      });
+    }
+
     // Draw mobs
     allMobs.forEach(mob => {
       if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
@@ -776,6 +820,117 @@
   }
 
   /**
+   * Loot a corpse
+   */
+  function lootCorpse(corpse) {
+    if (!corpse || !global.CorpseSystem) return;
+    
+    if (global.CorpseSystem.isCorpseLooted(corpse)) {
+      if (global.ChatSystem) {
+        global.ChatSystem.addSystemMessage('This corpse has already been looted.');
+      }
+      return;
+    }
+    
+    // Loot all remaining items
+    const lootedItems = global.CorpseSystem.lootAll(corpse.id);
+    
+    if (lootedItems.length === 0) {
+      if (global.ChatSystem) {
+        global.ChatSystem.addSystemMessage('The corpse has nothing of value.');
+      }
+      return;
+    }
+    
+    // Add items to inventory
+    let lootedCount = 0;
+    let lootText = '';
+    
+    lootedItems.forEach(itemId => {
+      const itemData = global.REALM?.data?.itemsById?.[itemId.toLowerCase()];
+      if (itemData) {
+        if (global.State?.addItem(itemId)) {
+          lootedCount++;
+          if (lootText) lootText += ', ';
+          lootText += itemData.name;
+          global.Toast?.show({
+            type: 'success',
+            title: 'Item Looted!',
+            text: itemData.name
+          });
+        }
+      }
+    });
+    
+    // Update inventory UI
+    global.Rendering?.updateInventory();
+    
+    // Show message
+    if (lootedCount > 0) {
+      global.Narrative?.addEntry({
+        type: 'loot',
+        text: `You loot ${lootText} from the ${corpse.corpseName}.`,
+        meta: 'Loot'
+      });
+      
+      if (global.ChatSystem) {
+        global.ChatSystem.addSystemMessage(`Looted ${lootedCount} item(s) from ${corpse.corpseName}.`);
+      }
+    }
+    
+    // Re-render map to update corpse display
+    renderMap();
+  }
+  
+  /**
+   * Handle canvas right-click (loot corpse)
+   */
+  function handleCanvasRightClick(event) {
+    event.preventDefault();
+    
+    const player = global.State?.getPlayer();
+    if (!player || !player.currentZone || !player.currentTile) return;
+
+    const zone = global.World?.getZone(player.currentZone);
+    if (!zone) return;
+
+    const rect = mapCanvas.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+
+    const tileSize = 16 * zoomLevel;
+    const container = mapCanvas.parentElement;
+    const containerWidth = container ? container.clientWidth : mapCanvas.width;
+    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    const viewportPixelWidth = VIEW_SIZE * tileSize;
+    const viewportPixelHeight = VIEW_SIZE * tileSize;
+    const offsetX = (containerWidth - viewportPixelWidth) / 2;
+    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+
+    // Calculate viewport coordinates
+    const vx = Math.floor((clickX - offsetX) / tileSize);
+    const vy = Math.floor((clickY - offsetY) / tileSize);
+
+    if (vx < 0 || vx >= VIEW_SIZE || vy < 0 || vy >= VIEW_SIZE) return;
+
+    // Calculate world coordinates
+    const worldX = player.currentTile.x + (vx - VIEW_CENTER);
+    const worldY = player.currentTile.y + (vy - VIEW_CENTER);
+
+    // Validate coordinates
+    if (worldX < 0 || worldX >= zone.gridWidth || worldY < 0 || worldY >= zone.gridHeight) return;
+
+    // Check for corpse (right-click to loot)
+    if (global.CorpseSystem) {
+      const corpse = global.CorpseSystem.getCorpseAtTile(player.currentZone, worldX, worldY);
+      if (corpse) {
+        lootCorpse(corpse);
+        return;
+      }
+    }
+  }
+  
+  /**
    * Handle canvas click
    */
   function handleCanvasClick(event) {
@@ -841,6 +996,16 @@
       }
     }
 
+    // Check for corpse first (loot on click)
+    if (global.CorpseSystem) {
+      const corpse = global.CorpseSystem.getCorpseAtTile(player.currentZone, worldX, worldY);
+      if (corpse) {
+        // Loot the corpse
+        lootCorpse(corpse);
+        return;
+      }
+    }
+
     // Get all entities at this tile
     const entities = getEntitiesAtTile(player.currentZone, worldX, worldY);
 
@@ -895,15 +1060,20 @@
       return;
     }
 
-    // Click on empty tile - check if walkable
-    if (!global.World?.isTileWalkable(player.currentZone, worldX, worldY)) {
+    // Click on empty tile - try to pathfind to it
+    // Check if tile is within viewport distance
+    const playerX = player.currentTile?.x || 0;
+    const playerY = player.currentTile?.y || 0;
+    const distance = Math.abs(worldX - playerX) + Math.abs(worldY - playerY);
+    
+    if (distance > VIEW_RADIUS) {
       if (global.ChatSystem) {
-        global.ChatSystem.addSystemMessage('You cannot move there.');
+        global.ChatSystem.addSystemMessage('That location is too far away.');
       }
       return;
     }
 
-    // Move to tile
+    // Try to move to tile (pathfinding will handle the rest)
     if (global.Movement) {
       global.Movement.moveToTile(worldX, worldY);
     }
