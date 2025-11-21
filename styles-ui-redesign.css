@@ -677,28 +677,30 @@
   top: var(--spacing-md);
   right: var(--spacing-md);
   display: flex;
-  flex-direction: column;
   gap: var(--spacing-xs);
   z-index: 10;
 }
 
 .map-control-btn {
-  width: 36px;
-  height: 36px;
+  padding: 0.5rem 1rem;
   background: rgba(26, 31, 46, 0.9);
   border: var(--border-medium);
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   color: var(--fg-primary);
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-soft);
+  font-family: var(--font-body);
 }
 
 .map-control-btn:hover {
-  background: rgba(201, 125, 61, 0.3);
+  background: rgba(201, 125, 61, 0.4);
   border-color: var(--ember-orange);
   box-shadow: var(--glow-ember);
+  transform: translateY(-2px);
 }
 
 .map-legend {
@@ -1383,6 +1385,93 @@
   color: var(--fg-secondary);
   padding: var(--spacing-lg);
   font-style: italic;
+}
+
+/* ============================================
+   Full Map Modal
+   ============================================ */
+
+.full-map-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.full-map-modal.hidden {
+  display: none;
+}
+
+.full-map-modal-content {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(42, 37, 32, 0.98) 100%);
+  border: var(--border-medium);
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-strong);
+}
+
+.full-map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.full-map-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--gold-bright);
+  font-size: 1.5rem;
+}
+
+.full-map-close {
+  background: none;
+  border: none;
+  color: var(--fg-secondary);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  border-radius: 0.25rem;
+}
+
+.full-map-close:hover {
+  color: var(--fg-primary);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.full-map-body {
+  padding: var(--spacing-md);
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#fullMapCanvas {
+  border: var(--border-subtle);
+  border-radius: 0.5rem;
+  background: rgba(10, 14, 26, 0.8);
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* ============================================

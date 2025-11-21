@@ -15,7 +15,6 @@
 (function (global) {
   let mapCanvas = null;
   let mapCtx = null;
-  let zoomLevel = 1.5;
   let showDebugOverlay = false;
   let hoveredTile = null; // {x, y} in world coordinates
 
@@ -26,7 +25,7 @@
 
   // Expose for movement system and compatibility
   global.WorldMapRender = global.WorldMapRender || {};
-  global.WorldMapRender.zoomLevel = zoomLevel;
+  global.WorldMapRender.zoomLevel = 1; // Fixed zoom - always 1x
   global.WorldMapRender.panX = 0; // Deprecated - kept for compatibility
   global.WorldMapRender.panY = 0; // Deprecated - kept for compatibility
   global.WorldMapRender.toggleDebugOverlay = () => {
@@ -103,18 +102,7 @@
       }
     }
 
-    // Mouse wheel zoom (keep for accessibility)
-    mapCanvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoomLevel = Math.max(0.5, Math.min(4, zoomLevel * zoomFactor));
-      
-      if (newZoomLevel !== zoomLevel) {
-        zoomLevel = newZoomLevel;
-        global.WorldMapRender.zoomLevel = zoomLevel;
-        renderMap();
-      }
-    }, { passive: false });
+    // Mouse wheel disabled - fixed zoom level
 
     // Click to move/target
     mapCanvas.addEventListener('click', handleCanvasClick);
@@ -131,33 +119,8 @@
     // Right-click to loot corpses
     mapCanvas.addEventListener('contextmenu', handleCanvasRightClick);
 
-    // Zoom controls
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    const centerPlayerBtn = document.getElementById('centerPlayerBtn');
-
-    if (zoomInBtn) {
-      zoomInBtn.addEventListener('click', () => {
-        zoomLevel = Math.min(4, zoomLevel + 0.3);
-        global.WorldMapRender.zoomLevel = zoomLevel;
-        renderMap();
-      });
-    }
-
-    if (zoomOutBtn) {
-      zoomOutBtn.addEventListener('click', () => {
-        zoomLevel = Math.max(0.5, zoomLevel - 0.3);
-        global.WorldMapRender.zoomLevel = zoomLevel;
-        renderMap();
-      });
-    }
-
-    // Center button - no-op since always centered, but keep for UI consistency
-    if (centerPlayerBtn) {
-      centerPlayerBtn.addEventListener('click', () => {
-        renderMap(); // Just re-render
-      });
-    }
+    // Zoom controls removed - fixed zoom level
+    // Map button will show full zone map
 
     // Debug toggle button
     const debugToggleBtn = document.getElementById('debugToggleBtn');
@@ -260,18 +223,23 @@
 
     const playerX = player.currentTile.x;
     const playerY = player.currentTile.y;
-    const tileSize = 16 * zoomLevel;
+    
+    // Calculate tile size to fit 16x16 viewport in container
+    const mapContainer = mapCanvas.parentElement;
+    const mapContainerWidth = mapContainer ? mapContainer.clientWidth : mapCanvas.width;
+    const mapContainerHeight = mapContainer ? mapContainer.clientHeight : mapCanvas.height;
+    const tileSize = Math.min(
+      Math.floor(mapContainerWidth / VIEW_SIZE),
+      Math.floor(mapContainerHeight / VIEW_SIZE)
+    );
 
-    // Update exposed values
-    global.WorldMapRender.zoomLevel = zoomLevel;
+    // Update exposed values (zoom is fixed at 1x)
+    global.WorldMapRender.zoomLevel = 1;
 
     // Clear canvas
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-
-    // Calculate container dimensions for centering
-    const container = mapCanvas.parentElement;
-    const containerWidth = container ? container.clientWidth : mapCanvas.width;
-    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    
+    // Calculate viewport offset to center it on screen
     
     // Calculate viewport offset to center it on screen
     const viewportPixelWidth = VIEW_SIZE * tileSize;
@@ -784,14 +752,18 @@
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    const tileSize = 16 * zoomLevel;
-    const container = mapCanvas.parentElement;
-    const containerWidth = container ? container.clientWidth : mapCanvas.width;
-    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    // Calculate tile size to fit 16x16 viewport in container
+    const mapContainer = mapCanvas.parentElement;
+    const mapContainerWidth = mapContainer ? mapContainer.clientWidth : mapCanvas.width;
+    const mapContainerHeight = mapContainer ? mapContainer.clientHeight : mapCanvas.height;
+    const tileSize = Math.min(
+      Math.floor(mapContainerWidth / VIEW_SIZE),
+      Math.floor(mapContainerHeight / VIEW_SIZE)
+    );
     const viewportPixelWidth = VIEW_SIZE * tileSize;
     const viewportPixelHeight = VIEW_SIZE * tileSize;
-    const offsetX = (containerWidth - viewportPixelWidth) / 2;
-    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+    const offsetX = (mapContainerWidth - viewportPixelWidth) / 2;
+    const offsetY = (mapContainerHeight - viewportPixelHeight) / 2;
 
     // Calculate viewport coordinates
     const vx = Math.floor((clickX - offsetX) / tileSize);
@@ -898,14 +870,18 @@
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    const tileSize = 16 * zoomLevel;
-    const container = mapCanvas.parentElement;
-    const containerWidth = container ? container.clientWidth : mapCanvas.width;
-    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    // Calculate tile size to fit 16x16 viewport in container
+    const mapContainer = mapCanvas.parentElement;
+    const mapContainerWidth = mapContainer ? mapContainer.clientWidth : mapCanvas.width;
+    const mapContainerHeight = mapContainer ? mapContainer.clientHeight : mapCanvas.height;
+    const tileSize = Math.min(
+      Math.floor(mapContainerWidth / VIEW_SIZE),
+      Math.floor(mapContainerHeight / VIEW_SIZE)
+    );
     const viewportPixelWidth = VIEW_SIZE * tileSize;
     const viewportPixelHeight = VIEW_SIZE * tileSize;
-    const offsetX = (containerWidth - viewportPixelWidth) / 2;
-    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+    const offsetX = (mapContainerWidth - viewportPixelWidth) / 2;
+    const offsetY = (mapContainerHeight - viewportPixelHeight) / 2;
 
     // Calculate viewport coordinates
     const vx = Math.floor((clickX - offsetX) / tileSize);
@@ -944,14 +920,18 @@
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    const tileSize = 16 * zoomLevel;
-    const container = mapCanvas.parentElement;
-    const containerWidth = container ? container.clientWidth : mapCanvas.width;
-    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    // Calculate tile size to fit 16x16 viewport in container
+    const mapContainer = mapCanvas.parentElement;
+    const mapContainerWidth = mapContainer ? mapContainer.clientWidth : mapCanvas.width;
+    const mapContainerHeight = mapContainer ? mapContainer.clientHeight : mapCanvas.height;
+    const tileSize = Math.min(
+      Math.floor(mapContainerWidth / VIEW_SIZE),
+      Math.floor(mapContainerHeight / VIEW_SIZE)
+    );
     const viewportPixelWidth = VIEW_SIZE * tileSize;
     const viewportPixelHeight = VIEW_SIZE * tileSize;
-    const offsetX = (containerWidth - viewportPixelWidth) / 2;
-    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+    const offsetX = (mapContainerWidth - viewportPixelWidth) / 2;
+    const offsetY = (mapContainerHeight - viewportPixelHeight) / 2;
 
     // Calculate viewport coordinates
     const vx = Math.floor((clickX - offsetX) / tileSize);
