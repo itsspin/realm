@@ -328,6 +328,21 @@
       }
       global.Targeting?.clearTarget();
 
+      // Apply faction changes from kill
+      const mobTemplate = global.World?.getMobTemplate(currentMonster.mobTemplateId || currentMonster.id);
+      if (mobTemplate && global.FactionSystem) {
+        global.FactionSystem.applyKillFactionChanges(mobTemplate);
+        
+        // Check if killed a friendly in a city (criminal flag)
+        const currentZone = global.Zones?.getCurrentZone();
+        if (currentZone && currentZone.isSafeHaven) {
+          const mobFactionId = mobTemplate.factionId;
+          if (mobFactionId && global.FactionSystem.isFriendlyToFaction(mobFactionId)) {
+            global.FactionSystem.markPlayerCriminal(300); // 5 minutes
+          }
+        }
+      }
+
       // Check for loot (use dungeon system if in dungeon, otherwise regular loot)
       const currentZone = global.Zones?.getCurrentZone();
       const isDungeonZone = currentZone && global.Dungeons?.getDungeonZone('gloomfang_caverns', currentZone.id);

@@ -105,7 +105,44 @@
   function spawnRoamingMob(spawnGroup, zone) {
     // Find a random walkable tile in the zone
     const tiles = global.World?.getZoneTiles(zone.id) || [];
-    const walkableTiles = tiles.filter(tile => tile.walkable);
+    let walkableTiles = tiles.filter(tile => tile.walkable);
+    
+    // If in a city (safe haven), filter out hostile mobs from city tiles
+    if (zone.isSafeHaven) {
+      // Only allow guards and neutral mobs in city tiles
+      walkableTiles = walkableTiles.filter(tile => {
+        // Check if this tile is a city tile (city_street, building, etc.)
+        const isCityTile = tile.terrainType === 'city_street' || 
+                          tile.terrainType === 'building' ||
+                          tile.terrainType === 'path';
+        
+        if (!isCityTile) return true; // Non-city tiles are fine
+        
+        // For city tiles, only allow guards or neutral mobs
+        const mobTemplateId = spawnGroup.mobTemplates[
+          Math.floor(Math.random() * spawnGroup.mobTemplates.length)
+        ];
+        const mobTemplate = global.World?.getMobTemplate(mobTemplateId);
+        if (!mobTemplate) return false;
+        
+        // Allow guards and neutral mobs
+        if (mobTemplate.isGuard) return true;
+        if (!mobTemplate.factionId) return true; // Neutral
+        
+        // Check if mob faction is hostile to city faction
+        const cityFaction = global.REALM?.data?.factionsById?.[zone.controllingFaction];
+        const mobFaction = global.REALM?.data?.factionsById?.[mobTemplate.factionId];
+        
+        if (!cityFaction || !mobFaction) return true;
+        
+        // Don't spawn evil mobs in good cities
+        if (cityFaction.alignment === 'good' && mobFaction.alignment === 'evil') {
+          return false;
+        }
+        
+        return true;
+      });
+    }
     
     if (walkableTiles.length === 0) return;
 

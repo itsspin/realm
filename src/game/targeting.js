@@ -99,44 +99,89 @@
       }
     }
 
-    // Update con (consider) color
+    // Update con (consider) with faction-based description
     if (conEl) {
       const player = global.State?.getPlayer();
-      const playerLevel = player?.level || 1;
-      const mobLevel = currentTarget.level;
-      const levelDiff = mobLevel - playerLevel;
-
-      let conColor = '#808080'; // Gray (even)
-      let conText = 'Even Match';
-
-      if (levelDiff <= -10) {
-        conColor = '#0000ff'; // Blue (trivial)
-        conText = 'Trivial';
-      } else if (levelDiff <= -5) {
-        conColor = '#00ffff'; // Cyan (easy)
-        conText = 'Easy';
-      } else if (levelDiff <= -3) {
-        conColor = '#00ff00'; // Green (weak)
-        conText = 'Weak';
-      } else if (levelDiff <= -1) {
-        conColor = '#ffff00'; // Yellow (decent)
-        conText = 'Decent';
-      } else if (levelDiff === 0) {
-        conColor = '#ffffff'; // White (even)
-        conText = 'Even Match';
-      } else if (levelDiff <= 2) {
-        conColor = '#ff8000'; // Orange (tough)
-        conText = 'Tough';
-      } else if (levelDiff <= 4) {
-        conColor = '#ff0000'; // Red (very tough)
-        conText = 'Very Tough';
+      if (!player) return;
+      
+      // Use enhanced faction system if available
+      if (global.FactionSystem) {
+        const conDesc = global.FactionSystem.getConDescription(currentTarget, player);
+        conEl.textContent = conDesc;
+        
+        // Color based on faction standing
+        const mob = currentTarget.mobTemplate;
+        if (mob && mob.factionId) {
+          const standing = global.FactionSystem.getPlayerStanding(mob.factionId);
+          if (standing === 'scowls' || standing === 'threatening') {
+            conEl.style.color = '#ff0000'; // Red - hostile
+          } else if (standing === 'ally' || standing === 'warmly' || standing === 'kindly') {
+            conEl.style.color = '#00ff00'; // Green - friendly
+          } else {
+            conEl.style.color = '#ffffff'; // White - neutral
+          }
+        } else {
+          // Level-based color for neutral mobs
+          const playerLevel = player.level || 1;
+          const mobLevel = currentTarget.level;
+          const levelDiff = mobLevel - playerLevel;
+          
+          if (levelDiff <= -10) {
+            conEl.style.color = '#0000ff'; // Blue (trivial)
+          } else if (levelDiff <= -5) {
+            conEl.style.color = '#00ffff'; // Cyan (easy)
+          } else if (levelDiff <= -3) {
+            conEl.style.color = '#00ff00'; // Green (weak)
+          } else if (levelDiff <= -1) {
+            conEl.style.color = '#ffff00'; // Yellow (decent)
+          } else if (levelDiff === 0) {
+            conEl.style.color = '#ffffff'; // White (even)
+          } else if (levelDiff <= 2) {
+            conEl.style.color = '#ff8000'; // Orange (tough)
+          } else if (levelDiff <= 4) {
+            conEl.style.color = '#ff0000'; // Red (very tough)
+          } else {
+            conEl.style.color = '#800080'; // Purple (impossible)
+          }
+        }
       } else {
-        conColor = '#800080'; // Purple (impossible)
-        conText = 'Impossible';
-      }
+        // Fallback to level-based con
+        const playerLevel = player.level || 1;
+        const mobLevel = currentTarget.level;
+        const levelDiff = mobLevel - playerLevel;
 
-      conEl.textContent = conText;
-      conEl.style.color = conColor;
+        let conColor = '#808080';
+        let conText = 'Even Match';
+
+        if (levelDiff <= -10) {
+          conColor = '#0000ff';
+          conText = 'Trivial';
+        } else if (levelDiff <= -5) {
+          conColor = '#00ffff';
+          conText = 'Easy';
+        } else if (levelDiff <= -3) {
+          conColor = '#00ff00';
+          conText = 'Weak';
+        } else if (levelDiff <= -1) {
+          conColor = '#ffff00';
+          conText = 'Decent';
+        } else if (levelDiff === 0) {
+          conColor = '#ffffff';
+          conText = 'Even Match';
+        } else if (levelDiff <= 2) {
+          conColor = '#ff8000';
+          conText = 'Tough';
+        } else if (levelDiff <= 4) {
+          conColor = '#ff0000';
+          conText = 'Very Tough';
+        } else {
+          conColor = '#800080';
+          conText = 'Impossible';
+        }
+
+        conEl.textContent = conText;
+        conEl.style.color = conColor;
+      }
     }
   }
 

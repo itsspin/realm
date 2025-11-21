@@ -59,7 +59,12 @@
     "xp": 12,
     "gold": 2,
     "lootTableId": "goblin_loot",
-    "isGuard": false
+    "isGuard": false,
+    "factionChanges": {
+      "gloomfang_tribes": -5,
+      "thronehold_guards": 1,
+      "thronehold_citizens": 1
+    }
   },
   {
     "id": "bandit_scout",
@@ -75,7 +80,12 @@
     "xp": 25,
     "gold": 8,
     "lootTableId": "bandit_loot",
-    "isGuard": false
+    "isGuard": false,
+    "factionChanges": {
+      "crimson_marauders": -5,
+      "thronehold_guards": 2,
+      "thronehold_citizens": 2
+    }
   },
   {
     "id": "bandit_raider",

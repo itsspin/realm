@@ -1,0 +1,48 @@
+[
+  {
+    "id": "thronehold_guards_patrol",
+    "zoneId": "thronehold",
+    "guardTemplateId": "thronehold_guard",
+    "patrolRoutes": [
+      {
+        "id": "patrol_1",
+        "waypoints": [
+          { "x": 10, "y": 10 },
+          { "x": 30, "y": 10 },
+          { "x": 30, "y": 30 },
+          { "x": 10, "y": 30 }
+        ],
+        "speed": 1,
+        "pauseAtWaypoint": 5000
+      },
+      {
+        "id": "patrol_2",
+        "waypoints": [
+          { "x": 20, "y": 5 },
+          { "x": 20, "y": 35 }
+        ],
+        "speed": 1,
+        "pauseAtWaypoint": 3000
+      }
+    ]
+  },
+  {
+    "id": "silverweave_wardens_patrol",
+    "zoneId": "silverweave",
+    "guardTemplateId": "silverweave_warden",
+    "patrolRoutes": [
+      {
+        "id": "patrol_1",
+        "waypoints": [
+          { "x": 15, "y": 15 },
+          { "x": 25, "y": 15 },
+          { "x": 25, "y": 25 },
+          { "x": 15, "y": 25 }
+        ],
+        "speed": 1,
+        "pauseAtWaypoint": 5000
+      }
+    ]
+  }
+]
+

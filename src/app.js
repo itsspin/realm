@@ -119,6 +119,7 @@
       { key: 'itemsStarter', path: 'data/items-starter.json' },
       { key: 'lootTables', path: 'data/loot-tables.json' },
       { key: 'gatheringNodes', path: 'data/gathering-nodes.json' },
+      { key: 'guardPatrols', path: 'data/guard-patrols.json' },
       { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
       { key: 'namedMobs', path: 'data/named-mobs.json' },
       { key: 'dungeons', path: 'data/dungeons.json' },
@@ -268,6 +269,13 @@
             }
             return acc;
           }, {});
+        } else if (key === 'guardPatrols') {
+          REALM.data.guardPatrolsById = (REALM.data[key] || []).reduce((acc, entry) => {
+            if (entry?.id) {
+              acc[String(entry.id).toLowerCase()] = entry;
+            }
+            return acc;
+          }, {});
         }
       } catch (err) {
         DIAG.fail(`data:${key}`, err);
@@ -391,6 +399,12 @@
           window.SpawnSystem.initializeZone(player.currentZone);
           DIAG.ok('spawn:initialized');
         }
+      }
+
+      // Initialize Guard system
+      if (window.GuardSystem && typeof window.GuardSystem.startGuardUpdates === 'function') {
+        window.GuardSystem.startGuardUpdates();
+        DIAG.ok('guard:initialized');
       }
 
       await initializeGame();
