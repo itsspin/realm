@@ -80,6 +80,13 @@
         meta: 'Level Up'
       });
 
+      // Force save on level up
+      if (global.State?.forceSave) {
+        global.State.forceSave().catch(err => {
+          console.error('Failed to save on level up:', err);
+        });
+      }
+
       // Update player reference
       const updatedPlayer = global.State?.getPlayer();
       if (updatedPlayer) {

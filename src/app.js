@@ -382,6 +382,53 @@
   }
 
   DIAG.ok('app:script-loaded');
+  /**
+   * Initialize game after authentication
+   */
+  async function initGame() {
+    try {
+      // Check authentication
+      if (!global.Auth?.isAuthenticated()) {
+        // Show auth screen
+        if (global.AuthScreen) {
+          global.AuthScreen.show();
+        }
+        return;
+      }
+
+      // Check if character is selected
+      const characterId = global.State?.currentCharacterId;
+      if (!characterId) {
+        // Show character select
+        if (global.CharacterSelect) {
+          global.CharacterSelect.show();
+        }
+        return;
+      }
+
+      // Load character data
+      await global.State?.loadFromBackend();
+      
+      // Continue with normal initialization
+      await initializeGame();
+      
+      // Start auto-save
+      if (global.State?.startAutoSave) {
+        global.State.startAutoSave(30000); // Save every 30 seconds
+      }
+    } catch (error) {
+      DIAG.fail('initGame', error);
+      // Fallback to auth screen
+      if (global.AuthScreen) {
+        global.AuthScreen.show();
+      }
+    }
+  }
+
+  // Expose for character select
+  global.App = global.App || {};
+  global.App.initGame = initGame;
+
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       DIAG.ok('app:dom-ready');
@@ -407,7 +454,12 @@
         DIAG.ok('guard:initialized');
       }
 
-      await initializeGame();
+      // Initialize auth and character systems first
+      if (global.Auth && global.AuthScreen && global.CharacterSelect) {
+        await initGame();
+      } else {
+        await initializeGame();
+      }
       DIAG.ok('game:initialized');
       
       // Update leaderboards on load

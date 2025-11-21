@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-chat.css">
   <link rel="stylesheet" href="styles-ui-redesign.css">
+  <link rel="stylesheet" href="styles-auth.css">
 </head>
 <body>
   <!-- Header: Minimal, just title and resources -->
@@ -222,8 +223,22 @@
   <!-- Tooltips -->
   <div id="itemTooltip" class="tooltip tooltip--item hidden" role="tooltip" hidden></div>
 
+  <!-- Backend Configuration (set these before loading scripts) -->
+  <script>
+    // Uncomment and configure for Supabase:
+    // window.REALM_SUPABASE_URL = 'https://your-project.supabase.co';
+    // window.REALM_SUPABASE_ANON_KEY = 'your-anon-key';
+    
+    // Or for custom API:
+    // window.REALM_API_URL = 'http://localhost:3000/api';
+  </script>
+
   <!-- Scripts -->
   <script src="src/types/core.js"></script>
+  <script src="src/api/auth.js"></script>
+  <script src="src/api/characters.js"></script>
+  <script src="src/ui/auth-screen.js"></script>
+  <script src="src/ui/character-select.js"></script>
   <script src="src/core/world.js"></script>
   <script src="src/core/spawn-system.js"></script>
   <script src="src/core/combat-enhanced.js"></script>

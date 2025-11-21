@@ -121,6 +121,13 @@
     global.Rendering?.updateZoneHeader();
     global.Rendering?.updateActionButtons();
 
+    // Force save on zone change
+    if (global.State?.forceSave) {
+      global.State.forceSave().catch(err => {
+        console.error('Failed to save on zone change:', err);
+      });
+    }
+
     return true;
   }
 

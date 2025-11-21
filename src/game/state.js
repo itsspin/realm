@@ -96,8 +96,20 @@
 
   const State = {
     data: null,
+    currentCharacterId: null,
+    lastSaveTime: 0,
+    saveInterval: null,
+    pendingSave: null,
 
     init() {
+      // Check if we have a character ID from backend
+      const session = global.Auth?.getSession();
+      if (session && this.currentCharacterId) {
+        // Load from backend
+        return this.loadFromBackend();
+      }
+
+      // Fallback to localStorage
       const loaded = this.load();
       if (loaded) {
         return loaded;
@@ -115,6 +127,53 @@
       return this.data;
     },
 
+    /**
+     * Load character from backend
+     */
+    async loadFromBackend() {
+      if (!this.currentCharacterId) return null;
+
+      try {
+        const character = await global.Characters?.getCharacter(this.currentCharacterId);
+        if (!character) return null;
+
+        this.data = global.Characters?.characterToGameState(character);
+        this.save(); // Save to localStorage as backup
+        return this.data;
+      } catch (error) {
+        console.error('Failed to load from backend:', error);
+        // Fallback to localStorage
+        return this.load();
+      }
+    },
+
+    /**
+     * Save to backend (async)
+     */
+    async saveToBackend() {
+      if (!this.data || !this.currentCharacterId) {
+        return;
+      }
+
+      if (!global.Auth?.isAuthenticated()) {
+        console.warn('Not authenticated, saving to localStorage only');
+        this.save();
+        return;
+      }
+
+      try {
+        const characterData = global.Characters?.gameStateToCharacter(this.data, this.currentCharacterId);
+        await global.Characters?.updateCharacter(this.currentCharacterId, characterData);
+        this.lastSaveTime = Date.now();
+        console.log('Character saved to backend');
+      } catch (error) {
+        console.error('Failed to save to backend:', error);
+        // Still save to localStorage as backup
+        this.save();
+        throw error;
+      }
+    },
+
     save() {
       if (!this.data || !global.localStorage) {
         return;
@@ -125,6 +184,19 @@
         global.localStorage.setItem(STORAGE_KEY, serialised);
       } catch (error) {
         console.error('Failed to save state', error);
+      }
+
+      // Also save to backend if authenticated
+      if (this.currentCharacterId && global.Auth?.isAuthenticated()) {
+        // Debounce backend saves
+        if (this.pendingSave) {
+          clearTimeout(this.pendingSave);
+        }
+        this.pendingSave = setTimeout(() => {
+          this.saveToBackend().catch(err => {
+            console.error('Background save failed:', err);
+          });
+        }, 2000); // Save 2 seconds after last change
       }
     },
 
@@ -159,6 +231,43 @@
       }
       Object.assign(this.data.player, updates);
       this.save();
+    },
+
+    /**
+     * Force immediate save to backend
+     */
+    async forceSave() {
+      if (this.pendingSave) {
+        clearTimeout(this.pendingSave);
+        this.pendingSave = null;
+      }
+      await this.saveToBackend();
+    },
+
+    /**
+     * Start periodic auto-save
+     */
+    startAutoSave(intervalMs = 30000) {
+      if (this.saveInterval) {
+        clearInterval(this.saveInterval);
+      }
+      this.saveInterval = setInterval(() => {
+        if (this.currentCharacterId && global.Auth?.isAuthenticated()) {
+          this.saveToBackend().catch(err => {
+            console.error('Auto-save failed:', err);
+          });
+        }
+      }, intervalMs);
+    },
+
+    /**
+     * Stop periodic auto-save
+     */
+    stopAutoSave() {
+      if (this.saveInterval) {
+        clearInterval(this.saveInterval);
+        this.saveInterval = null;
+      }
     },
 
     addItem(itemId) {

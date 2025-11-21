@@ -313,8 +313,92 @@
     creationState = null;
   }
 
+  /**
+   * Show character creation (updated for backend)
+   */
+  function show(callback) {
+    creationState = { step: 'race', race: null, class: null, name: '' };
+    creationCallback = callback;
+    renderCreationUI();
+  }
+
+  /**
+   * Finish character creation and save to backend
+   */
+  async function finishCreation() {
+    if (!creationState.name || !creationState.race || !creationState.class) {
+      alert('Please complete all steps');
+      return;
+    }
+
+    try {
+      const finishBtn = document.getElementById('finishCreationBtn');
+      if (finishBtn) {
+        finishBtn.disabled = true;
+        finishBtn.textContent = 'Creating...';
+      }
+
+      // Create character via API
+      const character = await global.Characters?.createCharacter({
+        name: creationState.name,
+        classId: creationState.class,
+        raceId: creationState.race,
+        stats: calculateStartingStats(creationState.race, creationState.class)
+      });
+
+      if (character && creationCallback) {
+        creationCallback(character);
+      }
+
+      // Hide creation overlay
+      const overlay = document.getElementById('characterCreationOverlay');
+      if (overlay) {
+        overlay.remove();
+      }
+
+      creationState = null;
+    } catch (error) {
+      console.error('Failed to create character:', error);
+      alert(`Failed to create character: ${error.message}`);
+      const finishBtn = document.getElementById('finishCreationBtn');
+      if (finishBtn) {
+        finishBtn.disabled = false;
+        finishBtn.textContent = 'Begin Your Journey';
+      }
+    }
+  }
+
+  /**
+   * Calculate starting stats based on race and class
+   */
+  function calculateStartingStats(raceId, classId) {
+    const race = RACES.find(r => r.id === raceId);
+    const cls = CLASSES.find(c => c.id === classId);
+    
+    const baseStats = { hp: 20, maxHp: 20, atk: 5, def: 2 };
+    
+    if (race) {
+      baseStats.atk += race.bonuses.atk || 0;
+      baseStats.def += race.bonuses.def || 0;
+      baseStats.hp += race.bonuses.hp || 0;
+      baseStats.maxHp += race.bonuses.hp || 0;
+    }
+    
+    if (cls) {
+      baseStats.atk += cls.bonuses.atk || 0;
+      baseStats.def += cls.bonuses.def || 0;
+      baseStats.hp += cls.bonuses.hp || 0;
+      baseStats.maxHp += cls.bonuses.hp || 0;
+    }
+    
+    return baseStats;
+  }
+
+  let creationCallback = null;
+
   const CharacterCreation = {
     showCharacterCreation,
+    show,
     goBack,
     finishCreation
   };
