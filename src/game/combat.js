@@ -55,25 +55,34 @@
     let maxHp = player.stats.maxHp || 20;
     let hp = player.stats.hp || maxHp;
 
-    // Apply equipment bonuses
-    if (player.equipment?.weapon) {
-      const item = global.REALM?.data?.itemsById?.[player.equipment.weapon];
-      if (item?.stats?.atk) {
-        atk += item.stats.atk;
-      }
-    }
-    if (player.equipment?.armor) {
-      const item = global.REALM?.data?.itemsById?.[player.equipment.armor];
-      if (item?.stats?.def) {
-        def += item.stats.def;
-      }
-    }
-    if (player.equipment?.charm) {
-      const item = global.REALM?.data?.itemsById?.[player.equipment.charm];
-      if (item?.stats?.all) {
-        atk += item.stats.all;
-        def += item.stats.all;
-      }
+    // Apply equipment bonuses (only if items aren't broken)
+    if (player.equipment) {
+      Object.keys(player.equipment).forEach(slot => {
+        const itemId = player.equipment[slot];
+        if (!itemId) return;
+
+        // Check if item is broken
+        if (global.DurabilitySystem?.isItemBroken(itemId, player)) {
+          return; // Broken items don't provide bonuses
+        }
+
+        const item = global.REALM?.data?.itemsById?.[itemId];
+        if (!item || !item.stats) return;
+
+        if (item.stats.atk) atk += item.stats.atk;
+        if (item.stats.def) def += item.stats.def;
+        if (item.stats.hp) maxHp += item.stats.hp;
+        if (item.stats.mana) {
+          // Mana bonus (if player has mana)
+          if (player.stats.maxMana) {
+            // This would need to be applied separately
+          }
+        }
+        if (item.stats.all) {
+          atk += item.stats.all;
+          def += item.stats.all;
+        }
+      });
     }
 
     return { atk, def, hp, maxHp };
@@ -265,9 +274,17 @@
 
     currentMonster.hp = Math.max(0, currentMonster.hp - damage);
     
-    // Update mob entity stats if it exists
-    if (currentMonster.mobEntity) {
+    // Update mob entity stats if it exists (sync immediately)
+    if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
       currentMonster.mobEntity.stats.hp = currentMonster.hp;
+    }
+    
+    // Also update target if it's the same mob
+    const currentTarget = global.Targeting?.getTarget();
+    if (currentTarget && currentTarget.id === currentMonster.mobEntity?.id) {
+      if (currentTarget.stats) {
+        currentTarget.stats.hp = currentMonster.hp;
+      }
     }
 
         const critText = isCritical ? ' CRITICAL HIT!' : '';
@@ -279,7 +296,13 @@
         });
         global.ChatSystem?.addChatMessage('combat', 'System', combatMsg, 'system');
 
+    // Check for death - ensure HP is 0 or less
     if (currentMonster.hp <= 0) {
+      // Force HP to 0 to ensure death
+      currentMonster.hp = 0;
+      if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+        currentMonster.mobEntity.stats.hp = 0;
+      }
       endCombat(true);
       return;
     }
@@ -376,11 +399,35 @@
         const currentTarget = global.Targeting?.getTarget();
         if (currentTarget && currentTarget.mobTemplateId === currentMonster.mobTemplateId) {
           mobEntity = currentTarget;
+        } else {
+          // Try to find mob in spawn system at target location
+          const player = global.State?.getPlayer();
+          if (player && player.currentZone && currentTarget) {
+            mobEntity = global.SpawnSystem?.getMobAtTile(player.currentZone, currentTarget.x, currentTarget.y);
+          }
+        }
+      }
+      
+      // Ensure mob entity has position data
+      if (mobEntity && (!mobEntity.x || !mobEntity.y)) {
+        // Try to get position from current target or current monster
+        const currentTarget = global.Targeting?.getTarget();
+        if (currentTarget && currentTarget.x !== undefined && currentTarget.y !== undefined) {
+          mobEntity.x = currentTarget.x;
+          mobEntity.y = currentTarget.y;
+        } else if (currentMonster.x !== undefined && currentMonster.y !== undefined) {
+          mobEntity.x = currentMonster.x;
+          mobEntity.y = currentMonster.y;
         }
       }
 
       // Kill the mob in spawn system (but keep reference for corpse)
       if (mobEntity) {
+        // Ensure mob is marked as dead before creating corpse
+        if (mobEntity.stats) {
+          mobEntity.stats.hp = 0;
+        }
+        mobEntity.alive = false;
         global.SpawnSystem?.killMob(mobEntity.id);
       }
       global.Targeting?.clearTarget();
@@ -620,6 +667,88 @@
     });
     
     return lootItems;
+  }
+
+  /**
+   * Start periodic updates during combat
+   */
+  function startCombatUpdates() {
+    // Clear any existing interval
+    if (combatUpdateInterval) {
+      clearInterval(combatUpdateInterval);
+    }
+    
+    // Update every 100ms for smooth real-time updates
+    combatUpdateInterval = setInterval(() => {
+      if (!currentMonster || !combatState) {
+        stopCombatUpdates();
+        return;
+      }
+      
+      // Sync HP from mob entity if it exists (for accurate display)
+      if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+        // Only sync if mob entity HP is different (to avoid overwriting damage)
+        // But if currentMonster.hp is 0, check if mob entity is also dead
+        if (currentMonster.hp <= 0 && currentMonster.mobEntity.stats.hp > 0) {
+          // Force sync - mob should be dead
+          currentMonster.mobEntity.stats.hp = 0;
+        } else if (currentMonster.hp > 0) {
+          // Sync from currentMonster to mobEntity (combat is source of truth)
+          currentMonster.mobEntity.stats.hp = currentMonster.hp;
+        }
+      }
+      
+      // Check for death (double-check)
+      if (currentMonster.hp <= 0) {
+        endCombat(true);
+        return;
+      }
+      
+      // Update combat UI (mob health)
+      global.Rendering?.updateCombatUI();
+      
+      // Update character panel (player HP/mana)
+      global.Rendering?.updateCharacterPanel();
+      
+      // Update target panel if targeting
+      if (global.Targeting) {
+        const target = global.Targeting.getTarget();
+        if (target && target.id === currentMonster.mobEntity?.id) {
+          // Update target from spawn system to get latest stats
+          const player = global.State?.getPlayer();
+          if (player && player.currentZone) {
+            const updated = global.SpawnSystem?.getMobAtTile(
+              player.currentZone,
+              target.x,
+              target.y
+            );
+            if (updated && updated.id === target.id) {
+              // Update current monster stats from entity
+              if (updated.stats.hp !== currentMonster.hp && currentMonster.hp > 0) {
+                currentMonster.hp = updated.stats.hp;
+                currentMonster.maxHp = updated.stats.maxHp;
+              }
+            } else if (!updated || !updated.alive) {
+              // Target is dead or gone - end combat
+              if (currentMonster.hp > 0) {
+                currentMonster.hp = 0;
+                endCombat(true);
+              }
+            }
+          }
+        }
+      }
+    }, 100);
+  }
+  
+  /**
+   * Stop periodic combat updates
+   */
+  function stopCombatUpdates() {
+    if (combatUpdateInterval) {
+      clearInterval(combatUpdateInterval);
+      combatUpdateInterval = null;
+    }
   }
 
   /**

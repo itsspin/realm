@@ -411,6 +411,212 @@
   opacity: 0.3;
 }
 
+.inventory-slot {
+  position: relative;
+}
+
+.inventory-slot--low-durability {
+  border-color: #c97d3d !important;
+}
+
+.inventory-slot--medium-durability {
+  border-color: #d4af37 !important;
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.equipment-toggle-btn {
+  padding: 0.25rem 0.5rem;
+  background: rgba(74, 138, 138, 0.2);
+  border: 1px solid var(--teal-arcane);
+  border-radius: 0.25rem;
+  color: var(--teal-bright);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.equipment-toggle-btn:hover {
+  background: rgba(74, 138, 138, 0.4);
+  border-color: var(--teal-bright);
+}
+
+/* Equipment Panel */
+.equipment-panel {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-subtle);
+}
+
+.equipment-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.equipment-close-btn {
+  background: none;
+  border: none;
+  color: var(--fg-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.equipment-close-btn:hover {
+  color: var(--fg-primary);
+}
+
+.equipment-slots-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.equipment-slot-row {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: center;
+}
+
+.equipment-slot-row--top {
+  justify-content: center;
+}
+
+.equipment-slot-row--center {
+  justify-content: center;
+}
+
+.equipment-slot-row--bottom {
+  justify-content: center;
+}
+
+.equipment-slot {
+  aspect-ratio: 1;
+  min-width: 60px;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.25rem;
+  position: relative;
+}
+
+.equipment-slot:hover {
+  background: rgba(201, 125, 61, 0.2);
+  border-color: var(--ember-orange);
+}
+
+.equipment-slot--filled {
+  background: rgba(74, 138, 138, 0.2);
+  border-color: var(--teal-arcane);
+}
+
+.equipment-slot-icon {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+.equipment-slot-label {
+  font-size: 0.7rem;
+  color: var(--fg-secondary);
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.equipment-slot-item-icon {
+  font-size: 1.5rem;
+}
+
+.equipment-slot-item-name {
+  font-size: 0.7rem;
+  color: var(--teal-bright);
+  margin-top: 0.25rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.equipment-slot-durability {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.durability-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(10, 14, 26, 0.8);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.durability-fill {
+  height: 100%;
+  background: var(--teal-arcane);
+  transition: width 0.3s ease;
+}
+
+.durability-text {
+  font-size: 0.6rem;
+  color: var(--fg-secondary);
+  text-align: center;
+  margin-top: 0.1rem;
+}
+
+.equipment-stats-summary {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-subtle);
+}
+
+.equipment-stats-title {
+  font-size: 0.85rem;
+  color: var(--gold-muted);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.equipment-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.equipment-stat-item {
+  font-size: 0.8rem;
+  color: var(--teal-bright);
+  padding: 0.25rem 0;
+}
+
+.equipment-stat-item--empty {
+  color: var(--fg-secondary);
+  font-style: italic;
+}
+
+.repair-item-entry {
+  background: rgba(10, 14, 26, 0.4);
+}
+
 /* ============================================
    Map Container (Center - Main Focus)
    ============================================ */

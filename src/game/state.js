@@ -44,9 +44,14 @@
     inventory: [],
     equipment: {
       weapon: null,
-      armor: null,
+      chest: null,
+      head: null,
+      legs: null,
+      feet: null,
+      hands: null,
       charm: null
     },
+    equipmentItems: {}, // Track item instances (durability) for equipped items
     skills: {},
     currentZone: 'thronehold',
     currentTile: { x: 20, y: 20 },
@@ -76,7 +81,16 @@
     state.activeQuests = Array.isArray(state.activeQuests) ? state.activeQuests : [];
     state.completedQuests = Array.isArray(state.completedQuests) ? state.completedQuests : [];
     state.discoveredLore = Array.isArray(state.discoveredLore) ? state.discoveredLore : [];
-    state.equipment = state.equipment || { weapon: null, armor: null, charm: null };
+    state.equipment = state.equipment || { 
+      weapon: null, 
+      chest: null, 
+      head: null, 
+      legs: null, 
+      feet: null, 
+      hands: null, 
+      charm: null 
+    };
+    state.equipmentItems = state.equipmentItems || {};
   }
 
   function applyDefaults(state) {
@@ -95,6 +109,14 @@
     }
     if (!state.player.equipment) {
       state.player.equipment = { ...DEFAULT_PLAYER.equipment };
+    }
+    // Migrate old "armor" slot to "chest"
+    if (state.player.equipment.armor && !state.player.equipment.chest) {
+      state.player.equipment.chest = state.player.equipment.armor;
+      state.player.equipment.armor = null;
+    }
+    if (!state.player.equipmentItems) {
+      state.player.equipmentItems = {};
     }
     if (!state.player.achievements) {
       state.player.achievements = [];
@@ -286,14 +308,36 @@
       }
     },
 
-    addItem(itemId) {
+    addItem(itemId, itemInstance = null) {
       if (!this.data || !this.data.player) {
         return false;
       }
       if (this.data.player.inventory.length >= 20) {
         return false; // Inventory full
       }
-      this.data.player.inventory.push({ itemId, id: `item_${Date.now()}_${Math.random()}` });
+      
+      const item = { itemId, id: `item_${Date.now()}_${Math.random()}` };
+      
+      // Add item instance data (durability, etc.)
+      if (itemInstance) {
+        if (itemInstance.durability !== undefined) {
+          item.durability = itemInstance.durability;
+        }
+        if (itemInstance.maxDurability !== undefined) {
+          item.maxDurability = itemInstance.maxDurability;
+        }
+      } else {
+        // Initialize durability from item data if available
+        const itemData = global.REALM?.data?.itemsById?.[itemId];
+        if (itemData) {
+          // All items have durability (default 100 if not specified)
+          const maxDurability = itemData.maxDurability || itemData.durability || 100;
+          item.durability = maxDurability;
+          item.maxDurability = maxDurability;
+        }
+      }
+      
+      this.data.player.inventory.push(item);
       this.save();
       return true;
     },

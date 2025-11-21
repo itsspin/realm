@@ -5,11 +5,15 @@
 
   function getItemSlot(item) {
     // Determine slot from item data
-    if (item.slot) return item.slot;
+    if (item.slot) {
+      // Map old "armor" slot to "chest"
+      if (item.slot === 'armor') return 'chest';
+      return item.slot;
+    }
     if (item.type === 'weapon') return 'weapon';
     if (item.type === 'armor') {
       // Default to chest if no specific slot
-      return item.slot || 'chest';
+      return 'chest';
     }
     return null;
   }

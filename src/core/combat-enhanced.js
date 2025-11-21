@@ -282,6 +282,15 @@
       // Apply damage
       target.stats.hp = Math.max(0, target.stats.hp - damage);
       
+      // Sync with currentMonster if in combat
+      const currentMonster = global.Combat?.getCurrentMonster();
+      if (currentMonster && (currentMonster.mobEntity?.id === target.id || currentMonster.id === target.id)) {
+        currentMonster.hp = target.stats.hp;
+        if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+          currentMonster.mobEntity.stats.hp = target.stats.hp;
+        }
+      }
+      
       // Generate threat
       const threatMultiplier = effect.threatMultiplier || 1.0;
       currentThreat += calculateThreat(damage, threatMultiplier);

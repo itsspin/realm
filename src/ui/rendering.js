@@ -80,26 +80,45 @@
     const goldEl = document.getElementById('statGold');
     if (atkEl) {
       let atk = stats.atk || 5;
-      // Apply equipment
-      if (player.equipment?.weapon) {
-        const item = global.REALM?.data?.itemsById?.[player.equipment.weapon];
-        if (item?.stats?.atk) atk += item.stats.atk;
-      }
-      if (player.equipment?.charm) {
-        const item = global.REALM?.data?.itemsById?.[player.equipment.charm];
-        if (item?.stats?.all) atk += item.stats.all;
+      // Apply equipment bonuses (only if items aren't broken)
+      if (player.equipment) {
+        Object.keys(player.equipment).forEach(slot => {
+          const itemId = player.equipment[slot];
+          if (!itemId) return;
+
+          // Check if item is broken
+          if (global.DurabilitySystem?.isItemBroken(itemId, player)) {
+            return; // Broken items don't provide bonuses
+          }
+
+          const item = global.REALM?.data?.itemsById?.[itemId];
+          if (!item || !item.stats) return;
+
+          if (item.stats.atk) atk += item.stats.atk;
+          if (item.stats.all) atk += item.stats.all;
+        });
       }
       atkEl.textContent = atk;
     }
     if (defEl) {
       let def = stats.def || 2;
-      if (player.equipment?.armor) {
-        const item = global.REALM?.data?.itemsById?.[player.equipment.armor];
-        if (item?.stats?.def) def += item.stats.def;
-      }
-      if (player.equipment?.charm) {
-        const item = global.REALM?.data?.itemsById?.[player.equipment.charm];
-        if (item?.stats?.all) def += item.stats.all;
+      // Apply equipment bonuses (only if items aren't broken)
+      if (player.equipment) {
+        Object.keys(player.equipment).forEach(slot => {
+          const itemId = player.equipment[slot];
+          if (!itemId) return;
+
+          // Check if item is broken
+          if (global.DurabilitySystem?.isItemBroken(itemId, player)) {
+            return; // Broken items don't provide bonuses
+          }
+
+          const item = global.REALM?.data?.itemsById?.[itemId];
+          if (!item || !item.stats) return;
+
+          if (item.stats.def) def += item.stats.def;
+          if (item.stats.all) def += item.stats.all;
+        });
       }
       defEl.textContent = def;
     }
@@ -121,9 +140,19 @@
         const itemData = global.REALM?.data?.itemsById?.[item.itemId];
         const displayName = itemData?.name || item.itemId?.replace(/_/g, ' ') || 'Unknown';
         const icon = itemData?.icon || '📦';
+        const durability = item.durability;
+        const maxDurability = item.maxDurability || itemData?.maxDurability || itemData?.durability || 100;
+        const durabilityPercent = durability !== undefined ? (durability / maxDurability) * 100 : 100;
+        const durabilityClass = durabilityPercent < 25 ? 'inventory-slot--low-durability' : durabilityPercent < 50 ? 'inventory-slot--medium-durability' : '';
+        
         return `
-          <div class="inventory-slot" data-item-id="${item.itemId}" title="${displayName}" data-slot-index="${index}">
+          <div class="inventory-slot ${durabilityClass}" data-item-id="${item.itemId}" title="${displayName}" data-slot-index="${index}">
             <span style="font-size: 1.2rem;">${icon}</span>
+            ${durability !== undefined && durabilityPercent < 50 ? `
+              <div style="position: absolute; bottom: 2px; left: 2px; right: 2px; height: 2px; background: rgba(10,14,26,0.8); border-radius: 1px; overflow: hidden;">
+                <div style="height: 100%; width: ${durabilityPercent}%; background: ${durabilityPercent < 25 ? '#c97d3d' : '#d4af37'};"></div>
+              </div>
+            ` : ''}
           </div>
         `;
       }
@@ -135,10 +164,24 @@
       const itemId = slot.dataset.itemId;
       const itemData = global.REALM?.data?.itemsById?.[itemId];
       
-      // Click handler
+      // Click handler - try to equip if equippable
       slot.addEventListener('click', () => {
-        // Show item tooltip or context menu
-        console.log('Item clicked:', itemId);
+        const player = global.State?.getPlayer();
+        if (!player) return;
+        
+        const inventoryItem = player.inventory?.find(item => item.itemId === itemId);
+        if (!inventoryItem) return;
+        
+        // Try to equip the item
+        if (itemData.type === 'weapon' || itemData.type === 'armor' || itemData.slot) {
+          if (global.Inventory?.equipItem(itemId)) {
+            // Success - item will be removed from inventory and equipped
+            return;
+          }
+        } else {
+          // Show context menu or use item
+          console.log('Item clicked:', itemId);
+        }
       });
       
       // Hover tooltip
@@ -155,6 +198,12 @@
           tooltipHTML += `<div class="tooltip-item-description">${itemData.description}</div>`;
         }
         
+        // Get item instance for durability
+        const player = global.State?.getPlayer();
+        const inventoryItem = player?.inventory?.find(item => item.itemId === itemId);
+        const durability = inventoryItem?.durability;
+        const maxDurability = inventoryItem?.maxDurability || itemData.maxDurability || itemData.durability;
+        
         if (itemData.stats) {
           tooltipHTML += `<div class="tooltip-item-stats">`;
           if (itemData.stats.atk) tooltipHTML += `<div>Attack: +${itemData.stats.atk}</div>`;
@@ -165,12 +214,29 @@
           tooltipHTML += `</div>`;
         }
         
+        if (durability !== undefined && maxDurability) {
+          const durabilityPercent = (durability / maxDurability) * 100;
+          let durabilityColor = '#4a8a8a';
+          if (durabilityPercent < 25) durabilityColor = '#c97d3d';
+          else if (durabilityPercent < 50) durabilityColor = '#d4af37';
+          
+          tooltipHTML += `<div class="tooltip-item-durability" style="color: ${durabilityColor}">Durability: ${durability}/${maxDurability}</div>`;
+        }
+        
         if (itemData.type) {
           tooltipHTML += `<div class="tooltip-item-type">Type: ${itemData.type}</div>`;
         }
         
+        if (itemData.slot) {
+          tooltipHTML += `<div class="tooltip-item-slot">Slot: ${itemData.slot}</div>`;
+        }
+        
         if (itemData.rarity) {
           tooltipHTML += `<div class="tooltip-item-rarity">Rarity: ${itemData.rarity}</div>`;
+        }
+        
+        if ((itemData.type === 'weapon' || itemData.type === 'armor' || itemData.slot) && itemData.levelReq) {
+          tooltipHTML += `<div class="tooltip-item-levelreq">Level Required: ${itemData.levelReq}</div>`;
         }
         
         tooltip.innerHTML = tooltipHTML;
@@ -265,11 +331,21 @@
     const hpEl = document.getElementById('monsterHp');
     const hpBarEl = document.getElementById('monsterHpBar');
 
+    // Ensure HP values are valid numbers
+    const currentHp = Math.max(0, Math.min(monster.hp || 0, monster.maxHp || 100));
+    const maxHp = monster.maxHp || 100;
+
     if (nameEl) nameEl.textContent = monster.name;
-    if (hpEl) hpEl.textContent = `${monster.hp} / ${monster.maxHp} HP`;
+    if (hpEl) hpEl.textContent = `${currentHp} / ${maxHp} HP`;
     if (hpBarEl) {
-      const percent = (monster.hp / monster.maxHp) * 100;
+      const percent = Math.max(0, Math.min(100, (currentHp / maxHp) * 100));
       hpBarEl.style.width = `${percent}%`;
+      
+      // Update bar color based on health
+      if (percent > 75) hpBarEl.style.backgroundColor = '#4caf50';
+      else if (percent > 50) hpBarEl.style.backgroundColor = '#ffeb3b';
+      else if (percent > 25) hpBarEl.style.backgroundColor = '#ff9800';
+      else hpBarEl.style.backgroundColor = '#f44336';
     }
 
     if (actionsEl) {

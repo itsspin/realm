@@ -205,9 +205,11 @@
     const invItem = player.inventory?.find(item => item.itemId === itemId);
     if (invItem) return invItem;
 
-    // Check equipment (items in equipment slots)
-    // Equipment items are stored by itemId, so we need to check if there's an instance
-    // For now, we'll create a default instance if durability is tracked
+    // Check equipment items (durability tracking for equipped items)
+    if (player.equipmentItems && player.equipmentItems[itemId]) {
+      return player.equipmentItems[itemId];
+    }
+
     return null;
   }
 

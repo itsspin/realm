@@ -72,6 +72,19 @@
       case 'auctioneer':
         showAuctioneer(npc);
         break;
+      case 'repair':
+      case 'blacksmith':
+      case 'anvil':
+        if (global.RepairSystem && typeof global.RepairSystem.showRepairInterface === 'function') {
+          global.RepairSystem.showRepairInterface();
+        } else {
+          global.Narrative?.addEntry({
+            type: 'system',
+            text: `${npc.name}: "I can repair your equipment. Click to open the repair interface."`,
+            meta: 'NPC'
+          });
+        }
+        break;
       default:
         global.Narrative?.addEntry({
           type: 'system',

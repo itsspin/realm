@@ -448,6 +448,24 @@
         window.HealthRegen.start();
       }
 
+      // Initialize durability system
+      if (window.DurabilitySystem && typeof window.DurabilitySystem.start === 'function') {
+        window.DurabilitySystem.start();
+      }
+
+      // Initialize equipment UI
+      if (window.EquipmentUI && typeof window.EquipmentUI.init === 'function') {
+        window.EquipmentUI.init();
+        
+        // Add button handler
+        const equipmentBtn = document.getElementById('equipmentToggleBtn');
+        if (equipmentBtn) {
+          equipmentBtn.addEventListener('click', () => {
+            window.EquipmentUI.toggle();
+          });
+        }
+      }
+
       // Render initial UI
       if (window.Rendering) {
         window.Rendering.updateZoneHeader();
@@ -459,6 +477,11 @@
         window.Rendering.updateActionButtons();
         window.Rendering.updateResourceBar();
         window.Rendering.updateNarrative();
+      }
+      
+      // Update equipment UI if visible
+      if (window.EquipmentUI && window.EquipmentUI.isVisible()) {
+        window.EquipmentUI.update();
       }
     } catch (error) {
       DIAG.fail('game:init-error', error);
