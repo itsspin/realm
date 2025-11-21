@@ -3,6 +3,20 @@
  * 
  * Data-driven mob spawning system using spawn groups from the World system.
  * Supports static spawns (dungeons) and roaming spawns (outdoor zones).
+ * 
+ * SPAWN TYPES:
+ * - Static: Fixed spawn points with respawn timers (dungeons)
+ * - Roaming: Random valid tiles, wandering behavior (outdoor zones)
+ * 
+ * DATA SOURCES:
+ * - Spawn Groups: data/spawn-groups.json
+ * - Mob Templates: data/mob-templates.json
+ * 
+ * DEBUG METHODS (dev mode only):
+ * - _debugAddMob(entityId, mobEntity) - Add mob directly
+ * - _debugCreateMobEntity(template, zoneId, x, y, spawnPointId) - Create mob entity
+ * 
+ * @module SpawnSystem
  */
 
 (function (global) {

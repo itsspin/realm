@@ -6,15 +6,23 @@
  * FLOW:
  * 1. Player clicks tile on map
  * 2. Calculate distance and validate move
- * 3. Update player position (currentTile)
- * 4. Check for zone changes
- * 5. Check for nearby enemies/NPCs
- * 6. Update map rendering
+ * 3. Check collision (walkable tiles only)
+ * 4. Update player position (currentTile)
+ * 5. Check for zone changes
+ * 6. Check for nearby enemies/NPCs
+ * 7. Update map rendering
+ * 
+ * COLLISION DETECTION:
+ * - Uses World.isTileWalkable(zoneId, x, y) to check if tile is walkable
+ * - Non-walkable tiles (walls, water, etc.) block movement
+ * - Movement queue handles multiple move requests
  * 
  * CURRENT LIMITATIONS:
  * - No pathfinding (moves one tile at a time)
  * - Zone boundaries not defined in tile coordinates
  * - Movement speed is fixed (except bard speed song)
+ * 
+ * @module Movement
  */
 (function (global) {
   let isMoving = false;

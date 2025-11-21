@@ -10,14 +10,36 @@
  * 4. Calculate damage (atk vs def with variance)
  * 5. Check for victory/defeat
  * 6. Award XP and loot on victory
+ * 7. Apply faction changes from kill
+ * 
+ * DAMAGE CALCULATION:
+ * - Base damage = attackerAtk - defenderDef (minimum 1)
+ * - Variance: ±30% of base damage
+ * - Critical hits: 1.5x damage multiplier
+ * - Uses CombatEnhanced.calculateDamage() for enhanced calculations
+ * 
+ * XP CALCULATION:
+ * - Base XP from mob template
+ * - Scaled by level difference (EverQuest style)
+ * - Same level: 100% XP
+ * - 5+ levels below: 5% XP
+ * - 5+ levels above: 10% XP
+ * 
+ * FACTION CHANGES:
+ * - Applied via FactionSystem.applyKillFactionChanges()
+ * - Uses mobTemplate.factionChanges object
+ * - Default: -5 to mob's faction if no changes defined
  * 
  * CURRENT FEATURES:
  * - Basic turn-based combat
  * - Critical hits (15% chance)
  * - Equipment bonuses applied
  * - XP and loot rewards
+ * - Faction reputation changes
  * 
  * FUTURE: Add skills, spells, status effects, party combat
+ * 
+ * @module Combat
  */
 (function (global) {
   let currentMonster = null;

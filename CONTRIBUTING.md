@@ -407,10 +407,46 @@ If you see `[FAIL]` messages, check:
 
 ## Overriding Content
 
-You can override existing content by:
-1. Adding entries with the same `id` in the same file (last one wins)
-2. Creating a new data file that loads after the original (not recommended)
-3. Using the admin panel (if available) to modify content at runtime
+You can override existing content without modifying the original files:
+
+### Method 1: Same File Override
+Add entries with the same `id` in the same file (last one wins):
+```json
+[
+  { "id": "existing_item", "name": "Original Name" },
+  { "id": "existing_item", "name": "Overridden Name" }  // This one wins
+]
+```
+
+### Method 2: Content Loader (Recommended)
+Use the ContentLoader to load override files:
+
+```javascript
+// In browser console or custom script
+ContentLoader.loadOverrideFile(
+  'data/my-overrides.json',
+  'items',
+  'itemsById',
+  entry => entry.id || entry.itemId
+);
+```
+
+Create `data/my-overrides.json`:
+```json
+[
+  {
+    "id": "existing_item",
+    "name": "My Custom Name",
+    "stats": { "atk": 999 }
+  }
+]
+```
+
+### Method 3: Admin Panel
+Use the admin panel (if available) to modify content at runtime (changes are not persisted).
+
+### Method 4: URL Parameter Override
+For testing, you can load override files via URL parameter (requires custom implementation).
 
 ## Best Practices
 

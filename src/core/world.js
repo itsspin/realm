@@ -3,6 +3,20 @@
  * 
  * Manages zones, tiles, spawn groups, and territory regions.
  * Provides utilities for looking up world data.
+ * 
+ * CONTENT LOADING:
+ * - All data loaded from JSON files in data/ directory
+ * - Zones: data/world-zones.json
+ * - Spawn Groups: data/spawn-groups.json
+ * - Mob Templates: data/mob-templates.json
+ * - Territory Regions: data/territory-regions.json
+ * 
+ * CONTENT OVERRIDES:
+ * - Later entries with same ID override earlier ones
+ * - Can add override files that load after base files
+ * - Use World.getWorldData() to inspect loaded data
+ * 
+ * @module World
  */
 
 (function (global) {

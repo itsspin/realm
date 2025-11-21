@@ -55,6 +55,12 @@
   }
 
   function handleChatCommand(command, player) {
+    // Check debug commands first (if dev mode enabled)
+    if (global.DebugCommands && global.DebugCommands.isEnabled() && 
+        global.DebugCommands.handleCommand(command)) {
+      return; // Debug command handled
+    }
+
     const parts = command.split(' ');
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1).join(' ');

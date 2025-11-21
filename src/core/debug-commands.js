@@ -512,20 +512,37 @@ Console API:
   // Initialize
   isEnabled = checkDevMode();
 
-  // Hook into chat system if available
-  if (global.ChatSystem && typeof global.ChatSystem.addCommandHandler === 'function') {
-    global.ChatSystem.addCommandHandler(handleCommand);
-  } else {
-    // Fallback: intercept chat messages
-    const originalSendMessage = global.ChatSystem?.sendMessage;
-    if (originalSendMessage) {
-      global.ChatSystem.sendMessage = function(message) {
-        if (message.startsWith('/') && handleCommand(message)) {
-          return; // Command handled
+  // Hook into chat system
+  // Wait for chat system to be available, then patch handleChatCommand
+  function integrateWithChat() {
+    if (global.ChatSystem && global.ChatSystem.handleChatCommand) {
+      const originalHandleCommand = global.ChatSystem.handleChatCommand;
+      global.ChatSystem.handleChatCommand = function(command, player) {
+        // Try debug commands first (only in dev mode)
+        if (checkDevMode() && command.startsWith('/') && handleCommand(command)) {
+          return; // Debug command handled
         }
-        return originalSendMessage.call(this, message);
+        // Fall through to original handler
+        return originalHandleCommand.call(this, command, player);
       };
+      console.log('[Debug] Integrated with chat system');
     }
+  }
+
+  // Try to integrate immediately, or wait for chat system
+  if (global.ChatSystem) {
+    integrateWithChat();
+  } else {
+    // Wait for chat system to load
+    const checkInterval = setInterval(() => {
+      if (global.ChatSystem) {
+        integrateWithChat();
+        clearInterval(checkInterval);
+      }
+    }, 100);
+    
+    // Give up after 5 seconds
+    setTimeout(() => clearInterval(checkInterval), 5000);
   }
 
   const DebugCommands = {
