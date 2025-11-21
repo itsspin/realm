@@ -15,21 +15,27 @@
   function isAdmin() {
     // Check character name
     const player = global.State?.getPlayer();
-    if (player && player.name && player.name.toLowerCase() === 'spin') {
-      return true;
+    if (player && player.name) {
+      const nameLower = player.name.toLowerCase().trim();
+      if (nameLower === 'spin') {
+        console.log('[AdminUtils] Admin access granted via character name:', player.name);
+        return true;
+      }
     }
 
     // Check username and email from auth session
     const session = global.Auth?.getSession();
     if (session) {
-      const username = session.username || '';
-      const email = session.email || '';
+      const username = (session.username || '').toLowerCase().trim();
+      const email = (session.email || '').toLowerCase().trim();
       
-      if (username.toLowerCase() === 'travisrd') {
+      if (username === 'travisrd') {
+        console.log('[AdminUtils] Admin access granted via username:', session.username);
         return true;
       }
       
-      if (email.toLowerCase() === 'travisrd@gmail.com') {
+      if (email === 'travisrd@gmail.com') {
+        console.log('[AdminUtils] Admin access granted via email:', session.email);
         return true;
       }
     }

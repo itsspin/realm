@@ -556,6 +556,12 @@
     unsavedChanges = true;
     updateStatus('Tile updated');
     renderMapEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
   }
 
   /**
@@ -595,6 +601,12 @@
     unsavedChanges = true;
     updateStatus('Zone filled');
     renderMapEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
   }
 
   /**
@@ -628,6 +640,12 @@
     unsavedChanges = true;
     updateStatus('Zone cleared');
     renderMapEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
   }
 
   /**
@@ -755,6 +773,12 @@
     unsavedChanges = true;
     updateStatus('Spawn point added');
     renderSpawnEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
   }
 
   /**
@@ -776,6 +800,12 @@
     unsavedChanges = true;
     updateStatus('Spawn point removed');
     renderSpawnEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
   }
 
   /**
@@ -1347,7 +1377,7 @@
   }
 
   /**
-   * Save all changes
+   * Save all changes and apply live
    */
   async function saveAll() {
     if (!unsavedChanges) {
@@ -1355,17 +1385,20 @@
       return;
     }
 
-    if (!confirm('This will overwrite the game data files. Continue?')) {
+    if (!confirm('This will apply changes to the live game. Continue?')) {
       return;
     }
 
-    updateStatus('Saving...');
+    updateStatus('Saving and applying changes...');
 
     try {
       const worldData = global.World?.getWorldData();
       if (!worldData) {
         throw new Error('World data not available');
       }
+
+      // Apply changes live to the game
+      applyChangesLive(worldData);
 
       // Convert to arrays for JSON files
       const zones = Object.values(worldData.zones);
@@ -1386,28 +1419,180 @@
         await saveJSONFile('data/guard-patrols.json', global.REALM.data.guardPatrols);
       }
 
-      // Note: Tiles are generated from zones, so they will be regenerated on load
-      // If you need to save custom tiles, you'd need to extend the zone data structure
-      // to include tile overrides or save tiles separately
-
       unsavedChanges = false;
-      updateStatus('All changes saved! Files downloaded - upload to server to apply.');
+      updateStatus('All changes saved and applied live!');
       
-      // Show alert with instructions
-      const API_BASE_URL = window.REALM_API_URL || '';
-      if (API_BASE_URL) {
-        alert('Files have been saved via API. Reloading game...');
-        setTimeout(() => {
-          location.reload();
-        }, 1000);
-      } else {
-        alert('Files have been downloaded. Please:\n1. Upload the JSON files to your server\n2. Replace the existing files in the data/ directory\n3. Reload the game to see changes');
+      // Show success message
+      if (global.Toast) {
+        global.Toast.show({
+          type: 'success',
+          title: 'Changes Applied',
+          text: 'All changes have been saved and applied to the live game.'
+        });
       }
     } catch (error) {
       console.error('Save error:', error);
       updateStatus('Error saving: ' + error.message);
       alert('Error saving changes: ' + error.message);
     }
+  }
+
+  /**
+   * Apply changes live to the game without restart
+   */
+  function applyChangesLive(worldData) {
+    // Regenerate tiles for all zones (preserving manual edits)
+    if (global.World && typeof global.World.generateZoneTiles === 'function') {
+      Object.values(worldData.zones).forEach(zone => {
+        global.World.generateZoneTiles(zone.id);
+      });
+    } else {
+      // Fallback: regenerate tiles manually
+      regenerateAllTiles(worldData);
+    }
+
+    // Update spawn system for current zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone && global.SpawnSystem) {
+      // Clear current spawns
+      global.SpawnSystem.clearZone();
+      // Reinitialize with new spawn data
+      global.SpawnSystem.initializeZone(player.currentZone);
+    }
+
+    // Update guard system
+    if (global.GuardSystem && typeof global.GuardSystem.reloadPatrols === 'function') {
+      global.GuardSystem.reloadPatrols();
+    }
+
+    // Update mob templates in REALM.data
+    if (global.REALM && global.REALM.data) {
+      // Update monstersById lookup
+      if (!global.REALM.data.monstersById) {
+        global.REALM.data.monstersById = {};
+      }
+      Object.values(worldData.mobTemplates).forEach(mob => {
+        global.REALM.data.monstersById[mob.id.toLowerCase()] = mob;
+      });
+    }
+
+    // Re-render map
+    if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
+      setTimeout(() => {
+        global.WorldMapRender.renderMap();
+      }, 100);
+    }
+
+    // Update zone data in REALM.data
+    if (global.REALM && global.REALM.data) {
+      if (!global.REALM.data.zonesById) {
+        global.REALM.data.zonesById = {};
+      }
+      Object.values(worldData.zones).forEach(zone => {
+        global.REALM.data.zonesById[zone.id.toLowerCase()] = zone;
+      });
+    }
+
+    console.log('[AdminPanel] Changes applied live to game');
+  }
+
+  /**
+   * Regenerate all tiles for zones
+   */
+  function regenerateAllTiles(worldData) {
+    if (!worldData.tiles) {
+      worldData.tiles = {};
+    }
+
+    Object.values(worldData.zones).forEach(zone => {
+      for (let y = 0; y < zone.gridHeight; y++) {
+        for (let x = 0; x < zone.gridWidth; x++) {
+          const key = `${zone.id}_${x}_${y}`;
+          const existingTile = worldData.tiles[key];
+          
+          // If tile was manually edited, preserve it
+          if (existingTile && existingTile.terrainType) {
+            // Keep existing tile
+            continue;
+          }
+          
+          // Otherwise, regenerate based on zone type
+          const tile = createTileForZone(zone, x, y, worldData);
+          worldData.tiles[key] = tile;
+        }
+      }
+    });
+  }
+
+  /**
+   * Create a tile for a zone (helper function)
+   */
+  function createTileForZone(zone, x, y, worldData) {
+    const { type, id: zoneId } = zone;
+    let terrainType = 'grass';
+    let walkable = true;
+    let spawnGroupId = null;
+    let guardPathNodeId = null;
+
+    if (type === 'city') {
+      const isWall = x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1;
+      const isStreet = (x % 5 === 0) || (y % 5 === 0) || (x === Math.floor(zone.gridWidth / 2)) || (y === Math.floor(zone.gridHeight / 2));
+      const isBuilding = !isWall && !isStreet && Math.random() > 0.3;
+
+      if (isWall) {
+        terrainType = 'wall';
+        walkable = false;
+      } else if (isStreet) {
+        terrainType = 'city_street';
+        walkable = true;
+      } else if (isBuilding) {
+        terrainType = 'building';
+        walkable = false;
+      } else {
+        terrainType = 'city_plaza';
+        walkable = true;
+      }
+    } else if (type === 'outdoor') {
+      const distanceFromCenter = Math.sqrt(Math.pow(x - zone.gridWidth / 2, 2) + Math.pow(y - zone.gridHeight / 2, 2));
+      const maxDistance = Math.sqrt(Math.pow(zone.gridWidth / 2, 2) + Math.pow(zone.gridHeight / 2, 2));
+
+      if (distanceFromCenter / maxDistance > 0.9) {
+        terrainType = Math.random() > 0.7 ? 'water' : 'rock';
+        walkable = terrainType !== 'water' && terrainType !== 'rock';
+      } else if ((x + y) % 8 === 0) {
+        terrainType = 'path';
+        walkable = true;
+      } else if (Math.random() > 0.85) {
+        terrainType = 'tree';
+        walkable = false;
+      } else {
+        terrainType = 'grass';
+        walkable = true;
+      }
+    } else if (type === 'dungeon') {
+      const isWall = x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1 || (x % 3 === 0 && y % 3 === 0);
+      terrainType = isWall ? 'dungeon_wall' : 'dungeon_floor';
+      walkable = !isWall;
+    }
+
+    // Check for spawn points
+    const spawnGroup = Object.values(worldData.spawnGroups || {}).find(sg => {
+      if (sg.zoneId !== zoneId) return false;
+      return sg.spawnPoints && sg.spawnPoints.some(sp => sp.x === x && sp.y === y);
+    });
+    if (spawnGroup) {
+      spawnGroupId = spawnGroup.id;
+    }
+
+    return {
+      x,
+      y,
+      zoneId,
+      terrainType,
+      walkable,
+      spawnGroupId: spawnGroupId || undefined,
+      guardPathNodeId: guardPathNodeId || undefined
+    };
   }
 
   /**
@@ -1487,8 +1672,16 @@
    * Show admin panel
    */
   function show() {
-    if (!global.AdminUtils?.isAdmin()) {
-      alert('You do not have admin privileges');
+    if (!global.AdminUtils) {
+      console.error('[AdminPanel] AdminUtils not available');
+      alert('Admin system not initialized. Please refresh the page.');
+      return;
+    }
+
+    if (!global.AdminUtils.isAdmin()) {
+      const status = global.AdminUtils.getAdminStatus();
+      console.log('[AdminPanel] Access denied. Status:', status);
+      alert('You do not have admin privileges.\n\nCharacter: ' + (status.characterName || 'N/A') + '\nUsername: ' + (status.username || 'N/A') + '\nEmail: ' + (status.email || 'N/A'));
       return;
     }
 
@@ -1496,10 +1689,16 @@
       createAdminPanel();
     }
 
+    if (!adminPanel) {
+      console.error('[AdminPanel] Failed to create admin panel');
+      return;
+    }
+
     adminPanel.style.display = 'block';
     isOpen = true;
     loadData();
     switchTab('map');
+    console.log('[AdminPanel] Admin panel opened');
   }
 
   /**
@@ -1524,6 +1723,11 @@
       return;
     }
 
+    // Only add if user is admin
+    if (!global.AdminUtils?.isAdmin()) {
+      return;
+    }
+
     const button = document.createElement('button');
     button.id = 'adminPanelBtn';
     button.className = 'admin-panel-btn';
@@ -1531,19 +1735,86 @@
     button.onclick = () => show();
     button.title = 'Open Admin Panel';
 
-    // Add to UI (find a good place - maybe near other UI buttons)
-    const gameUI = document.getElementById('gameUI') || document.body;
-    gameUI.appendChild(button);
+    // Add to UI - place in header or body
+    const header = document.querySelector('.app-header');
+    if (header) {
+      header.appendChild(button);
+    } else {
+      document.body.appendChild(button);
+    }
   }
 
-  // Initialize on load
+  /**
+   * Check admin status and show button
+   */
+  function checkAndShowAdminButton() {
+    if (!global.AdminUtils) {
+      console.log('[AdminPanel] AdminUtils not available yet');
+      return;
+    }
+
+    const isAdmin = global.AdminUtils.isAdmin();
+    const status = global.AdminUtils.getAdminStatus();
+    console.log('[AdminPanel] Admin check:', isAdmin, status);
+
+    if (isAdmin) {
+      addAdminButton();
+    } else {
+      // Remove button if not admin
+      const btn = document.getElementById('adminPanelBtn');
+      if (btn) {
+        btn.remove();
+        console.log('[AdminPanel] Removed admin button - not admin');
+      }
+    }
+  }
+
+  // Initialize on load - check multiple times to catch when player state is ready
+  function delayedInit() {
+    checkAndShowAdminButton();
+    
+    // Also check when player state changes
+    if (global.State) {
+      const originalUpdatePlayer = global.State.updatePlayer;
+      if (originalUpdatePlayer && !global.State._adminPanelHooked) {
+        global.State.updatePlayer = function(...args) {
+          originalUpdatePlayer.apply(this, args);
+          setTimeout(checkAndShowAdminButton, 100);
+        };
+        global.State._adminPanelHooked = true;
+      }
+    }
+  }
+
+  // Keyboard shortcut: Ctrl+Shift+A to open admin panel
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+      e.preventDefault();
+      if (global.AdminUtils?.isAdmin()) {
+        if (isOpen) {
+          close();
+        } else {
+          show();
+        }
+      }
+    }
+  });
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(initialize, 1000);
+      setTimeout(delayedInit, 500);
+      // Check again after game initialization
+      setTimeout(delayedInit, 2000);
+      setTimeout(delayedInit, 5000);
     });
   } else {
-    setTimeout(initialize, 1000);
+    setTimeout(delayedInit, 500);
+    setTimeout(delayedInit, 2000);
+    setTimeout(delayedInit, 5000);
   }
+
+  // Also check periodically
+  setInterval(checkAndShowAdminButton, 5000);
 
   const AdminPanel = {
     show,

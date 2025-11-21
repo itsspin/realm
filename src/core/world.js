@@ -76,8 +76,34 @@
       const tiles = generateTilesForZone(zone);
       tiles.forEach(tile => {
         const key = `${zone.id}_${tile.x}_${tile.y}`;
-        worldData.tiles[key] = tile;
+        // Preserve existing tiles if they exist (from admin edits)
+        if (!worldData.tiles[key]) {
+          worldData.tiles[key] = tile;
+        } else {
+          // Merge with existing tile, preserving manual edits
+          worldData.tiles[key] = { ...tile, ...worldData.tiles[key] };
+        }
       });
+    });
+  }
+
+  /**
+   * Generate tiles for a specific zone (exposed for admin panel)
+   */
+  function generateZoneTilesForZone(zoneId) {
+    const zone = worldData.zones[zoneId];
+    if (!zone) return;
+
+    const tiles = generateTilesForZone(zone);
+    tiles.forEach(tile => {
+      const key = `${zone.id}_${tile.x}_${tile.y}`;
+      // Preserve existing tiles if they exist (from admin edits)
+      if (!worldData.tiles[key]) {
+        worldData.tiles[key] = tile;
+      } else {
+        // Merge with existing tile, preserving manual edits
+        worldData.tiles[key] = { ...tile, ...worldData.tiles[key] };
+      }
     });
   }
 
@@ -286,7 +312,8 @@
     getControllingFaction,
     isTileWalkable,
     getZoneAtWorldPosition,
-    getWorldData: () => worldData
+    getWorldData: () => worldData,
+    generateZoneTiles: generateZoneTilesForZone
   };
 
   global.World = World;
