@@ -29,23 +29,39 @@
   ];
 
   function showCharacterCreation() {
+    console.log('[CharacterCreation] showCharacterCreation called');
     const player = global.State?.getPlayer();
-    if (player && player.race && player.class) {
+    console.log('[CharacterCreation] Player:', player);
+    
+    if (player && player.race && player.class && player.name) {
+      console.log('[CharacterCreation] Character already created, skipping');
       return false; // Already created
     }
 
+    console.log('[CharacterCreation] Starting character creation');
     creationState = { step: 'race', race: null, class: null, name: '' };
     renderCreationUI();
     return true;
   }
 
   function renderCreationUI() {
-    const main = document.querySelector('.app-main');
-    if (!main) return;
+    console.log('[CharacterCreation] renderCreationUI called, step:', creationState?.step);
+    
+    // Remove existing overlay if present
+    const existing = document.getElementById('characterCreationOverlay');
+    if (existing) {
+      existing.remove();
+    }
 
+    // Create overlay - append directly to body since it's position: fixed
     const overlay = document.createElement('div');
     overlay.id = 'characterCreationOverlay';
     overlay.className = 'character-creation-overlay';
+    
+    if (!creationState) {
+      console.error('[CharacterCreation] No creation state!');
+      creationState = { step: 'race', race: null, class: null, name: '' };
+    }
     
     if (creationState.step === 'race') {
       overlay.innerHTML = `
@@ -130,10 +146,7 @@
       }, 100);
     }
 
-    // Remove existing overlay
-    const existing = document.getElementById('characterCreationOverlay');
-    if (existing) existing.remove();
-
+    // Append to body
     document.body.appendChild(overlay);
 
     // Add event listeners

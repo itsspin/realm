@@ -327,11 +327,17 @@
 
       // Check for character creation
       const player = window.State?.getPlayer();
+      console.log('[App] Checking character creation, player:', player);
       if (!player || !player.race || !player.class || !player.name) {
+        console.log('[App] Character not complete, showing character creation');
         // Show character creation
         setTimeout(() => {
+          console.log('[App] CharacterCreation available?', window.CharacterCreation);
           if (window.CharacterCreation && typeof window.CharacterCreation.showCharacterCreation === 'function') {
+            console.log('[App] Calling showCharacterCreation');
             window.CharacterCreation.showCharacterCreation();
+          } else {
+            console.error('[App] CharacterCreation not available!');
           }
         }, 500);
         // Still initialize basic systems for character creation UI
