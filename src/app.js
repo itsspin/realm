@@ -455,9 +455,15 @@
       }
 
       // Initialize auth and character systems first
-      if (global.Auth && global.AuthScreen && global.CharacterSelect) {
+      // Only use auth flow if backend is configured
+      const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
+                        (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
+      
+      if (global.Auth && global.AuthScreen && global.CharacterSelect && hasBackend) {
+        // Use authenticated flow with backend
         await initGame();
       } else {
+        // Use local storage flow (no backend required)
         await initializeGame();
       }
       DIAG.ok('game:initialized');

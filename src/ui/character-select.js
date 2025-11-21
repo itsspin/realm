@@ -73,14 +73,37 @@
   }
 
   /**
-   * Load characters from backend
+   * Load characters from backend or localStorage
    */
   async function loadCharacters() {
     isLoading = true;
     const listEl = document.getElementById('characterList');
     
     try {
-      characters = await global.Characters?.getCharacters() || [];
+      // Check if we have backend configured
+      const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
+                        (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
+      
+      if (hasBackend && global.Characters) {
+        // Load from backend
+        characters = await global.Characters.getCharacters() || [];
+      } else {
+        // Local-only mode: load from localStorage
+        const player = global.State?.getPlayer();
+        if (player && player.name && player.race && player.class) {
+          // We have a local character
+          characters = [{
+            id: 'local_character',
+            name: player.name,
+            level: player.level || 1,
+            class_id: player.class,
+            race_id: player.race,
+            current_zone: player.currentZone || 'thronehold_gates'
+          }];
+        } else {
+          characters = [];
+        }
+      }
       
       if (characters.length === 0) {
         listEl.innerHTML = `
@@ -146,20 +169,35 @@
         selectBtn.textContent = 'Loading...';
       }
 
-      // Load character data
-      const character = await global.Characters?.getCharacter(characterId);
-      if (!character) {
-        throw new Error('Character not found');
-      }
-
-      // Convert to game state
-      const gameState = global.Characters?.characterToGameState(character);
+      // Check if we have backend configured
+      const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
+                        (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
       
-      // Load into State
-      if (global.State) {
-        global.State.data = gameState;
-        global.State.currentCharacterId = characterId;
-        global.State.save(); // Save to localStorage as backup
+      if (hasBackend && global.Characters) {
+        // Load character data from backend
+        const character = await global.Characters.getCharacter(characterId);
+        if (!character) {
+          throw new Error('Character not found');
+        }
+
+        // Convert to game state
+        const gameState = global.Characters.characterToGameState(character);
+        
+        // Load into State
+        if (global.State) {
+          global.State.data = gameState;
+          global.State.currentCharacterId = characterId;
+          global.State.save(); // Save to localStorage as backup
+        }
+      } else {
+        // Local-only mode: character data should already be in localStorage
+        if (global.State) {
+          global.State.currentCharacterId = characterId || 'local_character';
+          // Ensure data is loaded from localStorage
+          if (!global.State.data) {
+            global.State.data = global.State.load();
+          }
+        }
       }
 
       // Hide character select

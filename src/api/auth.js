@@ -86,6 +86,15 @@
     const session = getSession();
     if (!session) return false;
     
+    // In local mode, always allow if session exists
+    const hasBackend = (SUPABASE_URL && SUPABASE_ANON_KEY) || 
+                       (API_BASE_URL && API_BASE_URL !== 'http://localhost:3000/api');
+    
+    if (!hasBackend && session.accessToken === 'local_token') {
+      // Local mode: always valid
+      return true;
+    }
+    
     // Check if token is expired (if using JWT)
     if (session.expiresAt && Date.now() > session.expiresAt) {
       clearSession();
@@ -106,6 +115,28 @@
 
       if (password.length < 8) {
         throw new Error('Password must be at least 8 characters');
+      }
+
+      // If no backend is configured, create a mock session for local-only mode
+      if (!useSupabase && (!API_BASE_URL || API_BASE_URL === 'http://localhost:3000/api')) {
+        // Local-only mode: create a mock session
+        const mockUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        saveSession({
+          userId: mockUserId,
+          email: email,
+          username: username,
+          accessToken: 'local_token',
+          expiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year
+        });
+        
+        return { 
+          success: true, 
+          user: { 
+            id: mockUserId, 
+            email: email, 
+            username: username 
+          } 
+        };
       }
 
       if (useSupabase && SUPABASE_URL) {
@@ -180,6 +211,42 @@
     try {
       if (!email || !password) {
         throw new Error('Email and password are required');
+      }
+
+      // If no backend is configured, check for existing local session or create one
+      if (!useSupabase && (!API_BASE_URL || API_BASE_URL === 'http://localhost:3000/api')) {
+        // Local-only mode: check for existing session or create new one
+        const existingSession = getSession();
+        if (existingSession && existingSession.email === email) {
+          // Reuse existing session
+          return { 
+            success: true, 
+            user: { 
+              id: existingSession.userId, 
+              email: existingSession.email, 
+              username: existingSession.username 
+            } 
+          };
+        }
+        
+        // Create new mock session for this email
+        const mockUserId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        saveSession({
+          userId: mockUserId,
+          email: email,
+          username: email.split('@')[0], // Use email prefix as username
+          accessToken: 'local_token',
+          expiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year
+        });
+        
+        return { 
+          success: true, 
+          user: { 
+            id: mockUserId, 
+            email: email, 
+            username: email.split('@')[0] 
+          } 
+        };
       }
 
       if (useSupabase && SUPABASE_URL) {

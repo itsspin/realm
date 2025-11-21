@@ -199,8 +199,11 @@
     const race = RACES.find(r => r.id === creationState.race);
     const cls = CLASSES.find(c => c.id === creationState.class);
 
-    // Check if we should use backend
-    if (global.Auth?.isAuthenticated() && global.Characters) {
+    // Check if we should use backend (only if backend is actually configured)
+    const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
+                       (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
+    
+    if (global.Auth?.isAuthenticated() && global.Characters && hasBackend) {
       try {
         const finishBtn = document.getElementById('finishCreationBtn');
         if (finishBtn) {
