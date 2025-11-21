@@ -302,7 +302,13 @@
       currentMonster.hp = 0;
       if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
         currentMonster.mobEntity.stats.hp = 0;
+        currentMonster.mobEntity.alive = false;
       }
+      // Stop auto-attack immediately
+      if (global.CombatEnhanced) {
+        global.CombatEnhanced.stopAutoAttack();
+      }
+      // End combat immediately
       endCombat(true);
       return;
     }
@@ -350,7 +356,9 @@
   }
 
   function endCombat(victory) {
-    // Stop auto-attack
+    console.log('[Combat] endCombat called, victory:', victory, 'currentMonster:', currentMonster?.name);
+    
+    // Stop auto-attack FIRST
     if (global.CombatEnhanced) {
       global.CombatEnhanced.stopAutoAttack();
       global.CombatEnhanced.clearCooldowns();
@@ -360,6 +368,10 @@
     stopCombatUpdates();
 
     if (victory) {
+      // Ensure HP is 0
+      if (currentMonster) {
+        currentMonster.hp = 0;
+      }
       const player = global.State?.getPlayer();
       
       // Get XP and gold from mob template
@@ -395,18 +407,25 @@
 
       // Get mob entity before killing it (needed for corpse creation)
       let mobEntity = currentMonster.mobEntity;
+      console.log('[Combat] Getting mob entity for corpse. currentMonster.mobEntity:', !!mobEntity);
+      
       if (!mobEntity) {
         const currentTarget = global.Targeting?.getTarget();
+        console.log('[Combat] No mobEntity on currentMonster, trying target:', !!currentTarget);
         if (currentTarget && currentTarget.mobTemplateId === currentMonster.mobTemplateId) {
           mobEntity = currentTarget;
+          console.log('[Combat] Using target as mobEntity');
         } else {
           // Try to find mob in spawn system at target location
           const player = global.State?.getPlayer();
           if (player && player.currentZone && currentTarget) {
             mobEntity = global.SpawnSystem?.getMobAtTile(player.currentZone, currentTarget.x, currentTarget.y);
+            console.log('[Combat] Found mob in spawn system:', !!mobEntity);
           }
         }
       }
+      
+      console.log('[Combat] Final mobEntity for corpse:', !!mobEntity, mobEntity ? `at (${mobEntity.x}, ${mobEntity.y})` : 'none');
       
       // Ensure mob entity has position data
       if (mobEntity && (!mobEntity.x || !mobEntity.y)) {
@@ -468,28 +487,64 @@
 
       // Create corpse with loot (mobEntity was captured before killing)
       if (mobEntity && global.CorpseSystem) {
-        if (validLootItems.length > 0) {
-          global.CorpseSystem.createCorpse(mobEntity, validLootItems);
-          global.Narrative?.addEntry({
-            type: 'combat',
-            text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold. A corpse lies on the ground.`,
-            meta: 'Victory!'
-          });
+        // Ensure mob entity has all required properties for corpse creation
+        if (!mobEntity.mobTemplate && mobEntity.mobTemplateId) {
+          mobEntity.mobTemplate = global.World?.getMobTemplate(mobEntity.mobTemplateId);
+        }
+        
+        // Ensure position is set
+        if ((!mobEntity.x || !mobEntity.y) && currentMonster.mobEntity) {
+          mobEntity.x = currentMonster.mobEntity.x || mobEntity.x;
+          mobEntity.y = currentMonster.mobEntity.y || mobEntity.y;
+        }
+        
+        // Ensure zone is set
+        if (!mobEntity.zoneId) {
+          const player = global.State?.getPlayer();
+          if (player && player.currentZone) {
+            mobEntity.zoneId = player.currentZone;
+          }
+        }
+        
+        // Create corpse
+        const corpse = global.CorpseSystem.createCorpse(mobEntity, validLootItems);
+        
+        if (corpse) {
+          if (validLootItems.length > 0) {
+            global.Narrative?.addEntry({
+              type: 'combat',
+              text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold. A corpse lies on the ground.`,
+              meta: 'Victory!'
+            });
+          } else {
+            global.Narrative?.addEntry({
+              type: 'combat',
+              text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.`,
+              meta: 'Victory!'
+            });
+          }
+          
+          // Re-render map to show corpse
+          if (global.WorldMapRender) {
+            setTimeout(() => {
+              global.WorldMapRender.renderMap();
+            }, 200);
+          }
         } else {
-          // Create empty corpse (no loot) - still shows corpse
-          global.CorpseSystem.createCorpse(mobEntity, []);
+          console.warn('[Combat] Failed to create corpse for mob:', mobEntity);
           global.Narrative?.addEntry({
             type: 'combat',
             text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.`,
             meta: 'Victory!'
           });
         }
-        
-        // Re-render map to show corpse
-        if (global.WorldMapRender) {
-          setTimeout(() => global.WorldMapRender.renderMap(), 100);
-        }
       } else {
+        if (!mobEntity) {
+          console.warn('[Combat] No mob entity found for corpse creation');
+        }
+        if (!global.CorpseSystem) {
+          console.warn('[Combat] CorpseSystem not available');
+        }
         global.Narrative?.addEntry({
           type: 'combat',
           text: `You have defeated the ${currentMonster.name}! Gained ${actualXPGain} XP and ${goldGain} gold.`,
@@ -535,11 +590,22 @@
       handlePlayerDeath();
     }
 
+    // Clear combat state
+    const wasInCombat = currentMonster !== null;
     currentMonster = null;
     combatState = null;
+    
+    // Update UI
     global.Rendering?.updateCombatUI();
     global.Rendering?.updateActionButtons();
     global.Rendering?.updateCharacterPanel();
+    
+    // Force map re-render if we were in combat (to show corpse)
+    if (wasInCombat && global.WorldMapRender) {
+      setTimeout(() => {
+        global.WorldMapRender.renderMap();
+      }, 300);
+    }
   }
 
   function flee() {
@@ -685,23 +751,26 @@
         return;
       }
       
-      // Sync HP from mob entity if it exists (for accurate display)
-      if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
-        // Only sync if mob entity HP is different (to avoid overwriting damage)
-        // But if currentMonster.hp is 0, check if mob entity is also dead
-        if (currentMonster.hp <= 0 && currentMonster.mobEntity.stats.hp > 0) {
-          // Force sync - mob should be dead
-          currentMonster.mobEntity.stats.hp = 0;
-        } else if (currentMonster.hp > 0) {
-          // Sync from currentMonster to mobEntity (combat is source of truth)
-          currentMonster.mobEntity.stats.hp = currentMonster.hp;
-        }
-      }
-      
-      // Check for death (double-check)
+      // Check for death FIRST (before any syncing)
       if (currentMonster.hp <= 0) {
+        stopCombatUpdates();
+        // Force HP to 0
+        currentMonster.hp = 0;
+        if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+          currentMonster.mobEntity.stats.hp = 0;
+          currentMonster.mobEntity.alive = false;
+        }
+        // Stop auto-attack
+        if (global.CombatEnhanced) {
+          global.CombatEnhanced.stopAutoAttack();
+        }
         endCombat(true);
         return;
+      }
+      
+      // Sync HP from currentMonster to mobEntity (combat is source of truth)
+      if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+        currentMonster.mobEntity.stats.hp = currentMonster.hp;
       }
       
       // Update combat UI (mob health)
@@ -714,27 +783,9 @@
       if (global.Targeting) {
         const target = global.Targeting.getTarget();
         if (target && target.id === currentMonster.mobEntity?.id) {
-          // Update target from spawn system to get latest stats
-          const player = global.State?.getPlayer();
-          if (player && player.currentZone) {
-            const updated = global.SpawnSystem?.getMobAtTile(
-              player.currentZone,
-              target.x,
-              target.y
-            );
-            if (updated && updated.id === target.id) {
-              // Update current monster stats from entity
-              if (updated.stats.hp !== currentMonster.hp && currentMonster.hp > 0) {
-                currentMonster.hp = updated.stats.hp;
-                currentMonster.maxHp = updated.stats.maxHp;
-              }
-            } else if (!updated || !updated.alive) {
-              // Target is dead or gone - end combat
-              if (currentMonster.hp > 0) {
-                currentMonster.hp = 0;
-                endCombat(true);
-              }
-            }
+          // Sync target HP
+          if (target.stats) {
+            target.stats.hp = currentMonster.hp;
           }
         }
       }

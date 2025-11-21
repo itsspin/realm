@@ -14,10 +14,41 @@
    * Create a corpse from a dead mob
    */
   function createCorpse(mobEntity, lootItems) {
-    if (!mobEntity || !mobEntity.mobTemplate) return null;
+    if (!mobEntity) {
+      console.warn('[CorpseSystem] Cannot create corpse: mobEntity is null/undefined');
+      return null;
+    }
+    
+    // Get mob template if not directly on entity
+    let mobTemplate = mobEntity.mobTemplate;
+    if (!mobTemplate && mobEntity.mobTemplateId) {
+      mobTemplate = global.World?.getMobTemplate(mobEntity.mobTemplateId);
+    }
+    
+    if (!mobTemplate) {
+      console.warn('[CorpseSystem] Cannot create corpse: mobTemplate not found for', mobEntity.mobTemplateId);
+      return null;
+    }
+    
+    // Ensure position is valid
+    if (typeof mobEntity.x !== 'number' || typeof mobEntity.y !== 'number') {
+      console.warn('[CorpseSystem] Cannot create corpse: invalid position', mobEntity.x, mobEntity.y);
+      return null;
+    }
+    
+    // Ensure zone is set
+    if (!mobEntity.zoneId) {
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone) {
+        mobEntity.zoneId = player.currentZone;
+      } else {
+        console.warn('[CorpseSystem] Cannot create corpse: no zoneId');
+        return null;
+      }
+    }
     
     const corpseId = `corpse_${mobEntity.id}_${Date.now()}`;
-    const mobName = mobEntity.mobTemplate.name || 'Unknown';
+    const mobName = mobTemplate.name || 'Unknown';
     
     const corpse = {
       id: corpseId,
@@ -35,6 +66,7 @@
     };
     
     activeCorpses.set(corpseId, corpse);
+    console.log('[CorpseSystem] Created corpse:', corpse.corpseName, 'at', corpse.x, corpse.y, 'with', corpse.lootItems.length, 'items');
     return corpse;
   }
   

@@ -395,6 +395,13 @@
         stopAutoAttack();
         return;
       }
+      
+      // Check if target is dead
+      const currentMonster = global.Combat?.getCurrentMonster();
+      if (currentMonster && currentMonster.hp <= 0) {
+        stopAutoAttack();
+        return;
+      }
 
       global.Combat?.playerAttack();
     }, 3000);
