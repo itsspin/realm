@@ -375,11 +375,11 @@
         }
       }
 
-        // Render world map with player position
-        if (window.MapRender) {
+        // Render world map with player position - use WorldMapRender
+        if (window.WorldMapRender && typeof window.WorldMapRender.renderMap === 'function') {
           setTimeout(() => {
-            window.MapRender.renderMap();
-            window.MapRender.centerOnPlayer();
+            window.WorldMapRender.renderMap();
+            window.WorldMapRender.centerOnPlayer();
           }, 100);
         }
     }, 500);

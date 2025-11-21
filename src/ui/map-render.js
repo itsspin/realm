@@ -15,6 +15,12 @@
   global.MapRender.panY = panY;
 
   function initializeMapCanvas() {
+    // OLD MAP RENDERER - DISABLED
+    // The new WorldMapRender system should be used instead
+    // This renderer is kept for backwards compatibility but doesn't initialize
+    console.warn('[MapRender] Old map renderer is disabled. Use WorldMapRender instead.');
+    return;
+    
     mapCanvas = document.getElementById('worldMapCanvas');
     if (!mapCanvas) return;
 
@@ -142,6 +148,10 @@
   }
 
   function renderMap() {
+    // OLD MAP RENDERER - DISABLED
+    // The new WorldMapRender system should be used instead
+    return;
+    
     if (!mapCanvas || !mapCtx) return;
 
     const player = global.State?.getPlayer();

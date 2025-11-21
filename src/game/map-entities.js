@@ -66,9 +66,10 @@
   }
 
   function renderMapEntities() {
-    // Entities are rendered on the map canvas
-    if (global.MapRender) {
-      global.MapRender.renderMap();
+    // Entities are rendered on the map canvas using new WorldMapRender
+    // Don't use old MapRender - use WorldMapRender instead
+    if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
+      global.WorldMapRender.renderMap();
     }
   }
 

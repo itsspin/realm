@@ -24,9 +24,9 @@
   {
     "id": "thronehold_gates_wildlife",
     "zoneId": "thronehold_gates",
-    "spawnType": "roaming",
-    "maxConcurrent": 12,
-    "respawnSeconds": 180,
+    "spawnType": "static",
+    "maxConcurrent": 8,
+    "respawnSeconds": 300,
     "mobTemplates": ["wild_boar", "goblin_scout"],
     "spawnPoints": [
       { "x": 10, "y": 10 },

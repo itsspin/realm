@@ -85,23 +85,24 @@
       window.addEventListener('resize', resizeCanvas);
     }
 
-    // Pan controls (left-click drag when not clicking tiles, right-click, or middle-click)
+    // Pan controls (left-click drag, right-click, or middle-click)
     let mouseDownX = 0;
     let mouseDownY = 0;
     let hasMoved = false;
+    let isMouseDown = false;
 
     mapCanvas.addEventListener('mousedown', (e) => {
-      mouseDownX = e.clientX;
-      mouseDownY = e.clientY;
-      hasMoved = false;
-      
-      // Allow left-click drag, right-click drag, or middle-click drag
+      // Only start drag on left, right, or middle click
       if (e.button === 0 || e.button === 2 || e.button === 1) {
-        isDragging = false; // Will be set to true after movement detected
+        isMouseDown = true;
+        mouseDownX = e.clientX;
+        mouseDownY = e.clientY;
+        hasMoved = false;
+        isDragging = false;
         dragStartX = e.clientX - panX;
         dragStartY = e.clientY - panY;
         
-        if (e.button !== 0) {
+        if (e.button === 2 || e.button === 1) {
           // Right/middle click - immediately start dragging
           isDragging = true;
           mapCanvas.style.cursor = 'grabbing';
@@ -111,9 +112,14 @@
     });
 
     mapCanvas.addEventListener('mousemove', (e) => {
-      // Detect if mouse has moved enough to consider it a drag
-      if (!hasMoved && !isDragging) {
-        const moved = Math.abs(e.clientX - mouseDownX) > 3 || Math.abs(e.clientY - mouseDownY) > 3;
+      // Only drag if mouse is actually down
+      if (!isMouseDown) {
+        return; // Don't do anything if mouse isn't pressed
+      }
+      
+      // Detect if mouse has moved enough to consider it a drag (for left click)
+      if (e.button === 0 && !hasMoved && !isDragging) {
+        const moved = Math.abs(e.clientX - mouseDownX) > 5 || Math.abs(e.clientY - mouseDownY) > 5;
         if (moved) {
           hasMoved = true;
           isDragging = true;
@@ -121,6 +127,7 @@
         }
       }
       
+      // Only update pan if actually dragging
       if (isDragging) {
         panX = e.clientX - dragStartX;
         panY = e.clientY - dragStartY;
@@ -134,6 +141,7 @@
     mapCanvas.addEventListener('mouseup', (e) => {
       if (e.button === 0 || e.button === 2 || e.button === 1) {
         const wasDragging = isDragging;
+        isMouseDown = false;
         isDragging = false;
         hasMoved = false;
         mapCanvas.style.cursor = 'pointer';
@@ -145,25 +153,30 @@
         }
       }
     });
+    
+    // Also handle mouse leave to reset drag state
+    mapCanvas.addEventListener('mouseleave', () => {
+      isMouseDown = false;
+      isDragging = false;
+      hasMoved = false;
+      mapCanvas.style.cursor = 'pointer';
+    });
 
     mapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Mouse wheel scrolling (up/down)
+    // Mouse wheel zoom in/out
     mapCanvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       
-      // Scroll vertically (up/down)
-      const scrollAmount = e.deltaY * 0.5; // Adjust sensitivity
-      panY -= scrollAmount;
+      // Zoom in/out based on scroll direction
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // Zoom out on scroll down, zoom in on scroll up
+      const newZoomLevel = Math.max(0.5, Math.min(4, zoomLevel * zoomFactor));
       
-      // Also allow horizontal scrolling if shift is held
-      if (e.shiftKey) {
-        panX -= scrollAmount;
+      if (newZoomLevel !== zoomLevel) {
+        zoomLevel = newZoomLevel;
+        global.WorldMapRender.zoomLevel = zoomLevel;
+        renderMap();
       }
-      
-      global.WorldMapRender.panX = panX;
-      global.WorldMapRender.panY = panY;
-      renderMap();
     }, { passive: false });
 
     // Click to move
@@ -547,8 +560,9 @@
    */
   function handleCanvasClick(event) {
     // Don't handle clicks if we just finished dragging
-    if (hasMoved) {
+    if (isDragging || hasMoved) {
       hasMoved = false;
+      isDragging = false;
       return;
     }
 

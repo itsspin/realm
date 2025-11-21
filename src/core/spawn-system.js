@@ -247,17 +247,34 @@
     const now = Date.now();
     const spawnGroups = global.World?.getSpawnGroupsForZone(zone.id) || [];
 
-    // Update roaming mobs
+    // Update roaming mobs (only if spawn group is actually roaming)
+    const roamingToRemove = [];
     roamingMobs.forEach((roamingState, entityId) => {
       const mob = activeMobs.get(entityId);
-      if (!mob || !mob.alive) return;
+      if (!mob || !mob.alive) {
+        roamingToRemove.push(entityId);
+        return;
+      }
+      
+      // Check if this mob's spawn group is actually roaming
+      const spawnGroup = global.World?.getSpawnGroup(roamingState.spawnGroupId);
+      if (!spawnGroup || spawnGroup.spawnType !== 'roaming') {
+        // Shouldn't be roaming - remove from roaming list
+        roamingToRemove.push(entityId);
+        return;
+      }
 
-      // Check if it's time to wander
+      // Check if it's time to wander (only for actual roaming spawns)
       if (now - roamingState.lastWanderTime >= roamingState.wanderCooldown) {
         wanderMob(mob, roamingState, zone);
         roamingState.lastWanderTime = now;
         roamingState.wanderCooldown = 5000 + Math.random() * 5000;
       }
+    });
+    
+    // Remove mobs that shouldn't be roaming
+    roamingToRemove.forEach(entityId => {
+      roamingMobs.delete(entityId);
     });
 
     // Handle static spawn respawning

@@ -100,14 +100,10 @@
       y: targetY
     });
 
-    // Update map
-    if (global.WorldMapRender) {
+    // Update map - only use WorldMapRender
+    if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
       global.WorldMapRender.renderMap();
       global.WorldMapRender.centerOnPlayer();
-    } else if (global.MapRender) {
-      // Fallback to old renderer
-      global.MapRender.renderMap();
-      global.MapRender.centerOnPlayer();
     }
 
     // Check for zone change
