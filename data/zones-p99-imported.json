@@ -1,0 +1,16 @@
+[
+  {
+    "id": "shadowweave",
+    "name": "Shadowweave",
+    "description": "Rolling hills surrounding a distant city. Wild creatures roam these lands.",
+    "level": 1,
+    "levelRange": {
+      "min": 1,
+      "max": 2
+    },
+    "type": "outdoor",
+    "monsters": ["shadow_beast_123", "wild_boar"],
+    "lore": null
+  }
+]
+

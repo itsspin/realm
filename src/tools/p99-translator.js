@@ -395,7 +395,6 @@ class ItemConverter {
       if (p99Item.stats.mana) stats.mana = Math.floor(p99Item.stats.mana / 5);
       if (p99Item.stats.str) stats.str = Math.floor(p99Item.stats.str / 5);
     }
-    }
 
     if (p99Item.ac) {
       stats.def = this.statMapper.mapDEF(p99Item.ac, realmLevel);

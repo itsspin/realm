@@ -1,0 +1,12 @@
+[
+  {
+    "id": "shadowweave_wildlife",
+    "zoneId": "shadowweave",
+    "spawnType": "roaming",
+    "maxConcurrent": 8,
+    "respawnSeconds": 180,
+    "mobTemplates": ["shadow_beast_123"],
+    "spawnPoints": []
+  }
+]
+

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "ancient_catacombs",
+    "name": "Ancient Catacombs",
+    "description": "Ancient catacombs filled with undead and forgotten treasures.",
+    "minLevel": 3,
+    "maxLevel": 6,
+    "zones": [
+      {
+        "id": "catacombs_entrance",
+        "name": "Catacombs Entrance",
+        "description": "The entrance to the catacombs. Dust and decay fill the air.",
+        "level": 3,
+        "monsters": ["bone_wraith_789"]
+      },
+      {
+        "id": "catacombs_halls",
+        "name": "Catacombs Halls",
+        "description": "Long corridors lined with ancient burial niches.",
+        "level": 4,
+        "monsters": ["bone_wraith_789", "shadow_stalker_456"]
+      },
+      {
+        "id": "catacombs_chamber",
+        "name": "Burial Chamber",
+        "description": "A large chamber where the dead rest in eternal slumber.",
+        "level": 5,
+        "monsters": ["shadow_stalker_456", "ancient_master_321"]
+      }
+    ],
+    "spawnGroups": [
+      {
+        "id": "catacombs_entrance_spawns",
+        "zoneId": "catacombs_entrance",
+        "spawnType": "static",
+        "maxConcurrent": 4,
+        "respawnSeconds": 300,
+        "mobTemplates": ["bone_wraith_789"],
+        "spawnPoints": [
+          { "x": 10, "y": 10 },
+          { "x": 15, "y": 12 },
+          { "x": 12, "y": 15 },
+          { "x": 8, "y": 8 }
+        ]
+      },
+      {
+        "id": "catacombs_halls_spawns",
+        "zoneId": "catacombs_halls",
+        "spawnType": "static",
+        "maxConcurrent": 6,
+        "respawnSeconds": 300,
+        "mobTemplates": ["bone_wraith_789", "shadow_stalker_456"],
+        "spawnPoints": [
+          { "x": 5, "y": 20 },
+          { "x": 10, "y": 25 },
+          { "x": 15, "y": 20 },
+          { "x": 20, "y": 25 },
+          { "x": 25, "y": 20 },
+          { "x": 30, "y": 25 }
+        ]
+      },
+      {
+        "id": "catacombs_chamber_spawns",
+        "zoneId": "catacombs_chamber",
+        "spawnType": "static",
+        "maxConcurrent": 3,
+        "respawnSeconds": 600,
+        "mobTemplates": ["shadow_stalker_456", "ancient_master_321"],
+        "spawnPoints": [
+          { "x": 25, "y": 25 },
+          { "x": 30, "y": 30 },
+          { "x": 35, "y": 25 }
+        ]
+      }
+    ]
+  }
+]
+
