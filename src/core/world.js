@@ -29,24 +29,75 @@
   };
 
   /**
-   * Initialize world data from JSON files
+   * Initialize world data from JSON files or localStorage
    */
   async function initializeWorld() {
     try {
-      // Load world zones
-      const zones = await global.REALM.fetchJSON('data/world-zones.json');
+      // Check for admin-saved data in localStorage first
+      let zones = null;
+      let savedTiles = null;
+      
+      try {
+        const savedZones = localStorage.getItem('REALM_WORLD_ZONES');
+        const savedTilesStr = localStorage.getItem('REALM_WORLD_TILES');
+        if (savedZones) {
+          zones = JSON.parse(savedZones);
+          console.log('[World] Loading zones from localStorage (admin saves)');
+        }
+        if (savedTilesStr) {
+          savedTiles = JSON.parse(savedTilesStr);
+          console.log('[World] Loading tiles from localStorage (admin saves)');
+        }
+      } catch (e) {
+        console.warn('[World] Failed to load from localStorage:', e);
+      }
+
+      // Fallback to JSON files
+      if (!zones) {
+        zones = await global.REALM.fetchJSON('data/world-zones.json');
+      }
+
       zones.forEach(zone => {
         worldData.zones[zone.id] = zone;
       });
 
-      // Load spawn groups
-      const spawnGroups = await global.REALM.fetchJSON('data/spawn-groups.json');
+      // Load saved tiles if available
+      if (savedTiles) {
+        Object.assign(worldData.tiles, savedTiles);
+      }
+
+      // Load spawn groups (check localStorage first)
+      let spawnGroups = null;
+      try {
+        const saved = localStorage.getItem('REALM_SPAWN_GROUPS');
+        if (saved) {
+          spawnGroups = JSON.parse(saved);
+          console.log('[World] Loading spawn groups from localStorage');
+        }
+      } catch (e) {
+        console.warn('[World] Failed to load spawn groups from localStorage:', e);
+      }
+      if (!spawnGroups) {
+        spawnGroups = await global.REALM.fetchJSON('data/spawn-groups.json');
+      }
       spawnGroups.forEach(group => {
         worldData.spawnGroups[group.id] = group;
       });
 
-      // Load mob templates
-      const mobTemplates = await global.REALM.fetchJSON('data/mob-templates.json');
+      // Load mob templates (check localStorage first)
+      let mobTemplates = null;
+      try {
+        const saved = localStorage.getItem('REALM_MOB_TEMPLATES');
+        if (saved) {
+          mobTemplates = JSON.parse(saved);
+          console.log('[World] Loading mob templates from localStorage');
+        }
+      } catch (e) {
+        console.warn('[World] Failed to load mob templates from localStorage:', e);
+      }
+      if (!mobTemplates) {
+        mobTemplates = await global.REALM.fetchJSON('data/mob-templates.json');
+      }
       mobTemplates.forEach(template => {
         worldData.mobTemplates[template.id] = template;
       });
@@ -57,8 +108,10 @@
         worldData.territoryRegions[territory.id] = territory;
       });
 
-      // Generate tiles for all zones
-      generateZoneTiles();
+      // Generate tiles for all zones (only if not loaded from localStorage)
+      if (!savedTiles || Object.keys(savedTiles).length === 0) {
+        generateZoneTiles();
+      }
 
       global.DIAG?.ok('world:initialized');
       return worldData;

@@ -20,6 +20,7 @@
   let editingMob = null;
   let editingPatrol = null;
   let unsavedChanges = false;
+  let backupData = null; // For undo functionality
 
   /**
    * Initialize admin panel
@@ -97,6 +98,27 @@
               </div>
               <button class="admin-btn" onclick="window.AdminPanel.fillZoneWithTile()">Fill Zone</button>
               <button class="admin-btn" onclick="window.AdminPanel.clearZone()">Clear Zone</button>
+              
+              <h4 style="margin-top: 1.5rem; color: var(--gold-bright);">Map Generation</h4>
+              <div class="map-gen-controls">
+                <label>Generate Type:</label>
+                <select id="mapGenType">
+                  <option value="city">City (with streets & buildings)</option>
+                  <option value="outdoor">Outdoor (with paths & roads)</option>
+                  <option value="dungeon">Dungeon (with corridors)</option>
+                  <option value="fantasy">Fantasy Map (rivers, forests, roads)</option>
+                </select>
+                <label>Road/Path Width:</label>
+                <input type="number" id="mapGenRoadWidth" value="2" min="1" max="5">
+                <label>Building Density (0-100):</label>
+                <input type="number" id="mapGenBuildingDensity" value="30" min="0" max="100">
+                <label>Add Main Roads:</label>
+                <input type="checkbox" id="mapGenMainRoads" checked>
+                <label>Add Side Paths:</label>
+                <input type="checkbox" id="mapGenSidePaths" checked>
+                <button class="admin-btn" onclick="window.AdminPanel.generateMap()">Generate Map</button>
+                <button class="admin-btn" onclick="window.AdminPanel.generateFantasyMap()">Generate Fantasy Map</button>
+              </div>
             </div>
             <div class="admin-map-canvas-container">
               <canvas id="adminMapCanvas"></canvas>
@@ -250,7 +272,8 @@
       <div class="admin-panel-footer">
         <div class="admin-status" id="adminStatus">Ready</div>
         <div class="admin-actions">
-          <button class="admin-btn admin-btn-primary" onclick="window.AdminPanel.saveAll()">Save All Changes</button>
+          <button class="admin-btn" id="undoBtn" onclick="window.AdminPanel.undoChanges()" style="display: none;">Undo Last Save</button>
+          <button class="admin-btn admin-btn-primary" onclick="window.AdminPanel.saveAll()">Save All Changes (Live)</button>
           <button class="admin-btn" onclick="window.AdminPanel.reloadData()">Reload Data</button>
         </div>
       </div>
@@ -1377,6 +1400,154 @@
   }
 
   /**
+   * Create backup before saving
+   */
+  function createBackup() {
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return null;
+
+    backupData = {
+      zones: JSON.parse(JSON.stringify(worldData.zones)),
+      tiles: JSON.parse(JSON.stringify(worldData.tiles)),
+      spawnGroups: JSON.parse(JSON.stringify(worldData.spawnGroups)),
+      mobTemplates: JSON.parse(JSON.stringify(worldData.mobTemplates)),
+      guardPatrols: JSON.parse(JSON.stringify(global.REALM?.data?.guardPatrols || [])),
+      timestamp: Date.now()
+    };
+
+    // Also save to localStorage as persistent backup
+    try {
+      localStorage.setItem('REALM_ADMIN_BACKUP', JSON.stringify(backupData));
+      console.log('[AdminPanel] Backup created and saved to localStorage');
+    } catch (e) {
+      console.warn('[AdminPanel] Failed to save backup to localStorage:', e);
+    }
+
+    // Show undo button
+    const undoBtn = document.getElementById('undoBtn');
+    if (undoBtn) {
+      undoBtn.style.display = 'block';
+    }
+
+    return backupData;
+  }
+
+  /**
+   * Undo last save
+   */
+  function undoChanges() {
+    if (!backupData) {
+      // Try to load from localStorage
+      try {
+        const stored = localStorage.getItem('REALM_ADMIN_BACKUP');
+        if (stored) {
+          backupData = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn('[AdminPanel] Failed to load backup from localStorage:', e);
+      }
+    }
+
+    if (!backupData) {
+      alert('No backup found to restore');
+      return;
+    }
+
+    if (!confirm('This will restore the previous version. Continue?')) {
+      return;
+    }
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) {
+      alert('World data not available');
+      return;
+    }
+
+    // Restore from backup
+    worldData.zones = backupData.zones;
+    worldData.tiles = backupData.tiles;
+    worldData.spawnGroups = backupData.spawnGroups;
+    worldData.mobTemplates = backupData.mobTemplates;
+    if (global.REALM.data) {
+      global.REALM.data.guardPatrols = backupData.guardPatrols;
+    }
+
+    // Apply changes live
+    applyChangesLive(worldData);
+
+    // Save to localStorage/backend
+    saveToLiveStorage(worldData);
+
+    unsavedChanges = false;
+    updateStatus('Changes restored from backup');
+    
+    if (global.Toast) {
+      global.Toast.show({
+        type: 'success',
+        title: 'Restored',
+        text: 'Previous version has been restored.'
+      });
+    }
+  }
+
+  /**
+   * Save to live storage (localStorage and/or backend)
+   */
+  async function saveToLiveStorage(worldData) {
+    const zones = Object.values(worldData.zones);
+    const spawnGroups = Object.values(worldData.spawnGroups);
+    const mobTemplates = Object.values(worldData.mobTemplates);
+    const guardPatrols = global.REALM?.data?.guardPatrols || [];
+
+    // Save to localStorage for immediate effect
+    try {
+      localStorage.setItem('REALM_WORLD_ZONES', JSON.stringify(zones));
+      localStorage.setItem('REALM_SPAWN_GROUPS', JSON.stringify(spawnGroups));
+      localStorage.setItem('REALM_MOB_TEMPLATES', JSON.stringify(mobTemplates));
+      localStorage.setItem('REALM_GUARD_PATROLS', JSON.stringify(guardPatrols));
+      localStorage.setItem('REALM_WORLD_TILES', JSON.stringify(worldData.tiles));
+      localStorage.setItem('REALM_WORLD_DATA_SAVED', Date.now().toString());
+      console.log('[AdminPanel] Saved to localStorage');
+    } catch (e) {
+      console.error('[AdminPanel] Failed to save to localStorage:', e);
+    }
+
+    // Try to save via backend API if available
+    const API_BASE_URL = window.REALM_API_URL || '';
+    if (API_BASE_URL) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/save-world-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...global.Auth?.getAuthHeaders()
+          },
+          body: JSON.stringify({
+            zones: zones,
+            spawnGroups: spawnGroups,
+            mobTemplates: mobTemplates,
+            guardPatrols: guardPatrols,
+            tiles: worldData.tiles
+          })
+        });
+
+        if (response.ok) {
+          console.log('[AdminPanel] Saved to backend API');
+          return;
+        }
+      } catch (error) {
+        console.warn('[AdminPanel] API save failed:', error);
+      }
+    }
+
+    // Also download files as backup
+    await saveJSONFile('data/world-zones.json', zones);
+    await saveJSONFile('data/spawn-groups.json', spawnGroups);
+    await saveJSONFile('data/mob-templates.json', mobTemplates);
+    await saveJSONFile('data/guard-patrols.json', guardPatrols);
+  }
+
+  /**
    * Save all changes and apply live
    */
   async function saveAll() {
@@ -1385,11 +1556,11 @@
       return;
     }
 
-    if (!confirm('This will apply changes to the live game. Continue?')) {
+    if (!confirm('This will apply changes to the live game for all players. Continue?')) {
       return;
     }
 
-    updateStatus('Saving and applying changes...');
+    updateStatus('Creating backup and saving...');
 
     try {
       const worldData = global.World?.getWorldData();
@@ -1397,27 +1568,14 @@
         throw new Error('World data not available');
       }
 
+      // Create backup before saving
+      createBackup();
+
       // Apply changes live to the game
       applyChangesLive(worldData);
 
-      // Convert to arrays for JSON files
-      const zones = Object.values(worldData.zones);
-      const spawnGroups = Object.values(worldData.spawnGroups);
-      const mobTemplates = Object.values(worldData.mobTemplates);
-
-      // Save zones
-      await saveJSONFile('data/world-zones.json', zones);
-      
-      // Save spawn groups
-      await saveJSONFile('data/spawn-groups.json', spawnGroups);
-      
-      // Save mob templates
-      await saveJSONFile('data/mob-templates.json', mobTemplates);
-      
-      // Save guard patrols
-      if (global.REALM.data.guardPatrols) {
-        await saveJSONFile('data/guard-patrols.json', global.REALM.data.guardPatrols);
-      }
+      // Save to live storage (localStorage and/or backend)
+      await saveToLiveStorage(worldData);
 
       unsavedChanges = false;
       updateStatus('All changes saved and applied live!');
@@ -1427,7 +1585,7 @@
         global.Toast.show({
           type: 'success',
           title: 'Changes Applied',
-          text: 'All changes have been saved and applied to the live game.'
+          text: 'All changes have been saved and applied to the live game for all players.'
         });
       }
     } catch (error) {
@@ -1816,6 +1974,257 @@
   // Also check periodically
   setInterval(checkAndShowAdminButton, 5000);
 
+  /**
+   * Generate map based on type
+   */
+  function generateMap() {
+    const zoneSelect = document.getElementById('adminZoneSelect');
+    const zoneId = zoneSelect?.value;
+    if (!zoneId) {
+      alert('Please select a zone first');
+      return;
+    }
+
+    const zone = global.World?.getZone(zoneId);
+    if (!zone) return;
+
+    const genType = document.getElementById('mapGenType')?.value || 'outdoor';
+    const roadWidth = parseInt(document.getElementById('mapGenRoadWidth')?.value || '2');
+    const buildingDensity = parseInt(document.getElementById('mapGenBuildingDensity')?.value || '30');
+    const mainRoads = document.getElementById('mapGenMainRoads')?.checked ?? true;
+    const sidePaths = document.getElementById('mapGenSidePaths')?.checked ?? true;
+
+    if (!confirm(`Generate ${genType} map for ${zone.name}? This will replace existing tiles.`)) {
+      return;
+    }
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return;
+
+    // Generate based on type
+    if (genType === 'city') {
+      generateCityMap(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
+    } else if (genType === 'outdoor') {
+      generateOutdoorMap(zone, worldData, roadWidth, mainRoads, sidePaths);
+    } else if (genType === 'dungeon') {
+      generateDungeonMap(zone, worldData);
+    }
+
+    unsavedChanges = true;
+    updateStatus('Map generated');
+    renderMapEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
+  }
+
+  /**
+   * Generate fantasy map with rivers, forests, roads
+   */
+  function generateFantasyMap() {
+    const zoneSelect = document.getElementById('adminZoneSelect');
+    const zoneId = zoneSelect?.value;
+    if (!zoneId) {
+      alert('Please select a zone first');
+      return;
+    }
+
+    const zone = global.World?.getZone(zoneId);
+    if (!zone) return;
+
+    if (!confirm(`Generate fantasy map for ${zone.name}? This will replace existing tiles.`)) {
+      return;
+    }
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return;
+
+    // Generate fantasy map
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zoneId}_${x}_${y}`;
+        let terrainType = 'grass';
+        let walkable = true;
+
+        // Create a river (winding path)
+        const riverX = Math.sin(y * 0.1) * 10 + zone.gridWidth / 2;
+        if (Math.abs(x - riverX) < 2) {
+          terrainType = 'water';
+          walkable = false;
+        }
+        // Create a main road (horizontal and vertical)
+        else if (Math.abs(y - zone.gridHeight / 2) < 2 || Math.abs(x - zone.gridWidth / 2) < 2) {
+          terrainType = 'path';
+          walkable = true;
+        }
+        // Create forests (clusters)
+        else if (Math.random() > 0.7 && Math.sqrt(Math.pow(x - zone.gridWidth / 2, 2) + Math.pow(y - zone.gridHeight / 2, 2)) > zone.gridWidth * 0.2) {
+          terrainType = 'tree';
+          walkable = false;
+        }
+        // Create some rocks
+        else if (Math.random() > 0.95) {
+          terrainType = 'rock';
+          walkable = false;
+        }
+        // Default to grass
+        else {
+          terrainType = 'grass';
+          walkable = true;
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId,
+          terrainType,
+          walkable
+        };
+      }
+    }
+
+    unsavedChanges = true;
+    updateStatus('Fantasy map generated');
+    renderMapEditor();
+    
+    // Update live game map if in same zone
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === zoneId && global.WorldMapRender) {
+      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+    }
+  }
+
+  /**
+   * Generate city map with streets and buildings
+   */
+  function generateCityMap(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths) {
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zone.id}_${x}_${y}`;
+        let terrainType = 'city_plaza';
+        let walkable = true;
+
+        // Walls on edges
+        if (x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1) {
+          terrainType = 'wall';
+          walkable = false;
+        }
+        // Main roads (horizontal and vertical center)
+        else if (mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
+          terrainType = 'city_street';
+          walkable = true;
+        }
+        // Side paths (grid pattern)
+        else if (sidePaths && (x % 5 === 0 || y % 5 === 0)) {
+          terrainType = 'city_street';
+          walkable = true;
+        }
+        // Buildings based on density
+        else if (Math.random() * 100 < buildingDensity) {
+          terrainType = 'building';
+          walkable = false;
+        }
+        // Default to plaza
+        else {
+          terrainType = 'city_plaza';
+          walkable = true;
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId: zone.id,
+          terrainType,
+          walkable
+        };
+      }
+    }
+  }
+
+  /**
+   * Generate outdoor map with paths and roads
+   */
+  function generateOutdoorMap(zone, worldData, roadWidth, mainRoads, sidePaths) {
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zone.id}_${x}_${y}`;
+        let terrainType = 'grass';
+        let walkable = true;
+
+        // Main roads (horizontal and vertical center)
+        if (mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
+          terrainType = 'path';
+          walkable = true;
+        }
+        // Side paths (diagonal or grid)
+        else if (sidePaths && ((x + y) % 8 === 0 || x % 10 === 0 || y % 10 === 0)) {
+          terrainType = 'path';
+          walkable = true;
+        }
+        // Trees (random)
+        else if (Math.random() > 0.85) {
+          terrainType = 'tree';
+          walkable = false;
+        }
+        // Rocks (edges)
+        else if ((x < 3 || x > zone.gridWidth - 4 || y < 3 || y > zone.gridHeight - 4) && Math.random() > 0.7) {
+          terrainType = 'rock';
+          walkable = false;
+        }
+        // Default to grass
+        else {
+          terrainType = 'grass';
+          walkable = true;
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId: zone.id,
+          terrainType,
+          walkable
+        };
+      }
+    }
+  }
+
+  /**
+   * Generate dungeon map with corridors
+   */
+  function generateDungeonMap(zone, worldData) {
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zone.id}_${x}_${y}`;
+        let terrainType = 'dungeon_floor';
+        let walkable = true;
+
+        // Walls on edges
+        if (x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1) {
+          terrainType = 'dungeon_wall';
+          walkable = false;
+        }
+        // Corridor pattern
+        else if (x % 3 === 0 || y % 3 === 0) {
+          terrainType = 'dungeon_floor';
+          walkable = true;
+        }
+        // Some walls inside
+        else if (Math.random() > 0.7) {
+          terrainType = 'dungeon_wall';
+          walkable = false;
+        }
+        // Default to floor
+        else {
+          terrainType = 'dungeon_floor';
+          walkable = true;
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId: zone.id,
+          terrainType,
+          walkable
+        };
+      }
+    }
+  }
+
   const AdminPanel = {
     show,
     close,
@@ -1836,7 +2245,10 @@
     savePatrolGroup,
     deletePatrolGroup,
     addPatrolWaypoint,
-    removePatrolWaypoint
+    removePatrolWaypoint,
+    generateMap,
+    generateFantasyMap,
+    undoChanges
   };
 
   global.AdminPanel = AdminPanel;

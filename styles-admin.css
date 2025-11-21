@@ -77,6 +77,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0; /* Important for flex children */
 }
 
 .admin-tabs {
@@ -115,6 +116,8 @@
   flex: 1;
   overflow: auto;
   padding: 1.5rem;
+  min-height: 0; /* Important for flex children */
+  height: 100%;
 }
 
 .admin-tab-content.active {
@@ -131,6 +134,8 @@
   gap: 1.5rem;
   flex: 1;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .admin-map-controls,
@@ -139,11 +144,13 @@
 .admin-mob-list,
 .admin-patrol-controls {
   width: 300px;
+  min-width: 300px;
   background: var(--ink-navy);
   padding: 1.5rem;
   border-radius: 8px;
   border: var(--border-subtle);
   overflow-y: auto;
+  max-height: 100%;
 }
 
 .admin-map-controls h3,

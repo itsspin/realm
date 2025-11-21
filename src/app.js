@@ -53,11 +53,43 @@
   REALM.fetchJSON = fetchJSON;
 
   /**
+   * Load world data from localStorage if available (admin saves)
+   */
+  function loadWorldDataFromStorage() {
+    try {
+      const savedTime = localStorage.getItem('REALM_WORLD_DATA_SAVED');
+      if (!savedTime) return null;
+
+      const zones = localStorage.getItem('REALM_WORLD_ZONES');
+      const spawnGroups = localStorage.getItem('REALM_SPAWN_GROUPS');
+      const mobTemplates = localStorage.getItem('REALM_MOB_TEMPLATES');
+      const guardPatrols = localStorage.getItem('REALM_GUARD_PATROLS');
+      const tiles = localStorage.getItem('REALM_WORLD_TILES');
+
+      if (zones || spawnGroups || mobTemplates || guardPatrols || tiles) {
+        console.log('[App] Loading world data from localStorage (admin saves)');
+        return {
+          zones: zones ? JSON.parse(zones) : null,
+          spawnGroups: spawnGroups ? JSON.parse(spawnGroups) : null,
+          mobTemplates: mobTemplates ? JSON.parse(mobTemplates) : null,
+          guardPatrols: guardPatrols ? JSON.parse(guardPatrols) : null,
+          tiles: tiles ? JSON.parse(tiles) : null
+        };
+      }
+    } catch (e) {
+      console.warn('[App] Failed to load world data from localStorage:', e);
+    }
+    return null;
+  }
+
+  /**
    * Load all game data from JSON files
    * Creates lookup maps (e.g., itemsById, zonesById) for fast access
    * Data is stored in REALM.data namespace
    */
   async function loadGameData() {
+    // Check for admin-saved world data first
+    const savedWorldData = loadWorldDataFromStorage();
     // Load races
     try {
       const racesRes = await fetch('data/races.json');
@@ -119,7 +151,7 @@
       { key: 'itemsStarter', path: 'data/items-starter.json' },
       { key: 'lootTables', path: 'data/loot-tables.json' },
       { key: 'gatheringNodes', path: 'data/gathering-nodes.json' },
-      { key: 'guardPatrols', path: 'data/guard-patrols.json' },
+      { key: 'guardPatrols', path: 'data/guard-patrols.json', useStorage: true },
       { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
       { key: 'namedMobs', path: 'data/named-mobs.json' },
       { key: 'dungeons', path: 'data/dungeons.json' },
@@ -134,8 +166,23 @@
       { key: 'lore', path: 'data/lore.json' }
     ];
 
-    for (const { key, path } of files) {
+    for (const { key, path, useStorage } of files) {
       try {
+        // Check localStorage first for admin-saved data
+        if (useStorage) {
+          try {
+            const storageKey = `REALM_${key.toUpperCase().replace(/-/g, '_')}`;
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+              REALM.data[key] = JSON.parse(saved);
+              DIAG.ok(`data:${key} (from localStorage)`);
+              continue; // Skip fetching from file
+            }
+          } catch (e) {
+            console.warn(`Failed to load ${key} from localStorage:`, e);
+          }
+        }
+        
         REALM.data[key] = await fetchJSON(path);
         DIAG.ok(`data:${key}`);
 
