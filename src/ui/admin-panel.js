@@ -591,10 +591,17 @@
    * Fill zone with selected tile type
    */
   function fillZoneWithTile() {
+    console.log('[AdminPanel] fillZoneWithTile called');
     const zoneSelect = document.getElementById('adminZoneSelect');
-    const zoneId = zoneSelect?.value;
+    if (!zoneSelect) {
+      console.error('[AdminPanel] Zone select not found');
+      alert('Zone selector not found. Please refresh the admin panel.');
+      return;
+    }
+    
+    const zoneId = zoneSelect.value;
     if (!zoneId) {
-      alert('Please select a zone');
+      alert('Please select a zone first');
       return;
     }
 
@@ -603,12 +610,22 @@
     }
 
     const zone = global.World?.getZone(zoneId);
-    if (!zone) return;
+    if (!zone) {
+      alert('Zone not found: ' + zoneId);
+      return;
+    }
 
-    const tileType = selectedTileType;
+    const tileType = document.getElementById('tileTypeSelect')?.value || selectedTileType;
     const walkable = document.getElementById('tileWalkable')?.checked ?? true;
     const worldData = global.World?.getWorldData();
-    if (!worldData) return;
+    if (!worldData) {
+      alert('World data not available');
+      return;
+    }
+
+    if (!worldData.tiles) {
+      worldData.tiles = {};
+    }
 
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
@@ -636,10 +653,16 @@
    * Clear zone
    */
   function clearZone() {
+    console.log('[AdminPanel] clearZone called');
     const zoneSelect = document.getElementById('adminZoneSelect');
-    const zoneId = zoneSelect?.value;
+    if (!zoneSelect) {
+      alert('Zone selector not found');
+      return;
+    }
+    
+    const zoneId = zoneSelect.value;
     if (!zoneId) {
-      alert('Please select a zone');
+      alert('Please select a zone first');
       return;
     }
 
@@ -648,10 +671,16 @@
     }
 
     const zone = global.World?.getZone(zoneId);
-    if (!zone) return;
+    if (!zone) {
+      alert('Zone not found: ' + zoneId);
+      return;
+    }
 
     const worldData = global.World?.getWorldData();
-    if (!worldData) return;
+    if (!worldData) {
+      alert('World data not available');
+      return;
+    }
 
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
@@ -1803,8 +1832,22 @@
    * Reload data
    */
   function reloadData() {
+    console.log('[AdminPanel] reloadData called');
     if (unsavedChanges && !confirm('You have unsaved changes. Reload anyway?')) {
       return;
+    }
+
+    // Clear localStorage admin saves to reload from files
+    try {
+      localStorage.removeItem('REALM_WORLD_ZONES');
+      localStorage.removeItem('REALM_SPAWN_GROUPS');
+      localStorage.removeItem('REALM_MOB_TEMPLATES');
+      localStorage.removeItem('REALM_GUARD_PATROLS');
+      localStorage.removeItem('REALM_WORLD_TILES');
+      localStorage.removeItem('REALM_WORLD_DATA_SAVED');
+      console.log('[AdminPanel] Cleared localStorage, reloading...');
+    } catch (e) {
+      console.warn('[AdminPanel] Failed to clear localStorage:', e);
     }
 
     location.reload();
@@ -1975,18 +2018,112 @@
   setInterval(checkAndShowAdminButton, 5000);
 
   /**
-   * Generate map based on type
+   * Get zone transition points (where zone lines are)
+   */
+  function getZoneTransitions(zone) {
+    const transitions = [];
+    if (!zone.neighboringZones || zone.neighboringZones.length === 0) {
+      return transitions;
+    }
+
+    // Get neighboring zones to determine transition directions
+    zone.neighboringZones.forEach(neighborZoneId => {
+      const neighborZone = global.World?.getZone(neighborZoneId);
+      if (!neighborZone) return;
+
+      // Check if neighbor zone has this zone in its neighboringZones to determine direction
+      // For now, we'll infer direction based on zone names and types
+      // If neighbor is a city and we're outdoor, transition is likely at an edge
+      // If we're a city and neighbor is outdoor, transition is at city gate (edge)
+      
+      // Default: place transitions at all edges, but prioritize based on zone type
+      if (zone.type === 'city' && neighborZone.type === 'outdoor') {
+        // City gate - typically at one edge
+        // Check which edge makes sense (usually south for main gates)
+        transitions.push({ 
+          zoneId: neighborZoneId, 
+          direction: 'south', 
+          x: Math.floor(zone.gridWidth / 2), 
+          y: zone.gridHeight - 1 
+        });
+      } else if (zone.type === 'outdoor' && neighborZone.type === 'city') {
+        // Approaching city - transition at edge closest to city
+        transitions.push({ 
+          zoneId: neighborZoneId, 
+          direction: 'north', 
+          x: Math.floor(zone.gridWidth / 2), 
+          y: 0 
+        });
+      } else {
+        // Outdoor to outdoor - can be at any edge
+        // Place at center of each edge as potential transition points
+        transitions.push({ zoneId: neighborZoneId, direction: 'south', x: Math.floor(zone.gridWidth / 2), y: zone.gridHeight - 1 });
+        transitions.push({ zoneId: neighborZoneId, direction: 'north', x: Math.floor(zone.gridWidth / 2), y: 0 });
+        transitions.push({ zoneId: neighborZoneId, direction: 'east', x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2) });
+        transitions.push({ zoneId: neighborZoneId, direction: 'west', x: 0, y: Math.floor(zone.gridHeight / 2) });
+      }
+    });
+
+    // Deduplicate by direction and zoneId
+    const unique = [];
+    const seen = new Set();
+    transitions.forEach(t => {
+      const key = `${t.direction}_${t.zoneId}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(t);
+      }
+    });
+
+    return unique;
+  }
+
+  /**
+   * Check if tile is near ruins (check for structures or special markers)
+   */
+  function isNearRuins(zone, x, y, worldData) {
+    // Check if there are structures or special markers nearby
+    // For now, we'll check if there are any special terrain types that indicate ruins
+    const nearbyTiles = [
+      { x: x - 1, y: y - 1 }, { x: x, y: y - 1 }, { x: x + 1, y: y - 1 },
+      { x: x - 1, y: y }, { x: x + 1, y: y },
+      { x: x - 1, y: y + 1 }, { x: x, y: y + 1 }, { x: x + 1, y: y + 1 }
+    ];
+
+    for (const tile of nearbyTiles) {
+      const key = `${zone.id}_${tile.x}_${tile.y}`;
+      const existingTile = worldData.tiles[key];
+      if (existingTile && (existingTile.terrainType === 'rock' || existingTile.terrainType === 'building')) {
+        // Check if it looks like ruins (broken buildings, rocks in patterns)
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Generate map based on type (context-aware)
    */
   function generateMap() {
+    console.log('[AdminPanel] generateMap called');
     const zoneSelect = document.getElementById('adminZoneSelect');
-    const zoneId = zoneSelect?.value;
+    if (!zoneSelect) {
+      alert('Zone selector not found');
+      return;
+    }
+    
+    const zoneId = zoneSelect.value;
     if (!zoneId) {
       alert('Please select a zone first');
       return;
     }
 
     const zone = global.World?.getZone(zoneId);
-    if (!zone) return;
+    if (!zone) {
+      alert('Zone not found: ' + zoneId);
+      return;
+    }
 
     const genType = document.getElementById('mapGenType')?.value || 'outdoor';
     const roadWidth = parseInt(document.getElementById('mapGenRoadWidth')?.value || '2');
@@ -1999,13 +2136,20 @@
     }
 
     const worldData = global.World?.getWorldData();
-    if (!worldData) return;
+    if (!worldData) {
+      alert('World data not available');
+      return;
+    }
 
-    // Generate based on type
+    if (!worldData.tiles) {
+      worldData.tiles = {};
+    }
+
+    // Generate based on type (context-aware)
     if (genType === 'city') {
-      generateCityMap(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
+      generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
     } else if (genType === 'outdoor') {
-      generateOutdoorMap(zone, worldData, roadWidth, mainRoads, sidePaths);
+      generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths);
     } else if (genType === 'dungeon') {
       generateDungeonMap(zone, worldData);
     }
@@ -2022,62 +2166,145 @@
   }
 
   /**
-   * Generate fantasy map with rivers, forests, roads
+   * Generate fantasy map with rivers, forests, roads (context-aware)
    */
   function generateFantasyMap() {
+    console.log('[AdminPanel] generateFantasyMap called');
     const zoneSelect = document.getElementById('adminZoneSelect');
-    const zoneId = zoneSelect?.value;
+    if (!zoneSelect) {
+      alert('Zone selector not found');
+      return;
+    }
+    
+    const zoneId = zoneSelect.value;
     if (!zoneId) {
       alert('Please select a zone first');
       return;
     }
 
     const zone = global.World?.getZone(zoneId);
-    if (!zone) return;
+    if (!zone) {
+      alert('Zone not found: ' + zoneId);
+      return;
+    }
 
     if (!confirm(`Generate fantasy map for ${zone.name}? This will replace existing tiles.`)) {
       return;
     }
 
     const worldData = global.World?.getWorldData();
-    if (!worldData) return;
+    if (!worldData) {
+      alert('World data not available');
+      return;
+    }
 
-    // Generate fantasy map
+    if (!worldData.tiles) {
+      worldData.tiles = {};
+    }
+
+    // Get zone transitions for context-aware road generation
+    const transitions = getZoneTransitions(zone);
+    const eastTransitions = transitions.filter(t => t.direction === 'east');
+    const southTransitions = transitions.filter(t => t.direction === 'south');
+    const northTransitions = transitions.filter(t => t.direction === 'north');
+    const westTransitions = transitions.filter(t => t.direction === 'west');
+
+    // Generate fantasy map with context-aware roads
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
         const key = `${zoneId}_${x}_${y}`;
         let terrainType = 'grass';
         let walkable = true;
 
-        // Create a river (winding path)
-        const riverX = Math.sin(y * 0.1) * 10 + zone.gridWidth / 2;
-        if (Math.abs(x - riverX) < 2) {
-          terrainType = 'water';
-          walkable = false;
+        // Create roads leading to zone transitions
+        let isOnRoad = false;
+        
+        // Road to east transitions (split if multiple)
+        if (eastTransitions.length > 0) {
+          if (eastTransitions.length === 1) {
+            // Single road to east
+            const targetY = eastTransitions[0].y;
+            if (Math.abs(y - targetY) < 2 && x > zone.gridWidth * 0.3) {
+              terrainType = 'path';
+              walkable = true;
+              isOnRoad = true;
+            }
+          } else {
+            // Multiple east transitions - split road
+            const sorted = eastTransitions.sort((a, b) => a.y - b.y);
+            const midY = (sorted[0].y + sorted[sorted.length - 1].y) / 2;
+            if (x > zone.gridWidth * 0.3) {
+              if (Math.abs(y - midY) < 2) {
+                // Main road
+                terrainType = 'path';
+                walkable = true;
+                isOnRoad = true;
+              } else if (sorted.some(t => Math.abs(y - t.y) < 2)) {
+                // Branch to specific transition
+                terrainType = 'path';
+                walkable = true;
+                isOnRoad = true;
+              }
+            }
+          }
         }
-        // Create a main road (horizontal and vertical)
-        else if (Math.abs(y - zone.gridHeight / 2) < 2 || Math.abs(x - zone.gridWidth / 2) < 2) {
-          terrainType = 'path';
-          walkable = true;
+
+        // Road to south transitions
+        if (!isOnRoad && southTransitions.length > 0) {
+          const targetX = southTransitions[0].x;
+          if (Math.abs(x - targetX) < 2 && y > zone.gridHeight * 0.3) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
         }
-        // Create forests (clusters)
-        else if (Math.random() > 0.7 && Math.sqrt(Math.pow(x - zone.gridWidth / 2, 2) + Math.pow(y - zone.gridHeight / 2, 2)) > zone.gridWidth * 0.2) {
-          terrainType = 'tree';
-          walkable = false;
+
+        // Road to north transitions
+        if (!isOnRoad && northTransitions.length > 0) {
+          const targetX = northTransitions[0].x;
+          if (Math.abs(x - targetX) < 2 && y < zone.gridHeight * 0.7) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
         }
-        // Create some rocks
-        else if (Math.random() > 0.95) {
-          terrainType = 'rock';
-          walkable = false;
+
+        // Road to west transitions
+        if (!isOnRoad && westTransitions.length > 0) {
+          const targetY = westTransitions[0].y;
+          if (Math.abs(y - targetY) < 2 && x < zone.gridWidth * 0.7) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
         }
-        // Default to grass
-        else {
-          terrainType = 'grass';
-          walkable = true;
+
+        // Create a river (winding path) if not on road
+        if (!isOnRoad) {
+          const riverX = Math.sin(y * 0.1) * 10 + zone.gridWidth / 2;
+          if (Math.abs(x - riverX) < 2) {
+            terrainType = 'water';
+            walkable = false;
+          }
+          // Create forests (clusters)
+          else if (Math.random() > 0.7 && Math.sqrt(Math.pow(x - zone.gridWidth / 2, 2) + Math.pow(y - zone.gridHeight / 2, 2)) > zone.gridWidth * 0.2) {
+            terrainType = 'tree';
+            walkable = false;
+          }
+          // Create some rocks
+          else if (Math.random() > 0.95) {
+            terrainType = 'rock';
+            walkable = false;
+          }
+          // Default to grass
+          else {
+            terrainType = 'grass';
+            walkable = true;
+          }
         }
 
         worldData.tiles[key] = {
-          x, y, zoneId,
+          x, y, zoneId: zone.id,
           terrainType,
           walkable
         };
@@ -2096,9 +2323,124 @@
   }
 
   /**
-   * Generate city map with streets and buildings
+   * Generate city map with streets and buildings (context-aware)
+   */
+  function generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths) {
+    const transitions = getZoneTransitions(zone);
+    
+    // Find which directions have cities (for density)
+    const cityDirections = [];
+    transitions.forEach(t => {
+      const neighborZone = global.World?.getZone(t.zoneId);
+      if (neighborZone && neighborZone.type === 'city') {
+        cityDirections.push(t.direction);
+      }
+    });
+
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zone.id}_${x}_${y}`;
+        let terrainType = 'city_plaza';
+        let walkable = true;
+
+        // Walls on edges
+        if (x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1) {
+          terrainType = 'wall';
+          walkable = false;
+        }
+        // Roads leading to zone transitions
+        else {
+          let isOnRoad = false;
+          
+          // Check each transition direction and create roads
+          transitions.forEach(transition => {
+            if (transition.direction === 'east' && Math.abs(y - transition.y) < roadWidth && x > zone.gridWidth * 0.2) {
+              terrainType = 'city_street';
+              walkable = true;
+              isOnRoad = true;
+            } else if (transition.direction === 'west' && Math.abs(y - transition.y) < roadWidth && x < zone.gridWidth * 0.8) {
+              terrainType = 'city_street';
+              walkable = true;
+              isOnRoad = true;
+            } else if (transition.direction === 'south' && Math.abs(x - transition.x) < roadWidth && y > zone.gridHeight * 0.2) {
+              terrainType = 'city_street';
+              walkable = true;
+              isOnRoad = true;
+            } else if (transition.direction === 'north' && Math.abs(x - transition.x) < roadWidth && y < zone.gridHeight * 0.8) {
+              terrainType = 'city_street';
+              walkable = true;
+              isOnRoad = true;
+            }
+          });
+
+          // Main roads (horizontal and vertical center) if enabled
+          if (!isOnRoad && mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
+            terrainType = 'city_street';
+            walkable = true;
+            isOnRoad = true;
+          }
+          // Side paths (grid pattern) if enabled
+          else if (!isOnRoad && sidePaths && (x % 5 === 0 || y % 5 === 0)) {
+            terrainType = 'city_street';
+            walkable = true;
+            isOnRoad = true;
+          }
+          // Buildings - higher density near city transitions and zone lines
+          else if (!isOnRoad) {
+            let density = buildingDensity;
+            // Increase density near city transitions (where other cities connect)
+            transitions.forEach(transition => {
+              const neighborZone = global.World?.getZone(transition.zoneId);
+              if (neighborZone && neighborZone.type === 'city') {
+                const dist = Math.sqrt(Math.pow(x - transition.x, 2) + Math.pow(y - transition.y, 2));
+                if (dist < zone.gridWidth * 0.3) {
+                  density += 20; // More buildings near city entrances
+                }
+              }
+            });
+            
+            // Increase density near zone lines (where cities connect to outdoor zones)
+            transitions.forEach(transition => {
+              const neighborZone = global.World?.getZone(transition.zoneId);
+              if (neighborZone && neighborZone.type === 'outdoor') {
+                // More dense near the zone line
+                if (transition.direction === 'south' && y > zone.gridHeight * 0.7) {
+                  density += 15;
+                } else if (transition.direction === 'north' && y < zone.gridHeight * 0.3) {
+                  density += 15;
+                } else if (transition.direction === 'east' && x > zone.gridWidth * 0.7) {
+                  density += 15;
+                } else if (transition.direction === 'west' && x < zone.gridWidth * 0.3) {
+                  density += 15;
+                }
+              }
+            });
+            
+            if (Math.random() * 100 < density) {
+              terrainType = 'building';
+              walkable = false;
+            } else {
+              terrainType = 'city_plaza';
+              walkable = true;
+            }
+          }
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId: zone.id,
+          terrainType,
+          walkable
+        };
+      }
+    }
+  }
+
+  /**
+   * Generate city map with streets and buildings (old version - kept for compatibility)
    */
   function generateCityMap(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths) {
+    generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
+  }
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
         const key = `${zone.id}_${x}_${y}`;
@@ -2141,9 +2483,123 @@
   }
 
   /**
-   * Generate outdoor map with paths and roads
+   * Generate outdoor map with paths and roads (context-aware)
+   */
+  function generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths) {
+    const transitions = getZoneTransitions(zone);
+    const eastTransitions = transitions.filter(t => t.direction === 'east');
+    const southTransitions = transitions.filter(t => t.direction === 'south');
+    const northTransitions = transitions.filter(t => t.direction === 'north');
+    const westTransitions = transitions.filter(t => t.direction === 'west');
+
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zone.id}_${x}_${y}`;
+        let terrainType = 'grass';
+        let walkable = true;
+
+        let isOnRoad = false;
+
+        // Roads to east transitions
+        if (eastTransitions.length > 0) {
+          if (eastTransitions.length === 1) {
+            const targetY = eastTransitions[0].y;
+            if (Math.abs(y - targetY) < roadWidth && x > zone.gridWidth * 0.2) {
+              terrainType = 'path';
+              walkable = true;
+              isOnRoad = true;
+            }
+          } else {
+            // Multiple - split road
+            const sorted = eastTransitions.sort((a, b) => a.y - b.y);
+            const midY = (sorted[0].y + sorted[sorted.length - 1].y) / 2;
+            if (x > zone.gridWidth * 0.2) {
+              if (Math.abs(y - midY) < roadWidth) {
+                terrainType = 'path';
+                walkable = true;
+                isOnRoad = true;
+              } else if (sorted.some(t => Math.abs(y - t.y) < roadWidth)) {
+                terrainType = 'path';
+                walkable = true;
+                isOnRoad = true;
+              }
+            }
+          }
+        }
+
+        // Roads to south
+        if (!isOnRoad && southTransitions.length > 0) {
+          const targetX = southTransitions[0].x;
+          if (Math.abs(x - targetX) < roadWidth && y > zone.gridHeight * 0.2) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
+        }
+
+        // Roads to north
+        if (!isOnRoad && northTransitions.length > 0) {
+          const targetX = northTransitions[0].x;
+          if (Math.abs(x - targetX) < roadWidth && y < zone.gridHeight * 0.8) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
+        }
+
+        // Roads to west
+        if (!isOnRoad && westTransitions.length > 0) {
+          const targetY = westTransitions[0].y;
+          if (Math.abs(y - targetY) < roadWidth && x < zone.gridWidth * 0.8) {
+            terrainType = 'path';
+            walkable = true;
+            isOnRoad = true;
+          }
+        }
+
+        // Main roads if enabled and not already on a road
+        if (!isOnRoad && mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
+          terrainType = 'path';
+          walkable = true;
+          isOnRoad = true;
+        }
+        // Side paths if enabled
+        else if (!isOnRoad && sidePaths && ((x + y) % 8 === 0 || x % 10 === 0 || y % 10 === 0)) {
+          terrainType = 'path';
+          walkable = true;
+          isOnRoad = true;
+        }
+        // Trees (random)
+        else if (!isOnRoad && Math.random() > 0.85) {
+          terrainType = 'tree';
+          walkable = false;
+        }
+        // Rocks (edges)
+        else if (!isOnRoad && (x < 3 || x > zone.gridWidth - 4 || y < 3 || y > zone.gridHeight - 4) && Math.random() > 0.7) {
+          terrainType = 'rock';
+          walkable = false;
+        }
+        // Default to grass
+        else if (!isOnRoad) {
+          terrainType = 'grass';
+          walkable = true;
+        }
+
+        worldData.tiles[key] = {
+          x, y, zoneId: zone.id,
+          terrainType,
+          walkable
+        };
+      }
+    }
+  }
+
+  /**
+   * Generate outdoor map with paths and roads (old version - kept for compatibility)
    */
   function generateOutdoorMap(zone, worldData, roadWidth, mainRoads, sidePaths) {
+    generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths);
+  }
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
         const key = `${zone.id}_${x}_${y}`;
