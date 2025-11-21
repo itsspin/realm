@@ -103,7 +103,13 @@
     // Update map - only use WorldMapRender
     if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
       global.WorldMapRender.renderMap();
+      // centerOnPlayer is now a no-op since viewport is always centered
       global.WorldMapRender.centerOnPlayer();
+    }
+
+    // Update nearby list
+    if (global.NearbyList && typeof global.NearbyList.update === 'function') {
+      global.NearbyList.update();
     }
 
     // Check for zone change

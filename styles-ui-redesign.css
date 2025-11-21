@@ -915,3 +915,207 @@
    to these future enhancements without major refactoring.
    ============================================ */
 
+/* ============================================
+   Tile Detail Panel
+   ============================================ */
+
+.tile-detail-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
+}
+
+.tile-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-subtle);
+}
+
+.tile-detail-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--gold-bright);
+}
+
+.tile-coords {
+  font-size: 0.9rem;
+  color: var(--fg-secondary);
+  font-family: monospace;
+}
+
+.tile-detail-empty {
+  text-align: center;
+  color: var(--fg-secondary);
+  padding: var(--spacing-md);
+  font-style: italic;
+}
+
+.tile-detail-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.tile-detail-section h4 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 1rem;
+  color: var(--fg-primary);
+  font-weight: 600;
+}
+
+.tile-detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+  border: 1px solid transparent;
+}
+
+.tile-detail-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tile-detail-item.targeted {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: var(--gold-bright);
+}
+
+.tile-detail-item .entity-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.tile-detail-item .entity-name {
+  flex: 1;
+  color: var(--fg-primary);
+  font-weight: 500;
+}
+
+.tile-detail-item .entity-level,
+.tile-detail-item .entity-class,
+.tile-detail-item .entity-hp {
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+  margin-left: auto;
+}
+
+.tile-detail-item .entity-hp {
+  color: var(--ember-bright);
+}
+
+.tile-detail-item .entity-hp .hp-bar {
+  display: inline-block;
+  height: 8px;
+  background: var(--ember-bright);
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+/* ============================================
+   Nearby List
+   ============================================ */
+
+.nearby-list {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: var(--spacing-md);
+  font-size: 0.9rem;
+}
+
+.nearby-list-header {
+  font-weight: 600;
+  color: var(--gold-bright);
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: var(--border-subtle);
+  font-family: var(--font-display);
+}
+
+.nearby-list-empty {
+  text-align: center;
+  color: var(--fg-secondary);
+  padding: var(--spacing-md);
+  font-style: italic;
+}
+
+.nearby-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.nearby-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+  border: 1px solid transparent;
+}
+
+.nearby-list-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.nearby-list-item.selected {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: var(--gold-bright);
+}
+
+.nearby-list-item.targeted {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--gold-bright);
+  font-weight: 600;
+}
+
+.nearby-list-item .entity-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.nearby-list-item .entity-direction {
+  font-size: 0.8rem;
+  color: var(--fg-secondary);
+  font-family: monospace;
+  min-width: 60px;
+}
+
+.nearby-list-item .entity-name {
+  flex: 1;
+  color: var(--fg-primary);
+}
+
+.nearby-list-item .entity-level {
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+  margin-left: auto;
+  margin-right: var(--spacing-xs);
+}
+
+.nearby-list-item .entity-hp {
+  font-size: 0.85rem;
+  color: var(--ember-bright);
+  min-width: 40px;
+  text-align: right;
+}
+

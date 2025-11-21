@@ -1,26 +1,34 @@
 /**
  * World Map Rendering System
  * 
- * Renders the grid-based world map using the new World system.
- * Supports different tile types: city streets, buildings, walls, grass, paths, water, etc.
+ * Renders a 12×12 player-centered grid viewport.
+ * The player stays in the center of the viewport, and tiles are calculated
+ * relative to the player's position.
+ * 
+ * VIEWPORT:
+ * - 12×12 tiles total
+ * - Player always at viewport center (6, 6)
+ * - No dragging/panning - viewport follows player
+ * - Zoom still works for accessibility
  */
 
 (function (global) {
   let mapCanvas = null;
   let mapCtx = null;
   let zoomLevel = 1.5;
-  let panX = 0;
-  let panY = 0;
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartY = 0;
   let showDebugOverlay = false;
+  let hoveredTile = null; // {x, y} in world coordinates
 
-  // Expose for movement system
+  // Viewport constants
+  const VIEW_SIZE = 12; // 12×12 tiles
+  const VIEW_CENTER = 6; // Center index (0-11, center is 6)
+  const VIEW_RADIUS = 6; // 6 tiles on each side of center
+
+  // Expose for movement system and compatibility
   global.WorldMapRender = global.WorldMapRender || {};
   global.WorldMapRender.zoomLevel = zoomLevel;
-  global.WorldMapRender.panX = panX;
-  global.WorldMapRender.panY = panY;
+  global.WorldMapRender.panX = 0; // Deprecated - kept for compatibility
+  global.WorldMapRender.panY = 0; // Deprecated - kept for compatibility
   global.WorldMapRender.toggleDebugOverlay = () => {
     showDebugOverlay = !showDebugOverlay;
     renderMap();
@@ -67,20 +75,19 @@
       return;
     }
 
-    // Set canvas size (new UI structure: map-canvas-container)
+    // Set canvas size
     const container = mapCanvas.closest('.map-canvas-container') || mapCanvas.parentElement;
     if (container) {
       const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) {
-          // Container not ready yet, try again
           setTimeout(resizeCanvas, 100);
           return;
         }
         const dpr = window.devicePixelRatio || 1;
         mapCanvas.width = rect.width * dpr;
         mapCanvas.height = rect.height * dpr;
-        mapCtx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+        mapCtx.setTransform(1, 0, 0, 1, 0, 0);
         mapCtx.scale(dpr, dpr);
         mapCanvas.style.width = rect.width + 'px';
         mapCanvas.style.height = rect.height + 'px';
@@ -90,98 +97,16 @@
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
       
-      // Also watch for container size changes (flexbox layout)
       if (typeof ResizeObserver !== 'undefined') {
         const resizeObserver = new ResizeObserver(resizeCanvas);
         resizeObserver.observe(container);
       }
     }
 
-    // Pan controls (left-click drag, right-click, or middle-click)
-    let mouseDownX = 0;
-    let mouseDownY = 0;
-    let hasMoved = false;
-    let isMouseDown = false;
-
-    mapCanvas.addEventListener('mousedown', (e) => {
-      // Only start drag on left, right, or middle click
-      if (e.button === 0 || e.button === 2 || e.button === 1) {
-        isMouseDown = true;
-        mouseDownX = e.clientX;
-        mouseDownY = e.clientY;
-        hasMoved = false;
-        isDragging = false;
-        dragStartX = e.clientX - panX;
-        dragStartY = e.clientY - panY;
-        
-        if (e.button === 2 || e.button === 1) {
-          // Right/middle click - immediately start dragging
-          isDragging = true;
-          mapCanvas.style.cursor = 'grabbing';
-          e.preventDefault();
-        }
-      }
-    });
-
-    mapCanvas.addEventListener('mousemove', (e) => {
-      // Only drag if mouse is actually down
-      if (!isMouseDown) {
-        return; // Don't do anything if mouse isn't pressed
-      }
-      
-      // Detect if mouse has moved enough to consider it a drag (for left click)
-      if (e.button === 0 && !hasMoved && !isDragging) {
-        const moved = Math.abs(e.clientX - mouseDownX) > 5 || Math.abs(e.clientY - mouseDownY) > 5;
-        if (moved) {
-          hasMoved = true;
-          isDragging = true;
-          mapCanvas.style.cursor = 'grabbing';
-        }
-      }
-      
-      // Only update pan if actually dragging
-      if (isDragging) {
-        panX = e.clientX - dragStartX;
-        panY = e.clientY - dragStartY;
-        global.WorldMapRender.panX = panX;
-        global.WorldMapRender.panY = panY;
-        renderMap();
-        e.preventDefault();
-      }
-    });
-
-    mapCanvas.addEventListener('mouseup', (e) => {
-      if (e.button === 0 || e.button === 2 || e.button === 1) {
-        const wasDragging = isDragging;
-        isMouseDown = false;
-        isDragging = false;
-        hasMoved = false;
-        mapCanvas.style.cursor = 'pointer';
-        
-        // If we were dragging, don't trigger click
-        if (wasDragging) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }
-    });
-    
-    // Also handle mouse leave to reset drag state
-    mapCanvas.addEventListener('mouseleave', () => {
-      isMouseDown = false;
-      isDragging = false;
-      hasMoved = false;
-      mapCanvas.style.cursor = 'pointer';
-    });
-
-    mapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    // Mouse wheel zoom in/out
+    // Mouse wheel zoom (keep for accessibility)
     mapCanvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      
-      // Zoom in/out based on scroll direction
-      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1; // Zoom out on scroll down, zoom in on scroll up
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
       const newZoomLevel = Math.max(0.5, Math.min(4, zoomLevel * zoomFactor));
       
       if (newZoomLevel !== zoomLevel) {
@@ -191,8 +116,20 @@
       }
     }, { passive: false });
 
-    // Click to move
+    // Click to move/target
     mapCanvas.addEventListener('click', handleCanvasClick);
+
+    // Hover for tile detail panel
+    mapCanvas.addEventListener('mousemove', handleCanvasHover);
+    mapCanvas.addEventListener('mouseleave', () => {
+      hoveredTile = null;
+      if (global.TileDetailPanel) {
+        global.TileDetailPanel.hide();
+      }
+    });
+
+    // Prevent context menu
+    mapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
     // Zoom controls
     const zoomInBtn = document.getElementById('zoomInBtn');
@@ -215,8 +152,11 @@
       });
     }
 
+    // Center button - no-op since always centered, but keep for UI consistency
     if (centerPlayerBtn) {
-      centerPlayerBtn.addEventListener('click', centerOnPlayer);
+      centerPlayerBtn.addEventListener('click', () => {
+        renderMap(); // Just re-render
+      });
     }
 
     // Debug toggle button
@@ -243,57 +183,170 @@
   }
 
   /**
-   * Render the map
+   * Get all entities at a specific tile
+   */
+  function getEntitiesAtTile(zoneId, worldX, worldY) {
+    const result = {
+      mobs: [],
+      players: [],
+      npcs: []
+    };
+
+    // Get mobs
+    const allMobs = global.SpawnSystem?.getAliveMobs(zoneId) || [];
+    allMobs.forEach(mob => {
+      if (mob.x === worldX && mob.y === worldY) {
+        if (mob.mobTemplate?.isGuard) {
+          result.npcs.push(mob);
+        } else {
+          result.mobs.push(mob);
+        }
+      }
+    });
+
+    // Get players
+    const players = global.MapEntities?.getNearbyPlayers() || [];
+    players.forEach(player => {
+      const pTile = player.currentTile || { x: player.x, y: player.y };
+      if (pTile.x === worldX && pTile.y === worldY) {
+        result.players.push(player);
+      }
+    });
+
+    return result;
+  }
+
+  /**
+   * Determine tile border color based on entities
+   */
+  function getTileBorderColor(entities) {
+    if (entities.mobs.length > 0) {
+      return '#ff0000'; // Red for hostile mobs
+    }
+    if (entities.npcs.length > 0) {
+      // Check if NPC is important (guard, vendor, etc.)
+      const hasImportantNPC = entities.npcs.some(npc => 
+        npc.mobTemplate?.isGuard
+      );
+      if (hasImportantNPC) {
+        return '#ffd700'; // Gold for guards/important NPCs
+      }
+      return '#00aaff'; // Blue for friendly NPCs
+    }
+    if (entities.players.length > 0) {
+      return '#00ff00'; // Green for players
+    }
+    return null; // No border for empty tiles
+  }
+
+  /**
+   * Count total entities on a tile
+   */
+  function getEntityCount(entities) {
+    return entities.mobs.length + entities.players.length + entities.npcs.length;
+  }
+
+  /**
+   * Render the map using 12×12 viewport centered on player
    */
   function renderMap() {
     if (!mapCanvas || !mapCtx) return;
 
     const player = global.State?.getPlayer();
-    if (!player || !player.currentZone) return;
+    if (!player || !player.currentZone || !player.currentTile) return;
 
     const zone = global.World?.getZone(player.currentZone);
     if (!zone) return;
 
-    const tiles = global.World?.getZoneTiles(player.currentZone) || [];
+    const playerX = player.currentTile.x;
+    const playerY = player.currentTile.y;
     const tileSize = 16 * zoomLevel;
 
     // Update exposed values
     global.WorldMapRender.zoomLevel = zoomLevel;
-    global.WorldMapRender.panX = panX;
-    global.WorldMapRender.panY = panY;
 
     // Clear canvas
     mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-    // Calculate visible area
+    // Calculate container dimensions for centering
     const container = mapCanvas.parentElement;
     const containerWidth = container ? container.clientWidth : mapCanvas.width;
     const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    
+    // Calculate viewport offset to center it on screen
+    const viewportPixelWidth = VIEW_SIZE * tileSize;
+    const viewportPixelHeight = VIEW_SIZE * tileSize;
+    const offsetX = (containerWidth - viewportPixelWidth) / 2;
+    const offsetY = (containerHeight - viewportPixelHeight) / 2;
 
-    const startX = Math.max(0, Math.floor(-panX / tileSize));
-    const endX = Math.min(zone.gridWidth, Math.ceil((containerWidth - panX) / tileSize));
-    const startY = Math.max(0, Math.floor(-panY / tileSize));
-    const endY = Math.min(zone.gridHeight, Math.ceil((containerHeight - panY) / tileSize));
+    // Get all mobs and players once for efficiency
+    const allMobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];
+    const allPlayers = global.MapEntities?.getNearbyPlayers() || [];
+    const currentTarget = global.Targeting?.getTarget();
 
-    // Draw tiles
-    for (let y = startY; y < endY; y++) {
-      for (let x = startX; x < endX; x++) {
-        const tile = global.World?.getTile(player.currentZone, x, y);
-        if (!tile) continue;
+    // Draw tiles in 12×12 viewport
+    for (let vy = 0; vy < VIEW_SIZE; vy++) {
+      for (let vx = 0; vx < VIEW_SIZE; vx++) {
+        // Calculate world coordinates
+        const worldX = playerX + (vx - VIEW_CENTER);
+        const worldY = playerY + (vy - VIEW_CENTER);
 
-        const screenX = x * tileSize + panX;
-        const screenY = y * tileSize + panY;
+        // Calculate screen position
+        const screenX = vx * tileSize + offsetX;
+        const screenY = vy * tileSize + offsetY;
+
+        // Check if tile is outside zone bounds
+        if (worldX < 0 || worldX >= zone.gridWidth || worldY < 0 || worldY >= zone.gridHeight) {
+          // Draw fog/darkness for out-of-bounds
+          mapCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+          mapCtx.fillRect(screenX, screenY, tileSize, tileSize);
+          mapCtx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+          mapCtx.lineWidth = 1;
+          mapCtx.strokeRect(screenX, screenY, tileSize, tileSize);
+          continue;
+        }
+
+        // Get tile data
+        const tile = global.World?.getTile(player.currentZone, worldX, worldY);
+        if (!tile) {
+          // Draw placeholder for missing tiles
+          mapCtx.fillStyle = TERRAIN_COLORS.default;
+          mapCtx.fillRect(screenX, screenY, tileSize, tileSize);
+          continue;
+        }
 
         // Draw terrain
         const color = TERRAIN_COLORS[tile.terrainType] || TERRAIN_COLORS.default;
         mapCtx.fillStyle = color;
         mapCtx.fillRect(screenX, screenY, tileSize, tileSize);
 
-        // Draw border for non-walkable tiles
-        if (!tile.walkable) {
+        // Get entities at this tile
+        const entities = getEntitiesAtTile(player.currentZone, worldX, worldY);
+
+        // Draw border based on entities
+        const borderColor = getTileBorderColor(entities);
+        if (borderColor) {
+          mapCtx.strokeStyle = borderColor;
+          mapCtx.lineWidth = 2;
+          mapCtx.strokeRect(screenX + 1, screenY + 1, tileSize - 2, tileSize - 2);
+        }
+
+        // Draw border for non-walkable tiles (if no entity border)
+        if (!tile.walkable && !borderColor) {
           mapCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
           mapCtx.lineWidth = 1;
           mapCtx.strokeRect(screenX, screenY, tileSize, tileSize);
+        }
+
+        // Draw crowding indicator (+N badge if multiple entities)
+        const entityCount = getEntityCount(entities);
+        if (entityCount > 1 && tileSize >= 16) {
+          mapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          mapCtx.fillRect(screenX + tileSize - 18, screenY + 2, 16, 12);
+          mapCtx.fillStyle = '#fff';
+          mapCtx.font = `bold ${Math.max(8, tileSize / 4)}px monospace`;
+          mapCtx.textAlign = 'center';
+          mapCtx.fillText(`+${entityCount}`, screenX + tileSize - 10, screenY + 11);
         }
 
         // Draw spawn point indicator (for debugging)
@@ -307,106 +360,136 @@
           mapCtx.fillStyle = 'rgba(0, 255, 0, 0.3)';
           mapCtx.fillRect(screenX, screenY, tileSize, tileSize);
         }
-      }
-    }
 
-    // Draw zone transition arrows/indicators
-    drawZoneTransitions(zone, tileSize);
-
-    // Draw entities (monsters from spawn system)
-    if (player && player.currentZone && player.currentTile) {
-      const mobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];
-      const currentTarget = global.Targeting?.getTarget();
-
-      // Draw monsters
-      mobs.forEach(mob => {
-        if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
-        
-        const screenX = mob.x * tileSize + panX;
-        const screenY = mob.y * tileSize + panY;
-        
-        // Check if this is the current target
-        const isTargeted = currentTarget && currentTarget.id === mob.id;
-        
-        // Draw mob
-        mapCtx.fillStyle = isTargeted ? '#ffff00' : '#ff6666'; // Yellow if targeted
-        mapCtx.beginPath();
-        mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
-        mapCtx.fill();
-        mapCtx.strokeStyle = isTargeted ? '#ffaa00' : '#ff0000';
-        mapCtx.lineWidth = isTargeted ? 3 : 2;
-        mapCtx.stroke();
-
-        // Draw mob name
-        if (tileSize >= 20) {
-          mapCtx.fillStyle = '#fff';
-          mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
-          mapCtx.textAlign = 'center';
-          mapCtx.fillText(mob.mobTemplate?.name || 'Mob', screenX + tileSize / 2, screenY - 2);
-        }
-
-        // Highlight targeted tile
-        if (isTargeted) {
-          mapCtx.strokeStyle = '#ffff00';
+        // Draw hover highlight
+        if (hoveredTile && hoveredTile.x === worldX && hoveredTile.y === worldY) {
+          mapCtx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
           mapCtx.lineWidth = 2;
-          mapCtx.strokeRect(screenX - 1, screenY - 1, tileSize + 2, tileSize + 2);
+          mapCtx.strokeRect(screenX, screenY, tileSize, tileSize);
         }
-      });
+      }
     }
 
-    // Draw other players
-    const players = global.MapEntities?.getNearbyPlayers() || [];
-    players.forEach(p => {
-      const pTile = p.currentTile || { x: p.x, y: p.y };
-      if (!pTile || !pTile.x || !pTile.y || p.id === player?.id) return;
-      const screenX = pTile.x * tileSize + panX;
-      const screenY = pTile.y * tileSize + panY;
-      mapCtx.fillStyle = '#44ff44';
-      mapCtx.beginPath();
-      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
-      mapCtx.fill();
-    });
+    // Draw zone transition arrows/indicators (if visible in viewport)
+    drawZoneTransitions(zone, tileSize, playerX, playerY, offsetX, offsetY);
 
-    // Draw player
-    if (player && player.currentTile && typeof player.currentTile.x === 'number' && typeof player.currentTile.y === 'number') {
-      const screenX = player.currentTile.x * tileSize + panX;
-      const screenY = player.currentTile.y * tileSize + panY;
-      mapCtx.fillStyle = '#ff4444';
-      mapCtx.beginPath();
-      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2.5, 0, Math.PI * 2);
-      mapCtx.fill();
-      mapCtx.strokeStyle = '#fff';
-      mapCtx.lineWidth = 3;
-      mapCtx.stroke();
-      
-      // Draw player name
-      if (tileSize >= 20) {
-        mapCtx.fillStyle = '#fff';
-        mapCtx.font = `bold ${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
-        mapCtx.textAlign = 'center';
-        mapCtx.fillText(player.name || 'You', screenX + tileSize / 2, screenY - tileSize * 0.3);
-      }
+    // Draw entities (monsters, NPCs, players)
+    drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY);
+
+    // Draw player (always at center)
+    const playerScreenX = VIEW_CENTER * tileSize + offsetX;
+    const playerScreenY = VIEW_CENTER * tileSize + offsetY;
+    mapCtx.fillStyle = '#ff4444';
+    mapCtx.beginPath();
+    mapCtx.arc(playerScreenX + tileSize / 2, playerScreenY + tileSize / 2, tileSize / 2.5, 0, Math.PI * 2);
+    mapCtx.fill();
+    mapCtx.strokeStyle = '#fff';
+    mapCtx.lineWidth = 3;
+    mapCtx.stroke();
+    
+    // Draw player name
+    if (tileSize >= 20) {
+      mapCtx.fillStyle = '#fff';
+      mapCtx.font = `bold ${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+      mapCtx.textAlign = 'center';
+      mapCtx.fillText(player.name || 'You', playerScreenX + tileSize / 2, playerScreenY - tileSize * 0.3);
     }
 
     // Draw debug overlay (spawn points)
     if (showDebugOverlay) {
-      drawDebugOverlay(zone, tileSize);
+      drawDebugOverlay(zone, tileSize, playerX, playerY, offsetX, offsetY);
     }
 
     // Update legend
     updateMapLegend(zone);
+
+    // Update nearby list
+    if (global.NearbyList && typeof global.NearbyList.update === 'function') {
+      global.NearbyList.update();
+    }
+  }
+
+  /**
+   * Draw entities (mobs, NPCs, other players)
+   */
+  function drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY) {
+    // Draw mobs
+    allMobs.forEach(mob => {
+      if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
+      
+      // Check if mob is in viewport
+      const dx = mob.x - playerX;
+      const dy = mob.y - playerY;
+      if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
+
+      const vx = VIEW_CENTER + dx;
+      const vy = VIEW_CENTER + dy;
+      const screenX = vx * tileSize + offsetX;
+      const screenY = vy * tileSize + offsetY;
+      
+      const isTargeted = currentTarget && currentTarget.id === mob.id;
+      
+      // Draw mob
+      mapCtx.fillStyle = isTargeted ? '#ffff00' : '#ff6666';
+      mapCtx.beginPath();
+      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+      mapCtx.fill();
+      mapCtx.strokeStyle = isTargeted ? '#ffaa00' : '#ff0000';
+      mapCtx.lineWidth = isTargeted ? 3 : 2;
+      mapCtx.stroke();
+
+      // Draw mob name
+      if (tileSize >= 20) {
+        mapCtx.fillStyle = '#fff';
+        mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.textAlign = 'center';
+        mapCtx.fillText(mob.mobTemplate?.name || 'Mob', screenX + tileSize / 2, screenY - 2);
+      }
+
+      // Highlight targeted tile
+      if (isTargeted) {
+        mapCtx.strokeStyle = '#ffff00';
+        mapCtx.lineWidth = 2;
+        mapCtx.strokeRect(screenX - 1, screenY - 1, tileSize + 2, tileSize + 2);
+      }
+    });
+
+    // Draw other players
+    allPlayers.forEach(p => {
+      if (p.id === player?.id) return;
+      const pTile = p.currentTile || { x: p.x, y: p.y };
+      if (!pTile || typeof pTile.x !== 'number' || typeof pTile.y !== 'number') return;
+
+      // Check if player is in viewport
+      const dx = pTile.x - playerX;
+      const dy = pTile.y - playerY;
+      if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
+
+      const vx = VIEW_CENTER + dx;
+      const vy = VIEW_CENTER + dy;
+      const screenX = vx * tileSize + offsetX;
+      const screenY = vy * tileSize + offsetY;
+      
+      mapCtx.fillStyle = '#44ff44';
+      mapCtx.beginPath();
+      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+      mapCtx.fill();
+      
+      // Draw player name
+      if (tileSize >= 20) {
+        mapCtx.fillStyle = '#fff';
+        mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.textAlign = 'center';
+        mapCtx.fillText(p.name || 'Player', screenX + tileSize / 2, screenY - 2);
+      }
+    });
   }
 
   /**
    * Draw zone transition indicators (arrows for city entrances)
    */
-  function drawZoneTransitions(zone, tileSize) {
+  function drawZoneTransitions(zone, tileSize, playerX, playerY, offsetX, offsetY) {
     if (!zone || !zone.neighboringZones || zone.neighboringZones.length === 0) return;
-
-    const player = global.State?.getPlayer();
-    if (!player || !player.currentTile) return;
-
-    // Only show transitions in outdoor zones near cities
     if (zone.type !== 'outdoor') return;
 
     zone.neighboringZones.forEach(neighborZoneId => {
@@ -414,39 +497,41 @@
       if (!neighborZone || neighborZone.type !== 'city') return;
 
       // Find transition point (usually center or edge of zone)
-      // For now, place at center edges - can be improved with zone data
       const transitionPoints = [
-        { x: Math.floor(zone.gridWidth / 2), y: 0, dir: 'up' }, // Top edge
-        { x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2), dir: 'right' }, // Right edge
-        { x: Math.floor(zone.gridWidth / 2), y: zone.gridHeight - 1, dir: 'down' }, // Bottom edge
-        { x: 0, y: Math.floor(zone.gridHeight / 2), dir: 'left' } // Left edge
+        { x: Math.floor(zone.gridWidth / 2), y: 0, dir: 'up' },
+        { x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2), dir: 'right' },
+        { x: Math.floor(zone.gridWidth / 2), y: zone.gridHeight - 1, dir: 'down' },
+        { x: 0, y: Math.floor(zone.gridHeight / 2), dir: 'left' }
       ];
 
-      // Use first transition point for now (can be improved with zone-specific data)
       const transitionPoint = transitionPoints[0];
-      const screenX = transitionPoint.x * tileSize + panX;
-      const screenY = transitionPoint.y * tileSize + panY;
+      
+      // Check if transition point is in viewport
+      const dx = transitionPoint.x - playerX;
+      const dy = transitionPoint.y - playerY;
+      if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
+
+      const vx = VIEW_CENTER + dx;
+      const vy = VIEW_CENTER + dy;
+      const screenX = vx * tileSize + offsetX;
+      const screenY = vy * tileSize + offsetY;
 
       // Check if player is near this transition point
-      const distance = Math.abs(player.currentTile.x - transitionPoint.x) + 
-                       Math.abs(player.currentTile.y - transitionPoint.y);
+      const distance = Math.abs(playerX - transitionPoint.x) + Math.abs(playerY - transitionPoint.y);
       const isNearby = distance <= 5;
 
       // Draw arrow/indicator
       mapCtx.save();
       
-      // Draw background circle
       mapCtx.fillStyle = isNearby ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 215, 0, 0.5)';
       mapCtx.beginPath();
       mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize * 0.6, 0, Math.PI * 2);
       mapCtx.fill();
       
-      // Draw border
       mapCtx.strokeStyle = isNearby ? '#ffd700' : '#ffaa00';
       mapCtx.lineWidth = isNearby ? 3 : 2;
       mapCtx.stroke();
 
-      // Draw arrow pointing to city
       mapCtx.fillStyle = '#fff';
       mapCtx.strokeStyle = '#000';
       mapCtx.lineWidth = 2;
@@ -484,18 +569,24 @@
   /**
    * Draw debug overlay showing spawn points
    */
-  function drawDebugOverlay(zone, tileSize) {
+  function drawDebugOverlay(zone, tileSize, playerX, playerY, offsetX, offsetY) {
     const spawnGroups = global.World?.getSpawnGroupsForZone(zone.id) || [];
     
     spawnGroups.forEach(spawnGroup => {
       if (spawnGroup.spawnPoints && spawnGroup.spawnPoints.length > 0) {
         spawnGroup.spawnPoints.forEach((spawnPoint, index) => {
-          const screenX = spawnPoint.x * tileSize + panX;
-          const screenY = spawnPoint.y * tileSize + panY;
+          // Check if spawn point is in viewport
+          const dx = spawnPoint.x - playerX;
+          const dy = spawnPoint.y - playerY;
+          if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
+
+          const vx = VIEW_CENTER + dx;
+          const vy = VIEW_CENTER + dy;
+          const screenX = vx * tileSize + offsetX;
+          const screenY = vy * tileSize + offsetY;
           
-          // Draw spawn point marker
           const color = spawnGroup.spawnType === 'static' ? '#00ff00' : '#0000ff';
-          mapCtx.fillStyle = color + '80'; // Semi-transparent
+          mapCtx.fillStyle = color + '80';
           mapCtx.beginPath();
           mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
           mapCtx.fill();
@@ -503,7 +594,6 @@
           mapCtx.lineWidth = 2;
           mapCtx.stroke();
 
-          // Draw spawn point label
           mapCtx.fillStyle = '#fff';
           mapCtx.font = `${Math.max(8, tileSize / 4)}px monospace`;
           mapCtx.textAlign = 'center';
@@ -530,6 +620,14 @@
         <div style="width: 12px; height: 12px; background: #ff6666; border-radius: 50%;"></div>
         <span>Monster</span>
       </div>
+      <div class="legend-item">
+        <div style="width: 12px; height: 12px; border: 2px solid #ff0000;"></div>
+        <span>Hostile (red border)</span>
+      </div>
+      <div class="legend-item">
+        <div style="width: 12px; height: 12px; border: 2px solid #ffd700;"></div>
+        <span>Guard/NPC (gold border)</span>
+      </div>
       ${zone.type === 'city' ? `
         <div class="legend-item">
           <div style="width: 12px; height: 12px; background: ${TERRAIN_COLORS.city_street};"></div>
@@ -553,60 +651,86 @@
   }
 
   /**
-   * Center map on player
+   * Handle canvas hover
    */
-  function centerOnPlayer() {
+  function handleCanvasHover(event) {
     const player = global.State?.getPlayer();
-    if (!player || !player.currentTile) return;
+    if (!player || !player.currentZone || !player.currentTile) return;
 
-    const zone = global.World?.getZone(player.currentZone);
-    if (!zone) return;
+    const rect = mapCanvas.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
 
     const tileSize = 16 * zoomLevel;
-    const container = mapCanvas?.parentElement;
-    if (!container) return;
+    const container = mapCanvas.parentElement;
+    const containerWidth = container ? container.clientWidth : mapCanvas.width;
+    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    const viewportPixelWidth = VIEW_SIZE * tileSize;
+    const viewportPixelHeight = VIEW_SIZE * tileSize;
+    const offsetX = (containerWidth - viewportPixelWidth) / 2;
+    const offsetY = (containerHeight - viewportPixelHeight) / 2;
 
-    const centerX = container.clientWidth / 2;
-    const centerY = container.clientHeight / 2;
+    // Calculate viewport coordinates
+    const vx = Math.floor((clickX - offsetX) / tileSize);
+    const vy = Math.floor((clickY - offsetY) / tileSize);
 
-    panX = centerX - (player.currentTile.x * tileSize);
-    panY = centerY - (player.currentTile.y * tileSize);
+    if (vx < 0 || vx >= VIEW_SIZE || vy < 0 || vy >= VIEW_SIZE) {
+      hoveredTile = null;
+      if (global.TileDetailPanel) {
+        global.TileDetailPanel.hide();
+      }
+      return;
+    }
 
-    global.WorldMapRender.panX = panX;
-    global.WorldMapRender.panY = panY;
+    // Calculate world coordinates
+    const worldX = player.currentTile.x + (vx - VIEW_CENTER);
+    const worldY = player.currentTile.y + (vy - VIEW_CENTER);
 
-    renderMap();
+    hoveredTile = { x: worldX, y: worldY };
+
+    // Update tile detail panel
+    if (global.TileDetailPanel) {
+      global.TileDetailPanel.updateTile(player.currentZone, worldX, worldY);
+    }
+
+    renderMap(); // Re-render to show hover highlight
   }
 
   /**
    * Handle canvas click
    */
   function handleCanvasClick(event) {
-    // Don't handle clicks if we just finished dragging
-    if (isDragging || hasMoved) {
-      hasMoved = false;
-      isDragging = false;
-      return;
-    }
-
     const player = global.State?.getPlayer();
-    if (!player || !player.currentZone) return;
+    if (!player || !player.currentZone || !player.currentTile) return;
 
     const zone = global.World?.getZone(player.currentZone);
     if (!zone) return;
 
     const rect = mapCanvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    // Click coordinates are in CSS pixels, not canvas pixels
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
     const tileSize = 16 * zoomLevel;
-    const tileX = Math.floor((clickX - panX) / tileSize);
-    const tileY = Math.floor((clickY - panY) / tileSize);
+    const container = mapCanvas.parentElement;
+    const containerWidth = container ? container.clientWidth : mapCanvas.width;
+    const containerHeight = container ? container.clientHeight : mapCanvas.height;
+    const viewportPixelWidth = VIEW_SIZE * tileSize;
+    const viewportPixelHeight = VIEW_SIZE * tileSize;
+    const offsetX = (containerWidth - viewportPixelWidth) / 2;
+    const offsetY = (containerHeight - viewportPixelHeight) / 2;
+
+    // Calculate viewport coordinates
+    const vx = Math.floor((clickX - offsetX) / tileSize);
+    const vy = Math.floor((clickY - offsetY) / tileSize);
+
+    if (vx < 0 || vx >= VIEW_SIZE || vy < 0 || vy >= VIEW_SIZE) return;
+
+    // Calculate world coordinates
+    const worldX = player.currentTile.x + (vx - VIEW_CENTER);
+    const worldY = player.currentTile.y + (vy - VIEW_CENTER);
 
     // Validate coordinates
-    if (tileX < 0 || tileX >= zone.gridWidth || tileY < 0 || tileY >= zone.gridHeight) return;
+    if (worldX < 0 || worldX >= zone.gridWidth || worldY < 0 || worldY >= zone.gridHeight) return;
 
     // Check for zone transition click
     if (zone.type === 'outdoor' && zone.neighboringZones) {
@@ -614,7 +738,6 @@
         const neighborZone = global.World?.getZone(neighborZoneId);
         if (!neighborZone || neighborZone.type !== 'city') continue;
 
-        // Check if click is on transition point (center of edges)
         const transitionPoints = [
           { x: Math.floor(zone.gridWidth / 2), y: 0 },
           { x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2) },
@@ -623,15 +746,11 @@
         ];
 
         for (const tp of transitionPoints) {
-          const distance = Math.abs(tileX - tp.x) + Math.abs(tileY - tp.y);
+          const distance = Math.abs(worldX - tp.x) + Math.abs(worldY - tp.y);
           if (distance <= 2) {
-            // Transition to city
             if (global.Zones?.changeZone(neighborZoneId)) {
-              // Reload map for new zone
               setTimeout(() => {
                 renderMap();
-                centerOnPlayer();
-                // Initialize spawn system for new zone
                 if (global.SpawnSystem && player.currentZone) {
                   global.SpawnSystem.initializeZone(player.currentZone);
                 }
@@ -643,40 +762,74 @@
       }
     }
 
-    // Check for monster click (targeting)
-    const mob = global.SpawnSystem?.getMobAtTile(player.currentZone, tileX, tileY);
-    if (mob) {
+    // Get all entities at this tile
+    const entities = getEntitiesAtTile(player.currentZone, worldX, worldY);
+
+    // Priority: hostile mobs > NPCs > players > empty
+    let targetEntity = null;
+    if (entities.mobs.length > 0) {
+      targetEntity = entities.mobs[0]; // Use first mob
+    } else if (entities.npcs.length > 0) {
+      targetEntity = entities.npcs[0];
+    } else if (entities.players.length > 0) {
+      targetEntity = entities.players[0];
+    }
+
+    if (targetEntity) {
       // Set as target
-      global.Targeting?.setTarget(mob);
+      if (global.Targeting) {
+        global.Targeting.setTarget(targetEntity);
+      }
       
-      // If adjacent, attack
-      const playerX = player.currentTile?.x || 0;
-      const playerY = player.currentTile?.y || 0;
-      const distance = Math.abs(tileX - playerX) + Math.abs(tileY - playerY);
-      
-      if (distance <= 1) {
-        // Attack if adjacent
-        global.Combat?.startCombat(mob.mobTemplateId);
+      // If adjacent and mob, attack
+      if (targetEntity.mobTemplate && !targetEntity.mobTemplate.isGuard) {
+        const playerX = player.currentTile?.x || 0;
+        const playerY = player.currentTile?.y || 0;
+        const distance = Math.abs(worldX - playerX) + Math.abs(worldY - playerY);
+        
+        if (distance <= 1) {
+          if (global.Combat) {
+            global.Combat.startCombat(targetEntity.mobTemplateId);
+          }
+        } else {
+          // Move towards target
+          if (global.Movement) {
+            global.Movement.moveToTile(worldX, worldY);
+          }
+        }
       } else {
-        // Move towards target
-        global.Movement?.moveToTile(tileX, tileY);
+        // Update tile detail panel
+        if (global.TileDetailPanel) {
+          global.TileDetailPanel.updateTile(player.currentZone, worldX, worldY);
+        }
       }
       return;
     }
 
-    // Click on empty tile - clear target if just moving
-    if (global.Targeting?.getTarget()) {
-      // Keep target when moving
-    }
-
-    // Check if tile is walkable
-    if (!global.World?.isTileWalkable(player.currentZone, tileX, tileY)) {
-      global.ChatSystem?.addSystemMessage('You cannot move there.');
+    // Click on empty tile - check if walkable
+    if (!global.World?.isTileWalkable(player.currentZone, worldX, worldY)) {
+      if (global.ChatSystem) {
+        global.ChatSystem.addSystemMessage('You cannot move there.');
+      }
       return;
     }
 
     // Move to tile
-    global.Movement?.moveToTile(tileX, tileY);
+    if (global.Movement) {
+      global.Movement.moveToTile(worldX, worldY);
+    }
+
+    // Update tile detail panel
+    if (global.TileDetailPanel) {
+      global.TileDetailPanel.updateTile(player.currentZone, worldX, worldY);
+    }
+  }
+
+  /**
+   * Center map on player (no-op since always centered, but kept for compatibility)
+   */
+  function centerOnPlayer() {
+    renderMap(); // Just re-render
   }
 
   // Initialize when DOM is ready
@@ -690,11 +843,10 @@
     renderMap,
     centerOnPlayer,
     updateMapLegend,
-    zoomLevel,
-    panX,
-    panY
+    get zoomLevel() { return zoomLevel; },
+    get panX() { return 0; }, // Deprecated - always 0
+    get panY() { return 0; }  // Deprecated - always 0
   };
 
   global.WorldMapRender = WorldMapRender;
 })(window);
-
