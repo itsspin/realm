@@ -1449,3 +1449,107 @@ h3 {
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+/* ============================================
+   Spell Tooltip
+   ============================================ */
+
+.tooltip--spell {
+  min-width: 250px;
+  max-width: 350px;
+}
+
+.tooltip--spell .tooltip-spell-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gold-muted);
+  padding-bottom: 0.25rem;
+}
+
+.tooltip--spell .tooltip-spell-description {
+  color: var(--fg-secondary);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.tooltip--spell .tooltip-spell-meta {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.tooltip--spell .tooltip-spell-type {
+  color: var(--teal-bright);
+  font-weight: 600;
+}
+
+.tooltip--spell .tooltip-spell-level {
+  color: var(--fg-secondary);
+}
+
+.tooltip--spell .tooltip-spell-cost,
+.tooltip--spell .tooltip-spell-cooldown,
+.tooltip--spell .tooltip-spell-cast-time,
+.tooltip--spell .tooltip-spell-range {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(212, 196, 168, 0.2);
+  color: var(--fg-primary);
+  font-size: 0.9rem;
+}
+
+.tooltip--spell .tooltip-spell-cost .cost-mana {
+  color: #4a9eff;
+}
+
+.tooltip--spell .tooltip-spell-cost .cost-rage {
+  color: #ff4444;
+}
+
+.tooltip--spell .tooltip-spell-cost .cost-energy {
+  color: #44ff44;
+}
+
+.tooltip--spell .tooltip-spell-effects {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 196, 168, 0.3);
+}
+
+.tooltip--spell .tooltip-effect-damage {
+  color: #ff6666;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip--spell .tooltip-effect-heal {
+  color: #4caf50;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip--spell .tooltip-effect-buff {
+  color: var(--gold-bright);
+  margin-bottom: 0.25rem;
+}
+
+.tooltip--spell .tooltip-effect-resist,
+.tooltip--spell .tooltip-effect-stun,
+.tooltip--spell .tooltip-effect-interrupt,
+.tooltip--spell .tooltip-effect-dot,
+.tooltip--spell .tooltip-effect-snare,
+.tooltip--spell .tooltip-effect-stealth,
+.tooltip--spell .tooltip-effect-dodge,
+.tooltip--spell .tooltip-effect-duration,
+.tooltip--spell .tooltip-effect-threat {
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  margin-left: 0.5rem;
+}

@@ -170,24 +170,273 @@
 
     // Attach drag handlers
     attachDragHandlers();
+    
+    // Attach hover tooltips
+    attachTooltips();
+  }
+  
+  /**
+   * Attach hover tooltips to tome skill items
+   */
+  function attachTooltips() {
+    const skillItems = document.querySelectorAll('.tome-skill-item');
+    skillItems.forEach(item => {
+      const skillId = item.dataset.skillId;
+      if (!skillId) return;
+      
+      const skill = global.REALM?.data?.skillsById?.[skillId.toLowerCase()];
+      if (!skill) return;
+      
+      // Mouse enter - show tooltip
+      item.addEventListener('mouseenter', (e) => {
+        showSpellTooltip(e, skill);
+      });
+      
+      // Mouse move - update tooltip position
+      item.addEventListener('mousemove', (e) => {
+        updateTooltipPosition(e);
+      });
+      
+      // Mouse leave - hide tooltip
+      item.addEventListener('mouseleave', () => {
+        hideSpellTooltip();
+      });
+    });
+  }
+  
+  /**
+   * Show spell tooltip (shared with skillbar)
+   */
+  function showSpellTooltip(event, skill) {
+    const tooltip = document.getElementById('spellTooltip');
+    if (!tooltip) {
+      // Create tooltip if it doesn't exist
+      const newTooltip = document.createElement('div');
+      newTooltip.id = 'spellTooltip';
+      newTooltip.className = 'tooltip tooltip--spell hidden';
+      document.body.appendChild(newTooltip);
+      return showSpellTooltip(event, skill);
+    }
+    
+    // Build tooltip content (same as skillbar)
+    let html = `<div class="tooltip-spell-name">${skill.name || skill.id}</div>`;
+    
+    if (skill.description) {
+      html += `<div class="tooltip-spell-description">${skill.description}</div>`;
+    }
+    
+    // Type and level
+    html += `<div class="tooltip-spell-meta">`;
+    if (skill.type) {
+      html += `<span class="tooltip-spell-type">${skill.type.charAt(0).toUpperCase() + skill.type.slice(1)}</span>`;
+    }
+    if (skill.requiredLevel) {
+      html += `<span class="tooltip-spell-level">Level ${skill.requiredLevel}</span>`;
+    }
+    html += `</div>`;
+    
+    // Cost
+    if (skill.cost) {
+      html += `<div class="tooltip-spell-cost">`;
+      const costParts = [];
+      if (skill.cost.mana) costParts.push(`<span class="cost-mana">${skill.cost.mana} Mana</span>`);
+      if (skill.cost.rage) costParts.push(`<span class="cost-rage">${skill.cost.rage} Rage</span>`);
+      if (skill.cost.energy) costParts.push(`<span class="cost-energy">${skill.cost.energy} Energy</span>`);
+      if (costParts.length > 0) {
+        html += `Cost: ${costParts.join(', ')}`;
+      }
+      html += `</div>`;
+    }
+    
+    // Cooldown
+    if (skill.cooldown) {
+      html += `<div class="tooltip-spell-cooldown">Cooldown: ${skill.cooldown}s</div>`;
+    }
+    
+    // Cast time
+    if (skill.castTime) {
+      html += `<div class="tooltip-spell-cast-time">Cast Time: ${skill.castTime}s</div>`;
+    }
+    
+    // Range
+    if (skill.range !== undefined) {
+      html += `<div class="tooltip-spell-range">Range: ${skill.range === 0 ? 'Self' : skill.range}</div>`;
+    }
+    
+    // Effect details
+    if (skill.effect) {
+      html += `<div class="tooltip-spell-effects">`;
+      
+      if (skill.effect.type === 'damage') {
+        const formula = skill.effect.formula || 'atk * 1.0';
+        const bonus = skill.effect.bonusDamage || 0;
+        html += `<div class="tooltip-effect-damage">Damage: ${formula}${bonus > 0 ? ` + ${bonus}` : ''}</div>`;
+        
+        if (skill.effect.resistType) {
+          html += `<div class="tooltip-effect-resist">Resist: ${skill.effect.resistType}</div>`;
+        }
+        
+        if (skill.effect.stunDuration) {
+          html += `<div class="tooltip-effect-stun">Stuns for ${skill.effect.stunDuration}s</div>`;
+        }
+        
+        if (skill.effect.interrupt) {
+          html += `<div class="tooltip-effect-interrupt">Interrupts enemy actions</div>`;
+        }
+        
+        if (skill.effect.dot) {
+          html += `<div class="tooltip-effect-dot">DoT: ${skill.effect.dot.damage} damage every ${skill.effect.dot.duration / skill.effect.dot.ticks}s for ${skill.effect.dot.duration}s</div>`;
+        }
+        
+        if (skill.effect.snare) {
+          html += `<div class="tooltip-effect-snare">Slows movement by ${(skill.effect.snare.movementSpeed * 100).toFixed(0)}% for ${skill.effect.snare.duration}s</div>`;
+        }
+      } else if (skill.effect.type === 'heal') {
+        const formula = skill.effect.formula || 'wis * 1.0';
+        const bonus = skill.effect.bonusHealing || 0;
+        html += `<div class="tooltip-effect-heal">Healing: ${formula}${bonus > 0 ? ` + ${bonus}` : ''}</div>`;
+      } else if (skill.effect.type === 'buff') {
+        if (skill.effect.statModifier) {
+          const mods = [];
+          Object.keys(skill.effect.statModifier).forEach(stat => {
+            const value = skill.effect.statModifier[stat];
+            if (value > 0) {
+              mods.push(`+${(value * 100).toFixed(0)}% ${stat.toUpperCase()}`);
+            } else {
+              mods.push(`${(value * 100).toFixed(0)}% ${stat.toUpperCase()}`);
+            }
+          });
+          if (mods.length > 0) {
+            html += `<div class="tooltip-effect-buff">${mods.join(', ')}</div>`;
+          }
+        }
+        if (skill.effect.stealth) {
+          html += `<div class="tooltip-effect-stealth">Grants stealth</div>`;
+        }
+        if (skill.effect.dodgeChance) {
+          html += `<div class="tooltip-effect-dodge">+${(skill.effect.dodgeChance * 100).toFixed(0)}% Dodge Chance</div>`;
+        }
+        if (skill.effect.duration) {
+          html += `<div class="tooltip-effect-duration">Duration: ${skill.effect.duration}s</div>`;
+        }
+      } else if (skill.effect.type === 'threat') {
+        html += `<div class="tooltip-effect-threat">Threat Multiplier: ${skill.effect.threatMultiplier || 1.0}x</div>`;
+      }
+      
+      html += `</div>`;
+    }
+    
+    tooltip.innerHTML = html;
+    tooltip.classList.remove('hidden');
+    tooltip.hidden = false;
+    
+    updateTooltipPosition(event);
+  }
+  
+  /**
+   * Update tooltip position
+   */
+  function updateTooltipPosition(event) {
+    const tooltip = document.getElementById('spellTooltip');
+    if (!tooltip || tooltip.classList.contains('hidden')) return;
+    
+    const offset = 15;
+    const x = event.clientX + offset;
+    const y = event.clientY + offset;
+    
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+    
+    // Keep tooltip within viewport
+    const rect = tooltip.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      tooltip.style.left = `${event.clientX - rect.width - offset}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      tooltip.style.top = `${event.clientY - rect.height - offset}px`;
+    }
+  }
+  
+  /**
+   * Hide spell tooltip
+   */
+  function hideSpellTooltip() {
+    const tooltip = document.getElementById('spellTooltip');
+    if (tooltip) {
+      tooltip.classList.add('hidden');
+      tooltip.hidden = true;
+    }
   }
 
   /**
-   * Get skill icon
+   * Get skill icon - unique icons per spell/skill
    */
   function getSkillIcon(skill) {
-    const skillType = skill.type || skill.category || 'combat';
-    const icons = {
-      attack: '⚔️',
-      heal: '✚',
-      buff: '✨',
-      debuff: '💀',
-      spell: '🔮',
-      ability: '⚡',
-      combat: '⚔️',
-      default: '⚔️'
+    if (!skill || !skill.id) return '⚔️';
+    
+    // Unique icons for specific spells/skills (same as skillbar)
+    const skillIcons = {
+      // Warden abilities
+      'bash': '🛡️',
+      'taunt': '👹',
+      'kick': '👢',
+      'defensive_stance': '🛡️',
+      
+      // Stalker abilities
+      'backstab': '🗡️',
+      'sneak': '👤',
+      'poison_strike': '☠️',
+      'evasion': '💨',
+      
+      // Arcanist spells
+      'minor_nuke': '💫',
+      'flame_bolt': '🔥',
+      'frost_snare': '❄️',
+      'lightning_strike': '⚡',
+      
+      // Templar spells
+      'minor_heal': '💚',
+      'light_heal': '💚',
+      'smite_undead': '☀️',
+      'cure_disease': '✨',
+      
+      // Generic by type
+      'heal': '💚',
+      'resurrection': '🌟',
+      'haste': '⚡',
+      'clarity': '💎',
+      'charm': '💜',
+      'mesmerize': '🌀',
+      'mezmerize': '🌀',
+      'fireball': '🔥',
+      'magic_missile': '✨',
+      'frost_bolt': '❄️',
+      'lightning_bolt': '⚡',
+      'summon_pet': '🐾',
+      'bind_soul': '🔗',
+      'disarm': '🤲',
+      'fury': '😡'
     };
-    return icons[skillType.toLowerCase()] || icons.default;
+    
+    // Check for specific skill icon first
+    const skillId = skill.id.toLowerCase();
+    if (skillIcons[skillId]) {
+      return skillIcons[skillId];
+    }
+    
+    // Fallback to type-based icons
+    const skillType = skill.type || skill.category || 'combat';
+    const typeIcons = {
+      'ability': '⚔️',
+      'spell': '🔮',
+      'buff': '✨',
+      'debuff': '💀',
+      'heal': '💚',
+      'combat': '⚔️',
+      'default': '⚔️'
+    };
+    
+    return typeIcons[skillType.toLowerCase()] || typeIcons.default;
   }
 
   /**
