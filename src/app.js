@@ -327,7 +327,7 @@
 
       // Check for character creation
       const player = window.State?.getPlayer();
-      if (!player || !player.race || !player.class) {
+      if (!player || !player.race || !player.class || !player.name) {
         // Show character creation
         setTimeout(() => {
           if (window.CharacterCreation && typeof window.CharacterCreation.showCharacterCreation === 'function') {

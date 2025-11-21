@@ -83,13 +83,39 @@
       return false;
     }
 
-    // Update zone (could be dungeon zone or regular zone)
-    global.State?.updatePlayer({ currentZone: zoneId });
+    // Get new zone from World system
+    const newZone = global.World?.getZone(zoneId);
+    
+    // Set starting position in new zone (center or entrance point)
+    let startTile = { x: Math.floor((newZone?.gridWidth || 50) / 2), y: Math.floor((newZone?.gridHeight || 50) / 2) };
+    
+    // If transitioning from another zone, try to find entrance point
+    if (player.currentZone) {
+      const oldZone = global.World?.getZone(player.currentZone);
+      if (oldZone && oldZone.neighboringZones?.includes(zoneId)) {
+        // Find entrance point (opposite side of zone from where we came)
+        // For now, use center - can be improved with zone-specific entrance data
+        startTile = { x: Math.floor((newZone?.gridWidth || 50) / 2), y: Math.floor((newZone?.gridHeight || 50) / 2) };
+      }
+    }
+    
+    // Update zone and position
+    global.State?.updatePlayer({ 
+      currentZone: zoneId,
+      currentTile: startTile,
+      x: startTile.x,
+      y: startTile.y
+    });
     
     // If it's a dungeon zone, update the zone data structure
     if (dungeon) {
       // Store dungeon context
       global.State?.updatePlayer({ currentDungeon: dungeon.id, currentDungeonZone: zoneId });
+    }
+
+    // Initialize spawn system for new zone
+    if (global.SpawnSystem) {
+      global.SpawnSystem.initializeZone(zoneId);
     }
 
     // Track exploration
@@ -106,10 +132,10 @@
     // Unlock lore if available
     if (zone.lore) {
       const loreId = `lore_${zoneId}`;
-      const player = global.State?.getPlayer();
-      if (!player.discoveredLore?.includes(loreId)) {
-        player.discoveredLore = [...(player.discoveredLore || []), loreId];
-        global.State?.updatePlayer({ discoveredLore: player.discoveredLore });
+      const updatedPlayer = global.State?.getPlayer();
+      if (!updatedPlayer.discoveredLore?.includes(loreId)) {
+        updatedPlayer.discoveredLore = [...(updatedPlayer.discoveredLore || []), loreId];
+        global.State?.updatePlayer({ discoveredLore: updatedPlayer.discoveredLore });
         global.Narrative?.addEntry({
           type: 'lore',
           text: zone.lore,
@@ -118,8 +144,17 @@
       }
     }
 
+    // Update UI
     global.Rendering?.updateZoneHeader();
     global.Rendering?.updateActionButtons();
+    
+    // Reload map for new zone
+    if (global.WorldMapRender) {
+      setTimeout(() => {
+        global.WorldMapRender.renderMap();
+        global.WorldMapRender.centerOnPlayer();
+      }, 100);
+    }
 
     // Force save on zone change
     if (global.State?.forceSave) {

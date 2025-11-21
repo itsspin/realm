@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Goblin Warrior",
+    "level": 2,
+    "hp": 45,
+    "damage": 8,
+    "ac": 15,
+    "faction": "indifferent",
+    "zone": "qeynos_hills",
+    "loot": [
+      { "item": "Rusty Dagger", "chance": 0.3, "quantity": 1 },
+      { "item": "Tattered Cloth", "chance": 0.5, "quantity": 1 }
+    ],
+    "isGuard": false,
+    "aggressive": false
+  },
+  {
+    "name": "Orc Pawn",
+    "level": { "min": 3, "max": 5 },
+    "hp": 120,
+    "damage": 15,
+    "ac": 25,
+    "faction": "oggok",
+    "zone": "oggok",
+    "loot": [
+      { "item": "Orcish Axe", "chance": 0.25, "quantity": 1 },
+      { "item": "Copper Ore", "chance": 0.4, "quantity": 2 }
+    ],
+    "isGuard": false,
+    "aggressive": true
+  },
+  {
+    "name": "Skeleton",
+    "level": 4,
+    "hp": 80,
+    "damage": 12,
+    "ac": 20,
+    "faction": "indifferent",
+    "zone": "qeynos_catacombs",
+    "loot": [
+      { "item": "Bone Chips", "chance": 0.8, "quantity": 2 },
+      { "item": "Rusty Sword", "chance": 0.2, "quantity": 1 }
+    ],
+    "isGuard": false,
+    "aggressive": true
+  },
+  {
+    "name": "Qeynos Guard",
+    "level": 10,
+    "hp": 200,
+    "damage": 25,
+    "ac": 40,
+    "faction": "qeynos_guard",
+    "zone": "qeynos",
+    "loot": [],
+    "isGuard": true,
+    "aggressive": false
+  },
+  {
+    "name": "Gnoll Pup",
+    "level": 1,
+    "hp": 30,
+    "damage": 5,
+    "ac": 10,
+    "faction": "indifferent",
+    "zone": "blackburrow",
+    "loot": [
+      { "item": "Gnoll Fang", "chance": 0.6, "quantity": 1 },
+      { "item": "Gnoll Hide", "chance": 0.3, "quantity": 1 }
+    ],
+    "isGuard": false,
+    "aggressive": false
+  },
+  {
+    "name": "Dark Elf Warrior",
+    "level": { "min": 5, "max": 8 },
+    "hp": 150,
+    "damage": 20,
+    "ac": 30,
+    "faction": "neriak",
+    "zone": "neriak",
+    "loot": [
+      { "item": "Dark Elf Robe", "chance": 0.15, "quantity": 1 },
+      { "item": "Dark Elf Dagger", "chance": 0.2, "quantity": 1 }
+    ],
+    "isGuard": false,
+    "aggressive": true
+  }
+]
+

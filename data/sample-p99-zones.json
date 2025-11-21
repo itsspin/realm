@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Qeynos Hills",
+    "level": 1,
+    "type": "outdoor",
+    "description": "Rolling hills surrounding the city of Qeynos. Wild creatures roam these lands.",
+    "mobs": ["Goblin Warrior", "Gnoll Pup"]
+  },
+  {
+    "name": "Qeynos Catacombs",
+    "level": { "min": 3, "max": 6 },
+    "type": "dungeon",
+    "description": "Ancient catacombs beneath Qeynos, filled with undead and forgotten treasures.",
+    "mobs": ["Skeleton", "Zombie"]
+  },
+  {
+    "name": "Blackburrow",
+    "level": { "min": 1, "max": 5 },
+    "type": "dungeon",
+    "description": "A network of gnoll-infested tunnels carved into the hillside.",
+    "mobs": ["Gnoll Pup", "Gnoll Warrior"]
+  },
+  {
+    "name": "Neriak",
+    "level": { "min": 5, "max": 10 },
+    "type": "city",
+    "description": "The dark elven city, hidden in shadow and mystery.",
+    "mobs": ["Dark Elf Warrior", "Dark Elf Guard"]
+  }
+]
+

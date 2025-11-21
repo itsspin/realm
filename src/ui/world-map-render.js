@@ -85,35 +85,86 @@
       window.addEventListener('resize', resizeCanvas);
     }
 
-    // Pan controls (right-click or middle-click)
+    // Pan controls (left-click drag when not clicking tiles, right-click, or middle-click)
+    let mouseDownX = 0;
+    let mouseDownY = 0;
+    let hasMoved = false;
+
     mapCanvas.addEventListener('mousedown', (e) => {
-      if (e.button === 2 || e.button === 1) {
-        isDragging = true;
+      mouseDownX = e.clientX;
+      mouseDownY = e.clientY;
+      hasMoved = false;
+      
+      // Allow left-click drag, right-click drag, or middle-click drag
+      if (e.button === 0 || e.button === 2 || e.button === 1) {
+        isDragging = false; // Will be set to true after movement detected
         dragStartX = e.clientX - panX;
         dragStartY = e.clientY - panY;
-        mapCanvas.style.cursor = 'grabbing';
-        e.preventDefault();
+        
+        if (e.button !== 0) {
+          // Right/middle click - immediately start dragging
+          isDragging = true;
+          mapCanvas.style.cursor = 'grabbing';
+          e.preventDefault();
+        }
       }
     });
 
     mapCanvas.addEventListener('mousemove', (e) => {
+      // Detect if mouse has moved enough to consider it a drag
+      if (!hasMoved && !isDragging) {
+        const moved = Math.abs(e.clientX - mouseDownX) > 3 || Math.abs(e.clientY - mouseDownY) > 3;
+        if (moved) {
+          hasMoved = true;
+          isDragging = true;
+          mapCanvas.style.cursor = 'grabbing';
+        }
+      }
+      
       if (isDragging) {
         panX = e.clientX - dragStartX;
         panY = e.clientY - dragStartY;
         global.WorldMapRender.panX = panX;
         global.WorldMapRender.panY = panY;
         renderMap();
+        e.preventDefault();
       }
     });
 
     mapCanvas.addEventListener('mouseup', (e) => {
-      if (e.button === 2 || e.button === 1) {
+      if (e.button === 0 || e.button === 2 || e.button === 1) {
+        const wasDragging = isDragging;
         isDragging = false;
+        hasMoved = false;
         mapCanvas.style.cursor = 'pointer';
+        
+        // If we were dragging, don't trigger click
+        if (wasDragging) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
       }
     });
 
     mapCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Mouse wheel scrolling (up/down)
+    mapCanvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      
+      // Scroll vertically (up/down)
+      const scrollAmount = e.deltaY * 0.5; // Adjust sensitivity
+      panY -= scrollAmount;
+      
+      // Also allow horizontal scrolling if shift is held
+      if (e.shiftKey) {
+        panX -= scrollAmount;
+      }
+      
+      global.WorldMapRender.panX = panX;
+      global.WorldMapRender.panY = panY;
+      renderMap();
+    }, { passive: false });
 
     // Click to move
     mapCanvas.addEventListener('click', handleCanvasClick);
@@ -234,6 +285,9 @@
       }
     }
 
+    // Draw zone transition arrows/indicators
+    drawZoneTransitions(zone, tileSize);
+
     // Draw entities (monsters from spawn system)
     if (player && player.currentZone && player.currentTile) {
       const mobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];
@@ -305,6 +359,90 @@
 
     // Update legend
     updateMapLegend(zone);
+  }
+
+  /**
+   * Draw zone transition indicators (arrows for city entrances)
+   */
+  function drawZoneTransitions(zone, tileSize) {
+    if (!zone || !zone.neighboringZones || zone.neighboringZones.length === 0) return;
+
+    const player = global.State?.getPlayer();
+    if (!player || !player.currentTile) return;
+
+    // Only show transitions in outdoor zones near cities
+    if (zone.type !== 'outdoor') return;
+
+    zone.neighboringZones.forEach(neighborZoneId => {
+      const neighborZone = global.World?.getZone(neighborZoneId);
+      if (!neighborZone || neighborZone.type !== 'city') return;
+
+      // Find transition point (usually center or edge of zone)
+      // For now, place at center edges - can be improved with zone data
+      const transitionPoints = [
+        { x: Math.floor(zone.gridWidth / 2), y: 0, dir: 'up' }, // Top edge
+        { x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2), dir: 'right' }, // Right edge
+        { x: Math.floor(zone.gridWidth / 2), y: zone.gridHeight - 1, dir: 'down' }, // Bottom edge
+        { x: 0, y: Math.floor(zone.gridHeight / 2), dir: 'left' } // Left edge
+      ];
+
+      // Use first transition point for now (can be improved with zone-specific data)
+      const transitionPoint = transitionPoints[0];
+      const screenX = transitionPoint.x * tileSize + panX;
+      const screenY = transitionPoint.y * tileSize + panY;
+
+      // Check if player is near this transition point
+      const distance = Math.abs(player.currentTile.x - transitionPoint.x) + 
+                       Math.abs(player.currentTile.y - transitionPoint.y);
+      const isNearby = distance <= 5;
+
+      // Draw arrow/indicator
+      mapCtx.save();
+      
+      // Draw background circle
+      mapCtx.fillStyle = isNearby ? 'rgba(255, 215, 0, 0.8)' : 'rgba(255, 215, 0, 0.5)';
+      mapCtx.beginPath();
+      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize * 0.6, 0, Math.PI * 2);
+      mapCtx.fill();
+      
+      // Draw border
+      mapCtx.strokeStyle = isNearby ? '#ffd700' : '#ffaa00';
+      mapCtx.lineWidth = isNearby ? 3 : 2;
+      mapCtx.stroke();
+
+      // Draw arrow pointing to city
+      mapCtx.fillStyle = '#fff';
+      mapCtx.strokeStyle = '#000';
+      mapCtx.lineWidth = 2;
+      
+      const centerX = screenX + tileSize / 2;
+      const centerY = screenY + tileSize / 2;
+      const arrowSize = tileSize * 0.4;
+      
+      // Arrow pointing up (to city)
+      mapCtx.beginPath();
+      mapCtx.moveTo(centerX, centerY - arrowSize / 2);
+      mapCtx.lineTo(centerX - arrowSize / 2, centerY + arrowSize / 2);
+      mapCtx.lineTo(centerX, centerY + arrowSize / 3);
+      mapCtx.lineTo(centerX + arrowSize / 2, centerY + arrowSize / 2);
+      mapCtx.closePath();
+      mapCtx.fill();
+      mapCtx.stroke();
+
+      // Draw zone name label if nearby
+      if (isNearby && tileSize >= 16) {
+        mapCtx.fillStyle = '#fff';
+        mapCtx.font = `bold ${Math.max(10, tileSize / 4)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.textAlign = 'center';
+        mapCtx.strokeStyle = '#000';
+        mapCtx.lineWidth = 3;
+        const labelY = screenY - tileSize * 0.8;
+        mapCtx.strokeText(`→ ${neighborZone.name}`, centerX, labelY);
+        mapCtx.fillText(`→ ${neighborZone.name}`, centerX, labelY);
+      }
+
+      mapCtx.restore();
+    });
   }
 
   /**
@@ -408,7 +546,11 @@
    * Handle canvas click
    */
   function handleCanvasClick(event) {
-    if (isDragging) return;
+    // Don't handle clicks if we just finished dragging
+    if (hasMoved) {
+      hasMoved = false;
+      return;
+    }
 
     const player = global.State?.getPlayer();
     if (!player || !player.currentZone) return;
@@ -427,6 +569,41 @@
 
     // Validate coordinates
     if (tileX < 0 || tileX >= zone.gridWidth || tileY < 0 || tileY >= zone.gridHeight) return;
+
+    // Check for zone transition click
+    if (zone.type === 'outdoor' && zone.neighboringZones) {
+      for (const neighborZoneId of zone.neighboringZones) {
+        const neighborZone = global.World?.getZone(neighborZoneId);
+        if (!neighborZone || neighborZone.type !== 'city') continue;
+
+        // Check if click is on transition point (center of edges)
+        const transitionPoints = [
+          { x: Math.floor(zone.gridWidth / 2), y: 0 },
+          { x: zone.gridWidth - 1, y: Math.floor(zone.gridHeight / 2) },
+          { x: Math.floor(zone.gridWidth / 2), y: zone.gridHeight - 1 },
+          { x: 0, y: Math.floor(zone.gridHeight / 2) }
+        ];
+
+        for (const tp of transitionPoints) {
+          const distance = Math.abs(tileX - tp.x) + Math.abs(tileY - tp.y);
+          if (distance <= 2) {
+            // Transition to city
+            if (global.Zones?.changeZone(neighborZoneId)) {
+              // Reload map for new zone
+              setTimeout(() => {
+                renderMap();
+                centerOnPlayer();
+                // Initialize spawn system for new zone
+                if (global.SpawnSystem && player.currentZone) {
+                  global.SpawnSystem.initializeZone(player.currentZone);
+                }
+              }, 100);
+              return;
+            }
+          }
+        }
+      }
+    }
 
     // Check for monster click (targeting)
     const mob = global.SpawnSystem?.getMobAtTile(player.currentZone, tileX, tileY);

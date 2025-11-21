@@ -57,10 +57,17 @@
 
   /**
    * Initialize roaming spawns (random valid tiles, wandering)
+   * NOTE: Cities should NOT use roaming spawns - only static spawns (guards)
    */
   function initializeRoamingSpawns(spawnGroup) {
     const zone = global.World?.getZone(spawnGroup.zoneId);
     if (!zone) return;
+
+    // Don't spawn roaming mobs in cities (only static spawns/guards allowed)
+    if (zone.type === 'city' || zone.isSafeHaven) {
+      // Cities should only have static spawns (guards on patrol)
+      return;
+    }
 
     // Spawn initial mobs randomly across the zone
     const count = Math.min(spawnGroup.maxConcurrent, 5); // Start with a few

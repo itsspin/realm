@@ -104,6 +104,17 @@
             <button class="action-btn" onclick="window.CharacterCreation.goBack()">← Back</button>
             <button class="action-btn" id="finishCreationBtn" onclick="window.CharacterCreation.finishCreation()">Begin Your Journey</button>
           </div>
+          <script>
+            // Update creationState.name as user types
+            const nameInput = document.getElementById('characterNameInput');
+            if (nameInput) {
+              nameInput.addEventListener('input', (e) => {
+                if (window.CharacterCreation && window.CharacterCreation.creationState) {
+                  window.CharacterCreation.creationState.name = e.target.value;
+                }
+              });
+            }
+          </script>
         </div>
       `;
       setTimeout(() => {
@@ -156,7 +167,7 @@
     renderCreationUI();
   }
 
-  function finishCreation() {
+  async function finishCreation() {
     console.log('finishCreation called', creationState);
     
     const nameInput = document.getElementById('characterNameInput');
@@ -187,6 +198,53 @@
 
     const race = RACES.find(r => r.id === creationState.race);
     const cls = CLASSES.find(c => c.id === creationState.class);
+
+    // Check if we should use backend
+    if (global.Auth?.isAuthenticated() && global.Characters) {
+      try {
+        const finishBtn = document.getElementById('finishCreationBtn');
+        if (finishBtn) {
+          finishBtn.disabled = true;
+          finishBtn.textContent = 'Creating...';
+        }
+
+        // Create character via API
+        const character = await global.Characters.createCharacter({
+          name: name,
+          classId: creationState.class,
+          raceId: creationState.race,
+          stats: calculateStartingStats(creationState.race, creationState.class)
+        });
+
+        if (character && creationCallback) {
+          creationCallback(character);
+        }
+
+        // Hide creation overlay
+        const overlay = document.getElementById('characterCreationOverlay');
+        if (overlay) {
+          overlay.remove();
+        }
+
+        creationState = null;
+        return;
+      } catch (error) {
+        console.error('Failed to create character:', error);
+        if (global.Toast && typeof global.Toast.show === 'function') {
+          global.Toast.show({
+            type: 'error',
+            title: 'Creation Failed',
+            text: `Failed to create character: ${error.message}`
+          });
+        }
+        const finishBtn = document.getElementById('finishCreationBtn');
+        if (finishBtn) {
+          finishBtn.disabled = false;
+          finishBtn.textContent = 'Begin Your Journey';
+        }
+        return;
+      }
+    }
 
     // Calculate starting stats
     const baseStats = { hp: 20, maxHp: 20, atk: 5, def: 2 };
@@ -322,51 +380,6 @@
     renderCreationUI();
   }
 
-  /**
-   * Finish character creation and save to backend
-   */
-  async function finishCreation() {
-    if (!creationState.name || !creationState.race || !creationState.class) {
-      alert('Please complete all steps');
-      return;
-    }
-
-    try {
-      const finishBtn = document.getElementById('finishCreationBtn');
-      if (finishBtn) {
-        finishBtn.disabled = true;
-        finishBtn.textContent = 'Creating...';
-      }
-
-      // Create character via API
-      const character = await global.Characters?.createCharacter({
-        name: creationState.name,
-        classId: creationState.class,
-        raceId: creationState.race,
-        stats: calculateStartingStats(creationState.race, creationState.class)
-      });
-
-      if (character && creationCallback) {
-        creationCallback(character);
-      }
-
-      // Hide creation overlay
-      const overlay = document.getElementById('characterCreationOverlay');
-      if (overlay) {
-        overlay.remove();
-      }
-
-      creationState = null;
-    } catch (error) {
-      console.error('Failed to create character:', error);
-      alert(`Failed to create character: ${error.message}`);
-      const finishBtn = document.getElementById('finishCreationBtn');
-      if (finishBtn) {
-        finishBtn.disabled = false;
-        finishBtn.textContent = 'Begin Your Journey';
-      }
-    }
-  }
 
   /**
    * Calculate starting stats based on race and class
@@ -396,11 +409,18 @@
 
   let creationCallback = null;
 
+  // Expose creationState for external access
+  function getCreationState() {
+    return creationState;
+  }
+
   const CharacterCreation = {
     showCharacterCreation,
     show,
     goBack,
-    finishCreation
+    finishCreation,
+    getCreationState,
+    get creationState() { return creationState; }
   };
 
   global.CharacterCreation = CharacterCreation;

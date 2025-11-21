@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Rusty Dagger",
+    "type": "weapon",
+    "slot": "weapon",
+    "level": 1,
+    "damage": 5,
+    "ac": 0,
+    "value": 5,
+    "rarity": "common"
+  },
+  {
+    "name": "Tattered Cloth Robe",
+    "type": "armor",
+    "slot": "chest",
+    "level": 1,
+    "ac": 3,
+    "stats": { "hp": 5 },
+    "value": 3,
+    "rarity": "common"
+  },
+  {
+    "name": "Orcish Axe",
+    "type": "weapon",
+    "slot": "weapon",
+    "level": 3,
+    "damage": 12,
+    "ac": 0,
+    "value": 25,
+    "rarity": "uncommon"
+  },
+  {
+    "name": "Bone Chips",
+    "type": "misc",
+    "slot": "inventory",
+    "level": 1,
+    "value": 1,
+    "rarity": "common"
+  },
+  {
+    "name": "Dark Elf Robe",
+    "type": "armor",
+    "slot": "chest",
+    "level": 5,
+    "ac": 8,
+    "stats": { "hp": 15, "mana": 20 },
+    "value": 50,
+    "rarity": "rare"
+  },
+  {
+    "name": "Gnoll Fang",
+    "type": "misc",
+    "slot": "inventory",
+    "level": 1,
+    "value": 2,
+    "rarity": "common"
+  },
+  {
+    "name": "Copper Ore",
+    "type": "misc",
+    "slot": "inventory",
+    "level": 1,
+    "value": 1,
+    "rarity": "common"
+  }
+]
+
