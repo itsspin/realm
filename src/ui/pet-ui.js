@@ -38,7 +38,7 @@
           <h3>Pet</h3>
           <button class="pet-panel-toggle" id="petPanelToggle" title="Minimize/Maximize Pet Panel">▼</button>
         </div>
-        <div class="pet-panel-content" id="petPanelContent">
+        <div class="pet-panel-content" id="petPanelContent" style="display: flex;">
           <div class="pet-info">
             <div class="pet-name" id="petName">-</div>
             <div class="pet-level" id="petLevel">Level -</div>
@@ -64,7 +64,7 @@
           </div>
         </div>
         <!-- Compact minimized view -->
-        <div class="pet-panel-compact" id="petPanelCompact" style="display: none;">
+        <div class="pet-panel-compact" id="petPanelCompact" style="display: none; flex-direction: column;">
           <div class="pet-compact-hp-bar">
             <div class="pet-hp-fill-compact" id="petHpBarCompact" style="width: 100%"></div>
             <span class="pet-hp-text-compact" id="petHpTextCompact">- / -</span>
@@ -105,6 +105,16 @@
     petSitBtn = document.getElementById('petSitBtn');
     petHoldBtn = document.getElementById('petHoldBtn');
     petDismissBtn = document.getElementById('petDismissBtn');
+    
+    // Pet panel toggle button
+    const petPanelToggle = document.getElementById('petPanelToggle');
+    if (petPanelToggle) {
+      petPanelToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePetPanel();
+      });
+    }
 
     // Attach event handlers
     if (petAttackBtn) {
@@ -201,10 +211,15 @@
     const hasPetClass = classData?.hasPets || false;
 
     // Show/hide panel based on pet existence or pet class
-    if (pet) {
+    if (pet && pet.alive) {
       petPanel.hidden = false;
-
-      // Update pet info
+      
+      // Check if minimized
+      const isMinimized = petPanel.classList.contains('pet-panel--minimized');
+      const content = document.getElementById('petPanelContent');
+      const compact = document.getElementById('petPanelCompact');
+      
+      // Update pet info (always needed, even if minimized)
       if (petNameEl) petNameEl.textContent = pet.name || '-';
       if (petLevelEl) petLevelEl.textContent = `Level ${pet.level || 1}`;
 
@@ -213,52 +228,55 @@
       const maxHp = pet.stats?.maxHp || 1;
       const hpPercent = (hp / maxHp) * 100;
 
-      if (petHpBarEl) {
-        petHpBarEl.style.width = `${hpPercent}%`;
-        // Color based on health
-        if (hpPercent > 75) petHpBarEl.style.backgroundColor = '#4caf50';
-        else if (hpPercent > 50) petHpBarEl.style.backgroundColor = '#ffeb3b';
-        else if (hpPercent > 25) petHpBarEl.style.backgroundColor = '#ff9800';
-        else petHpBarEl.style.backgroundColor = '#f44336';
-      }
-
-      if (petHpTextEl) petHpTextEl.textContent = `${hp} / ${maxHp}`;
-
-      // Update button states based on behavior
-      const behavior = pet.behavior || 'follow';
-      if (petAttackBtn) {
-        petAttackBtn.classList.toggle('active', behavior === 'attack');
-      }
-      if (petTauntBtn) {
-        petTauntBtn.classList.toggle('active', behavior === 'taunt');
-      }
-      if (petStayBtn) {
-        petStayBtn.classList.toggle('active', behavior === 'stay');
-      }
-      if (petFollowBtn) {
-        petFollowBtn.classList.toggle('active', behavior === 'follow');
-      }
-      if (petGuardBtn) {
-        petGuardBtn.classList.toggle('active', behavior === 'guard');
-      }
-      if (petSitBtn) {
-        petSitBtn.classList.toggle('active', behavior === 'sit');
-      }
-      if (petHoldBtn) {
-        petHoldBtn.classList.toggle('active', behavior === 'hold');
-      }
-
-      // Check if pet is alive
-      if (!pet.alive) {
-        petPanel.hidden = true;
-      }
-      
-      // Update compact view if minimized
-      if (petPanel && petPanel.classList.contains('pet-panel--minimized')) {
+      if (isMinimized) {
+        // Show compact view
+        if (content) content.style.display = 'none';
+        if (compact) compact.style.display = 'flex';
+        // Update compact view
         updatePetPanelCompact(pet);
+      } else {
+        // Show full view
+        if (content) content.style.display = 'flex';
+        if (compact) compact.style.display = 'none';
+        
+        // Update full HP bar
+        if (petHpBarEl) {
+          petHpBarEl.style.width = `${hpPercent}%`;
+          // Color based on health
+          if (hpPercent > 75) petHpBarEl.style.backgroundColor = '#4caf50';
+          else if (hpPercent > 50) petHpBarEl.style.backgroundColor = '#ffeb3b';
+          else if (hpPercent > 25) petHpBarEl.style.backgroundColor = '#ff9800';
+          else petHpBarEl.style.backgroundColor = '#f44336';
+        }
+
+        if (petHpTextEl) petHpTextEl.textContent = `${hp} / ${maxHp}`;
+
+        // Update button states based on behavior
+        const behavior = pet.behavior || 'follow';
+        if (petAttackBtn) {
+          petAttackBtn.classList.toggle('active', behavior === 'attack');
+        }
+        if (petTauntBtn) {
+          petTauntBtn.classList.toggle('active', behavior === 'taunt');
+        }
+        if (petStayBtn) {
+          petStayBtn.classList.toggle('active', behavior === 'stay');
+        }
+        if (petFollowBtn) {
+          petFollowBtn.classList.toggle('active', behavior === 'follow');
+        }
+        if (petGuardBtn) {
+          petGuardBtn.classList.toggle('active', behavior === 'guard');
+        }
+        if (petSitBtn) {
+          petSitBtn.classList.toggle('active', behavior === 'sit');
+        }
+        if (petHoldBtn) {
+          petHoldBtn.classList.toggle('active', behavior === 'hold');
+        }
       }
     } else {
-      // Hide panel if no pet (even if pet class)
+      // Hide panel if no pet or pet is dead
       petPanel.hidden = true;
     }
   }
@@ -266,26 +284,51 @@
   /**
    * Toggle pet panel minimized/maximized state
    */
+  /**
+   * Toggle pet panel minimized/maximized state
+   */
   function togglePetPanel() {
-    if (!petPanel) return;
+    if (!petPanel) {
+      console.warn('[PetUI] togglePetPanel: petPanel not found');
+      return;
+    }
     
     const isMinimized = petPanel.classList.contains('pet-panel--minimized');
     const content = document.getElementById('petPanelContent');
     const compact = document.getElementById('petPanelCompact');
     const toggleBtn = document.getElementById('petPanelToggle');
     
+    console.log('[PetUI] Toggling pet panel, isMinimized:', isMinimized);
+    
     if (isMinimized) {
-      // Expand
+      // Expand - show full content
       petPanel.classList.remove('pet-panel--minimized');
-      if (content) content.style.display = 'flex';
-      if (compact) compact.style.display = 'none';
-      if (toggleBtn) toggleBtn.textContent = '▼';
+      if (content) {
+        content.style.display = 'flex';
+        console.log('[PetUI] Showing full pet panel content');
+      }
+      if (compact) {
+        compact.style.display = 'none';
+      }
+      if (toggleBtn) {
+        toggleBtn.textContent = '▼';
+        toggleBtn.title = 'Minimize Pet Panel';
+      }
     } else {
-      // Minimize
+      // Minimize - show compact view
       petPanel.classList.add('pet-panel--minimized');
-      if (content) content.style.display = 'none';
-      if (compact) compact.style.display = 'block';
-      if (toggleBtn) toggleBtn.textContent = '▲';
+      if (content) {
+        content.style.display = 'none';
+        console.log('[PetUI] Hiding full pet panel content');
+      }
+      if (compact) {
+        compact.style.display = 'flex';
+        console.log('[PetUI] Showing compact pet panel');
+      }
+      if (toggleBtn) {
+        toggleBtn.textContent = '▲';
+        toggleBtn.title = 'Maximize Pet Panel';
+      }
       
       // Update compact view
       const player = global.State?.getPlayer();
@@ -293,6 +336,11 @@
         updatePetPanelCompact(player.pet);
       }
     }
+    
+    // Force a panel update after toggle
+    setTimeout(() => {
+      updatePetPanel();
+    }, 50);
   }
   
   /**

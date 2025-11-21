@@ -252,9 +252,9 @@
 
     const items = listElement.querySelectorAll('.nearby-list-item');
     items.forEach((item, index) => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         selectedIndex = index;
-        targetEntity(nearbyEntities[index].entity);
+        targetEntity(nearbyEntities[index].entity, e);
         renderList();
       });
     });
@@ -263,9 +263,9 @@
   /**
    * Target an entity
    */
-  function targetEntity(entity) {
+  function targetEntity(entity, clickEvent) {
     if (entity && global.Targeting) {
-      global.Targeting.setTarget(entity);
+      global.Targeting.setTarget(entity, clickEvent);
       update(); // Re-render to show targeted state
     }
   }
@@ -299,7 +299,7 @@
 
       case 'Enter':
         if (selectedIndex >= 0 && selectedIndex < nearbyEntities.length) {
-          targetEntity(nearbyEntities[selectedIndex].entity);
+          targetEntity(nearbyEntities[selectedIndex].entity, null);
         }
         break;
 

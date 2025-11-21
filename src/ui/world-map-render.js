@@ -1131,8 +1131,9 @@
       }
 
       // Set as target (don't auto-attack - user must use Attack button or skillbar)
+      // Pass click event so target panel can appear near cursor
       if (global.Targeting) {
-        global.Targeting.setTarget(targetEntity);
+        global.Targeting.setTarget(targetEntity, event);
       }
       
       // For mobs, just set as target - don't auto-attack

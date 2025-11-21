@@ -297,9 +297,17 @@
   padding-bottom: var(--spacing-xs);
 }
 
+.pet-panel--minimized .pet-panel-content {
+  display: none !important;
+}
+
+.pet-panel--minimized .pet-panel-compact {
+  display: flex !important;
+}
+
 /* Pet Panel Compact View (Minimized) */
 .pet-panel-compact {
-  display: flex;
+  display: none; /* Hidden by default, shown when minimized */
   flex-direction: column;
   gap: var(--spacing-xs);
 }
@@ -941,13 +949,40 @@
    Target Panel
    ============================================ */
 
+/* Target Panel - Floating Popup */
+.target-panel--floating {
+  position: fixed !important;
+  z-index: 9998;
+  min-width: 280px;
+  max-width: 320px;
+  pointer-events: auto;
+  animation: targetPanelFadeIn 0.2s ease-out;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+@keyframes targetPanelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .target-panel {
-  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(42, 37, 32, 0.98) 100%);
   border: var(--border-medium);
   border-radius: 0.5rem;
   padding: var(--spacing-md);
   box-shadow: var(--shadow-soft);
-  margin-bottom: var(--spacing-md);
+}
+
+/* Remove margin when floating */
+.target-panel--floating {
+  margin-bottom: 0;
 }
 
 .target-header {

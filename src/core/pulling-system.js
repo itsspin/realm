@@ -80,7 +80,7 @@
     
     // Set target
     if (global.Targeting) {
-      global.Targeting.setTarget(mobEntity);
+      global.Targeting.setTarget(mobEntity, null); // No click event for pulling
     }
     
     // Start mob chase (handled by spawn system) - mark as pulled

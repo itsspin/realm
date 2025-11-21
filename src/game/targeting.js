@@ -12,14 +12,14 @@
   /**
    * Set target from mob entity
    */
-  function setTarget(mobEntity) {
+  function setTarget(mobEntity, clickEvent) {
     if (!mobEntity) {
       clearTarget();
       return;
     }
 
     currentTarget = mobEntity;
-    updateTargetPanel();
+    updateTargetPanel(clickEvent);
     highlightTargetedTile();
   }
 
@@ -28,8 +28,75 @@
    */
   function clearTarget() {
     currentTarget = null;
-    updateTargetPanel();
+    updateTargetPanel(); // Will use default position
     highlightTargetedTile();
+  }
+  
+  /**
+   * Position target panel near cursor (avoiding UI elements)
+   */
+  function positionPanelNearCursor(panel, clickEvent) {
+    if (!panel || !clickEvent) return;
+    
+    const mouseX = clickEvent.clientX;
+    const mouseY = clickEvent.clientY;
+    
+    // Get panel dimensions (estimate if not rendered yet)
+    const panelWidth = 280; // Approximate width
+    const panelHeight = 200; // Approximate height
+    
+    // Padding from cursor
+    const padding = 20;
+    
+    // Calculate position - prefer top-right of cursor
+    let left = mouseX + padding;
+    let top = mouseY - panelHeight - padding;
+    
+    // Check viewport bounds and adjust
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // If panel would go off right edge, position to left of cursor
+    if (left + panelWidth > viewportWidth - 20) {
+      left = mouseX - panelWidth - padding;
+    }
+    
+    // If panel would go off top edge, position below cursor
+    if (top < 80) { // Leave space for header
+      top = mouseY + padding;
+    }
+    
+    // If panel would go off bottom edge, adjust up
+    if (top + panelHeight > viewportHeight - 100) { // Leave space for chat
+      top = viewportHeight - panelHeight - 100;
+    }
+    
+    // Ensure it doesn't overlap left panel (if exists)
+    const leftPanel = document.querySelector('.game-panel--left');
+    if (leftPanel) {
+      const leftPanelRect = leftPanel.getBoundingClientRect();
+      if (left < leftPanelRect.right + 10) {
+        left = leftPanelRect.right + 10;
+      }
+    }
+    
+    // Ensure it doesn't overlap right panel (if exists)
+    const rightPanel = document.querySelector('.game-panel--right');
+    if (rightPanel) {
+      const rightPanelRect = rightPanel.getBoundingClientRect();
+      if (left + panelWidth > rightPanelRect.left - 10) {
+        left = rightPanelRect.left - panelWidth - 10;
+      }
+    }
+    
+    // Apply positioning
+    panel.style.position = 'fixed';
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+    panel.style.right = 'auto';
+    panel.style.bottom = 'auto';
+    panel.style.transform = 'none';
+    panel.style.zIndex = '9998'; // High z-index but below admin panel
   }
 
   /**
@@ -48,9 +115,78 @@
 
   /**
    * Update target panel UI
+   * @param {MouseEvent} clickEvent - Optional click event to position panel near cursor
    */
-  function updateTargetPanel() {
-    const panel = document.getElementById('targetPanel');
+  function updateTargetPanel(clickEvent) {
+    let panel = document.getElementById('targetPanel');
+    
+    // Create panel if it doesn't exist (floating popup)
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'targetPanel';
+      panel.className = 'target-panel target-panel--floating';
+      panel.hidden = true;
+      panel.innerHTML = `
+        <div class="target-header">
+          <h3 class="target-name" id="targetName">No Target</h3>
+          <button class="target-close" id="targetClose" aria-label="Clear target">×</button>
+        </div>
+        <div class="target-info">
+          <div class="target-level" id="targetLevel"></div>
+          <div class="target-hp-container">
+            <div class="target-hp-bar">
+              <div class="target-hp-fill" id="targetHpFill"></div>
+            </div>
+            <div class="target-hp-text" id="targetHpText"></div>
+          </div>
+          <div class="target-faction" id="targetFaction"></div>
+          <div class="target-con" id="targetCon"></div>
+          <!-- Target Action Buttons -->
+          <div class="target-actions">
+            <button class="target-action-btn" id="attackBtn" title="Attack target">Attack</button>
+            <button class="target-action-btn" id="conBtn" title="Consider target">Con</button>
+            <button class="target-action-btn" id="hailBtn" title="Hail target">Hail</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(panel);
+      
+      // Attach close button handler
+      const closeBtn = panel.querySelector('#targetClose');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          clearTarget();
+        });
+      }
+      
+      // Attach action button handlers
+      const attackBtn = panel.querySelector('#attackBtn');
+      if (attackBtn) {
+        attackBtn.addEventListener('click', () => {
+          if (global.Combat && currentTarget) {
+            global.Combat.attackTarget();
+          }
+        });
+      }
+      
+      const conBtn = panel.querySelector('#conBtn');
+      if (conBtn) {
+        conBtn.addEventListener('click', () => {
+          if (global.Combat && currentTarget) {
+            global.Combat.considerTarget();
+          }
+        });
+      }
+      
+      const hailBtn = panel.querySelector('#hailBtn');
+      if (hailBtn) {
+        hailBtn.addEventListener('click', () => {
+          if (global.NPCInteraction && currentTarget) {
+            global.NPCInteraction.hail(currentTarget);
+          }
+        });
+      }
+    }
     const nameEl = document.getElementById('targetName');
     const levelEl = document.getElementById('targetLevel');
     const hpBarEl = document.getElementById('targetHpFill');
@@ -66,6 +202,19 @@
     }
 
     panel.hidden = false;
+    
+    // Position panel near cursor if click event provided
+    if (clickEvent) {
+      positionPanelNearCursor(panel, clickEvent);
+    } else {
+      // Position in top-right corner by default (if no click event)
+      panel.style.position = 'fixed';
+      panel.style.top = '80px';
+      panel.style.right = '20px';
+      panel.style.left = 'auto';
+      panel.style.bottom = 'auto';
+      panel.style.transform = 'none';
+    }
 
     const mob = currentTarget.mobTemplate;
     const stats = currentTarget.stats;
@@ -243,7 +392,7 @@
       nextIndex = currentIndex <= 0 ? nearbyTargets.length - 1 : currentIndex - 1;
     }
 
-    setTarget(nearbyTargets[nextIndex]);
+    setTarget(nearbyTargets[nextIndex], null); // No click event for keyboard targeting
   }
 
   /**
@@ -253,7 +402,7 @@
     const mob = global.SpawnSystem?.getMobAtTile(zoneId, x, y);
     
     if (mob) {
-      setTarget(mob);
+      setTarget(mob, null); // No click event for tile click
       return true;
     } else {
       // Click on empty tile - clear target if we're just clicking to move

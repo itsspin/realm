@@ -198,7 +198,7 @@
       // Auto-engage if stepping directly on mob (aggro)
       // But don't auto-attack - just set as target
       if (global.Targeting) {
-        global.Targeting.setTarget(mob);
+        global.Targeting.setTarget(mob, null); // No click event for auto-targeting
       }
       
       // Only auto-start combat if player is already in combat mode or mob is aggressive

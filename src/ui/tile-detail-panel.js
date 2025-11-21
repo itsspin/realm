@@ -223,10 +223,10 @@
     
     const items = panelElement.querySelectorAll('.tile-detail-item');
     items.forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         const entityId = item.dataset.entityId;
         const entityType = item.dataset.entityType;
-        targetEntity(entityId, entityType);
+        targetEntity(entityId, entityType, e);
       });
     });
   }
@@ -234,7 +234,7 @@
   /**
    * Target an entity
    */
-  function targetEntity(entityId, entityType) {
+  function targetEntity(entityId, entityType, clickEvent) {
     if (!selectedTile) return;
 
     let entity = null;
@@ -247,7 +247,7 @@
     }
 
     if (entity && global.Targeting) {
-      global.Targeting.setTarget(entity);
+      global.Targeting.setTarget(entity, clickEvent);
       // Update panel to highlight selected
       updateTile(selectedTile.zoneId, selectedTile.x, selectedTile.y);
     }

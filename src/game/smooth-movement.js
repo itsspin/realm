@@ -164,7 +164,7 @@
     if (mob && mob.alive && mob.mobTemplate && !mob.mobTemplate.isGuard) {
       // Set as target
       if (global.Targeting) {
-        global.Targeting.setTarget(mob);
+        global.Targeting.setTarget(mob, null); // No click event for auto-targeting
       }
       
       // Only auto-start combat if player is already in combat mode

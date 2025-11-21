@@ -334,7 +334,7 @@
 
     const pet = player.pet;
     const playerTile = player.currentTile || { x: 0, y: 0 };
-    const petZone = player.currentZone || pet.zone;
+    const playerZone = player.currentZone || pet.zone;
 
     // Update pet zone if player changed zones
     if (pet.zone !== playerZone) {
