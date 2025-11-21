@@ -42,7 +42,9 @@
       global.Skills?.addSkillXP(skillId, amount * 2);
     }
 
-    global.State?.data.resources = resources;
+    if (global.State && global.State.data) {
+      global.State.data.resources = resources;
+    }
     global.Rendering?.updateResourceBar();
 
     global.Narrative?.addEntry({

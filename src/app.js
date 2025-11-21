@@ -414,47 +414,47 @@
   async function initGame() {
     try {
       // Check authentication
-      if (!global.Auth?.isAuthenticated()) {
+      if (!window.Auth?.isAuthenticated()) {
         // Show auth screen
-        if (global.AuthScreen) {
-          global.AuthScreen.show();
+        if (window.AuthScreen) {
+          window.AuthScreen.show();
         }
         return;
       }
 
       // Check if character is selected
-      const characterId = global.State?.currentCharacterId;
+      const characterId = window.State?.currentCharacterId;
       if (!characterId) {
         // Show character select
-        if (global.CharacterSelect) {
-          global.CharacterSelect.show();
+        if (window.CharacterSelect) {
+          window.CharacterSelect.show();
         }
         return;
       }
 
       // Load character data
-      await global.State?.loadFromBackend();
+      await window.State?.loadFromBackend();
       
       // Continue with normal initialization
       await initializeGame();
       
       // Start auto-save
-      if (global.State?.startAutoSave) {
-        global.State.startAutoSave(30000); // Save every 30 seconds
+      if (window.State?.startAutoSave) {
+        window.State.startAutoSave(30000); // Save every 30 seconds
       }
     } catch (error) {
       DIAG.fail('initGame', error);
       // Fallback to auth screen
-      if (global.AuthScreen) {
-        global.AuthScreen.show();
+      if (window.AuthScreen) {
+        window.AuthScreen.show();
       }
     }
   }
 
   // Expose for character select and auth screen
-  global.App = global.App || {};
-  global.App.initGame = initGame;
-  global.App.initializeGame = initializeGame;
+  window.App = window.App || {};
+  window.App.initGame = initGame;
+  window.App.initializeGame = initializeGame;
 
   document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -501,12 +501,12 @@
                         (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
       
       console.log('[App] Has backend?', hasBackend);
-      console.log('[App] Auth available?', !!global.Auth);
-      console.log('[App] AuthScreen available?', !!global.AuthScreen);
-      console.log('[App] CharacterSelect available?', !!global.CharacterSelect);
+      console.log('[App] Auth available?', !!window.Auth);
+      console.log('[App] AuthScreen available?', !!window.AuthScreen);
+      console.log('[App] CharacterSelect available?', !!window.CharacterSelect);
       console.log('[App] State.data:', window.State?.data);
       
-      if (global.Auth && global.AuthScreen && global.CharacterSelect && hasBackend) {
+      if (window.Auth && window.AuthScreen && window.CharacterSelect && hasBackend) {
         // Use authenticated flow with backend
         console.log('[App] Using authenticated flow with backend');
         await initGame();
@@ -516,14 +516,14 @@
         console.log('[App] Using local flow (no backend)');
         
         // Check if user is already authenticated (local account)
-        const isAuth = global.Auth?.isAuthenticated();
+        const isAuth = window.Auth?.isAuthenticated();
         console.log('[App] Is authenticated (local)?', isAuth);
         
-        if (!isAuth && global.AuthScreen && global.Auth) {
+        if (!isAuth && window.AuthScreen && window.Auth) {
           // Show auth screen - user can register/login for local account
           console.log('[App] Showing auth screen (local mode - create account)');
-          if (global.AuthScreen) {
-            global.AuthScreen.show();
+          if (window.AuthScreen) {
+            window.AuthScreen.show();
           }
         } else {
           // Skip auth, go directly to character creation/game check

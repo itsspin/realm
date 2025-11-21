@@ -41,7 +41,9 @@
     item.recipe.forEach(([resource, amount]) => {
       resources[resource] = (resources[resource] || 0) - amount;
     });
-    global.State?.data.resources = resources;
+    if (global.State && global.State.data) {
+      global.State.data.resources = resources;
+    }
 
     // Add item
     global.State?.addItem(itemId);

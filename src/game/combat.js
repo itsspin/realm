@@ -355,9 +355,9 @@
       global.Targeting?.clearTarget();
 
       // Apply faction changes from kill
-      const mobTemplate = global.World?.getMobTemplate(currentMonster.mobTemplateId || currentMonster.id);
-      if (mobTemplate && global.FactionSystem) {
-        global.FactionSystem.applyKillFactionChanges(mobTemplate);
+      const mobTemplateForFaction = global.World?.getMobTemplate(currentMonster.mobTemplateId || currentMonster.id);
+      if (mobTemplateForFaction && global.FactionSystem) {
+        global.FactionSystem.applyKillFactionChanges(mobTemplateForFaction);
         
         // Check if killed a friendly in a city (criminal flag)
         const currentZone = global.Zones?.getCurrentZone();

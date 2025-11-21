@@ -754,7 +754,10 @@
     document.body.appendChild(overlay);
   }
 
-  global.Rendering.showWorldMap = showWorldMap;
+  if (typeof window !== 'undefined') {
+    window.Rendering = window.Rendering || {};
+    window.Rendering.showWorldMap = showWorldMap;
+  }
 
   function updateResourceBar() {
     const resources = global.State?.data?.resources || {};
@@ -874,6 +877,14 @@
     showAlchemy
   };
 
-  global.Rendering = Rendering;
+  if (typeof window !== 'undefined') {
+    window.Rendering = Rendering;
+    // Also set on global for compatibility
+    if (typeof global !== 'undefined') {
+      global.Rendering = Rendering;
+    }
+  } else if (typeof global !== 'undefined') {
+    global.Rendering = Rendering;
+  }
 })(window);
 

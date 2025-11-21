@@ -78,7 +78,9 @@
     potion.recipe.forEach(([material, amount]) => {
       resources[material] = (resources[material] || 0) - amount;
     });
-    global.State?.data.resources = resources;
+    if (global.State && global.State.data) {
+      global.State.data.resources = resources;
+    }
 
     // Calculate success chance (base 70% + 2% per alchemy level)
     const successChance = Math.min(0.95, 0.7 + (alchemyLevel * 0.02));

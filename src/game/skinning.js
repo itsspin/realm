@@ -40,7 +40,9 @@
       resources.hide = (resources.hide || 0) + hideAmount;
     }
 
-    global.State?.data.resources = resources;
+    if (global.State && global.State.data) {
+      global.State.data.resources = resources;
+    }
 
     // Award skill XP
     global.Skills?.addSkillXP('skinning', hideAmount * 5);

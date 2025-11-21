@@ -144,7 +144,9 @@
           }
         } else {
           // Character exists, initialize game
-          if (global.App && global.App.initializeGame) {
+          if (window.App && window.App.initializeGame) {
+            window.App.initializeGame();
+          } else if (global.App && global.App.initializeGame) {
             global.App.initializeGame();
           }
         }
