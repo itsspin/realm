@@ -318,6 +318,44 @@
     "range": 8,
     "castTime": 2,
     "canTargetSelf": true
+  },
+  {
+    "id": "bind_soul",
+    "name": "Bind Soul",
+    "description": "Binds a party member's soul to your current location. When they die, they will respawn here instead of their starting point. Requires party member as target.",
+    "classId": "arcanist",
+    "requiredLevel": 12,
+    "type": "spell",
+    "cooldown": 0,
+    "cost": {
+      "mana": 50
+    },
+    "effect": {
+      "type": "bind",
+      "requiresParty": true
+    },
+    "range": 5,
+    "castTime": 3,
+    "requiresTarget": true
+  },
+  {
+    "id": "bind_soul",
+    "name": "Bind Soul",
+    "description": "Binds a party member's soul to your current location. When they die, they will respawn here instead of their starting point. Requires party member as target.",
+    "classId": "templar",
+    "requiredLevel": 12,
+    "type": "spell",
+    "cooldown": 0,
+    "cost": {
+      "mana": 50
+    },
+    "effect": {
+      "type": "bind",
+      "requiresParty": true
+    },
+    "range": 5,
+    "castTime": 3,
+    "requiresTarget": true
   }
 ]
 

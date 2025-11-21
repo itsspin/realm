@@ -54,7 +54,22 @@
       return;
     }
 
-    // Get player's class and skills
+    // Check for custom skillbar assignments first
+    if (player.skillbar && Array.isArray(player.skillbar) && player.skillbar.length > 0) {
+      skillSlots = [];
+      player.skillbar.forEach((skillId, index) => {
+        if (skillId && index < 5) {
+          const skill = global.REALM?.data?.skillsById?.[skillId.toLowerCase()];
+          if (skill) {
+            skillSlots[index] = skill;
+          }
+        }
+      });
+      renderSkillbar();
+      return;
+    }
+
+    // Fallback: Auto-populate from class skills (for new players)
     const classData = global.REALM?.data?.classesEnhancedById?.[player.class.toLowerCase()] ||
                      global.REALM?.data?.classesById?.[player.class.toLowerCase()];
     if (!classData) {
@@ -134,6 +149,9 @@
 
     // Attach click handlers
     attachClickHandlers();
+    
+    // Attach drag handlers for drops from tome
+    attachDropHandlers();
   }
 
   /**
@@ -226,6 +244,111 @@
   }
 
   /**
+   * Set skill in skillbar slot
+   */
+  function setSkill(slotIndex, skillId) {
+    if (slotIndex < 0 || slotIndex >= 5) return false;
+    
+    const player = global.State?.getPlayer();
+    if (!player) return false;
+    
+    // Verify player has learned this skill
+    const classData = global.REALM?.data?.classesEnhancedById?.[player.class.toLowerCase()] ||
+                     global.REALM?.data?.classesById?.[player.class.toLowerCase()];
+    if (!classData) return false;
+    
+    const skillIdsByLevel = classData.skillIdsByLevel || {};
+    let hasSkill = false;
+    Object.keys(skillIdsByLevel).forEach(level => {
+      if (player.level >= parseInt(level, 10)) {
+        if (skillIdsByLevel[level].includes(skillId.toLowerCase())) {
+          hasSkill = true;
+        }
+      }
+    });
+    
+    if (!hasSkill) {
+      if (global.ChatSystem) {
+        global.ChatSystem.addSystemMessage('You have not learned this skill yet.');
+      }
+      return false;
+    }
+    
+    // Get skill data
+    const skill = global.REALM?.data?.skillsById?.[skillId.toLowerCase()];
+    if (!skill) return false;
+    
+    // Initialize skillbar array if needed
+    if (!player.skillbar || !Array.isArray(player.skillbar)) {
+      player.skillbar = new Array(5).fill(null);
+    }
+    
+    // Set skill in slot
+    player.skillbar[slotIndex] = skillId.toLowerCase();
+    
+    // Update state
+    global.State?.updatePlayer({ skillbar: player.skillbar });
+    
+    // Update skillbar display
+    updateSkillbar();
+    
+    return true;
+  }
+
+  /**
+   * Wipe skillbar (on death)
+   */
+  function wipeSkillbar() {
+    const player = global.State?.getPlayer();
+    if (!player) return;
+    
+    global.State?.updatePlayer({ skillbar: [] });
+    skillSlots = [];
+    renderSkillbar();
+    
+    if (global.ChatSystem) {
+      global.ChatSystem.addSystemMessage('Your skillbar has been cleared.');
+    }
+  }
+
+  /**
+   * Attach drop handlers for drag-and-drop from tome
+   */
+  function attachDropHandlers() {
+    const slots = skillbarElement?.querySelectorAll('.skillbar-slot');
+    if (!slots) return;
+    
+    slots.forEach(slot => {
+      slot.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      
+      slot.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+      });
+      
+      slot.addEventListener('dragleave', (e) => {
+        e.currentTarget.classList.remove('drag-over');
+      });
+      
+      slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        
+        const skillId = e.dataTransfer.getData('text/plain');
+        if (!skillId) return;
+        
+        const slotIndex = parseInt(e.currentTarget.dataset.slot, 10) - 1;
+        if (isNaN(slotIndex) || slotIndex < 0 || slotIndex >= 5) return;
+        
+        setSkill(slotIndex, skillId);
+      });
+    });
+  }
+
+  /**
    * Handle keyboard input
    */
   function handleKeyboard(event) {
@@ -268,7 +391,9 @@
 
   const Skillbar = {
     update: updateSkillbar,
-    useSkill
+    useSkill,
+    setSkill,
+    wipeSkillbar
   };
 
   global.Skillbar = Skillbar;

@@ -74,7 +74,8 @@
       "1": ["minor_nuke"],
       "4": ["flame_bolt"],
       "7": ["frost_snare"],
-      "10": ["lightning_strike"]
+      "10": ["lightning_strike"],
+      "12": ["bind_soul"]
     },
     "bonuses": { "atk": 5, "def": 0, "hp": 2 },
     "canSolo": true,
@@ -101,7 +102,8 @@
       "1": ["minor_heal"],
       "4": ["light_heal"],
       "7": ["smite_undead"],
-      "10": ["cure_disease"]
+      "10": ["cure_disease"],
+      "12": ["bind_soul"]
     },
     "bonuses": { "atk": 1, "def": 2, "hp": 4 },
     "canSolo": true,

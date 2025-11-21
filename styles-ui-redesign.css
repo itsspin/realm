@@ -865,6 +865,188 @@
   font-weight: 600;
 }
 
+.skillbar-slot.drag-over {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 12px rgba(212, 184, 138, 0.8);
+  background: rgba(212, 184, 138, 0.1);
+}
+
+/* ============================================
+   Tome UI
+   ============================================ */
+
+.tome-button {
+  position: absolute;
+  left: -50px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-soft);
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  .tome-button {
+    left: -45px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+  }
+}
+
+.tome-button:hover {
+  border-color: var(--gold-bright);
+  box-shadow: var(--glow-gold);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.tome-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.tome-modal.hidden {
+  display: none;
+}
+
+.tome-modal-content {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(42, 37, 32, 0.98) 100%);
+  border: var(--border-medium);
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-strong);
+}
+
+.tome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.tome-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--gold-bright);
+  font-size: 1.5rem;
+}
+
+.tome-close {
+  background: none;
+  border: none;
+  color: var(--fg-secondary);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.tome-close:hover {
+  color: var(--fg-primary);
+}
+
+.tome-content {
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tome-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.tome-skill-item {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.5rem;
+  cursor: grab;
+  transition: all 0.2s ease;
+}
+
+.tome-skill-item:hover {
+  border-color: var(--gold-bright);
+  background: rgba(10, 14, 26, 0.8);
+  transform: translateX(4px);
+}
+
+.tome-skill-item.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.tome-skill-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.tome-skill-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.tome-skill-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+.tome-skill-description {
+  font-size: 0.9rem;
+  color: var(--fg-secondary);
+  line-height: 1.4;
+}
+
+.tome-skill-stats {
+  font-size: 0.85rem;
+  color: var(--ember-orange);
+  font-family: var(--font-mono);
+  margin-top: var(--spacing-xs);
+}
+
+.tome-empty {
+  text-align: center;
+  color: var(--fg-secondary);
+  padding: var(--spacing-lg);
+  font-style: italic;
+}
+
 /* ============================================
    Responsive Design (Mobile)
    ============================================ */

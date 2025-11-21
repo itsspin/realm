@@ -48,6 +48,8 @@
     skills: {},
     currentZone: 'thronehold',
     currentTile: { x: 20, y: 20 },
+    bindLocation: null, // { zone: 'zoneId', tile: { x, y } } - respawn location
+    skillbar: [], // Custom skillbar assignments [skillId1, skillId2, ...] (max 5)
     settlements: [],
     guild: null,
     faction: null,

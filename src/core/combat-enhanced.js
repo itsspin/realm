@@ -132,18 +132,33 @@
     if (!player) return false;
 
     // Get skill data
-    const skill = global.REALM?.data?.skillsById?.[skillId];
-    if (!skill) return false;
-
-    // Check if skill is learned
-    if (!player.skills || !player.skills[skillId]) {
-      global.ChatSystem?.addSystemMessage('You do not know that skill.');
+    const skill = global.REALM?.data?.skillsById?.[skillId.toLowerCase()];
+    if (!skill) {
+      global.ChatSystem?.addSystemMessage('Skill not found.');
       return false;
     }
 
-    // Check level requirement
-    if (player.level < skill.requiredLevel) {
-      global.ChatSystem?.addSystemMessage('You are not high enough level to use that skill.');
+    // Check if skill is learned (check class and level)
+    const classData = global.REALM?.data?.classesEnhancedById?.[player.class?.toLowerCase()] ||
+                     global.REALM?.data?.classesById?.[player.class?.toLowerCase()];
+    if (!classData) {
+      global.ChatSystem?.addSystemMessage('Class data not found.');
+      return false;
+    }
+
+    // Check if player has learned this skill (based on level)
+    const skillIdsByLevel = classData.skillIdsByLevel || {};
+    let hasSkill = false;
+    Object.keys(skillIdsByLevel).forEach(level => {
+      if (player.level >= parseInt(level, 10)) {
+        if (skillIdsByLevel[level].includes(skillId.toLowerCase())) {
+          hasSkill = true;
+        }
+      }
+    });
+
+    if (!hasSkill || player.level < skill.requiredLevel) {
+      global.ChatSystem?.addSystemMessage('You have not learned this skill yet.');
       return false;
     }
 
@@ -256,6 +271,56 @@
       });
       
       global.Rendering?.updateCharacterPanel();
+    } else if (effect.type === 'bind') {
+      // Bind Soul spell - binds target's soul to caster's location
+      const caster = global.State?.getPlayer();
+      if (!caster) return;
+
+      // Check if target exists
+      if (!target) {
+        global.ChatSystem?.addSystemMessage('You need a target to bind.');
+        return;
+      }
+
+      // For party-based binding, check if target is in party
+      // For now, allow self-targeting or party members (if party system exists)
+      const isSelf = target.id === caster.id || target === caster;
+      const isPartyMember = global.Party && global.Party.isInParty && global.Party.isInParty(target.id);
+      
+      if (effect.requiresParty && !isSelf && !isPartyMember) {
+        global.ChatSystem?.addSystemMessage('You can only bind yourself or party members.');
+        return;
+      }
+
+      // Get caster's current location
+      const bindLocation = {
+        zone: caster.currentZone,
+        tile: { ...caster.currentTile }
+      };
+
+      if (isSelf) {
+        // Bind self
+        global.State?.updatePlayer({ bindLocation });
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You bind your soul to this location. You will respawn here upon death.`,
+          meta: 'Bind Soul'
+        });
+        global.ChatSystem?.addSystemMessage('Your soul has been bound to this location.');
+      } else {
+        // Bind party member (in real MMO, this would update target's state on server)
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You bind ${target.name}'s soul to this location. They will respawn here upon death.`,
+          meta: 'Bind Soul'
+        });
+        global.ChatSystem?.addSystemMessage(`${target.name}'s soul has been bound to this location.`);
+        
+        // Note: In a real MMO implementation, you would:
+        // 1. Verify caster and target are in the same party
+        // 2. Update target's bindLocation on the server
+        // 3. Notify target player of the bind via server message
+      }
     }
   }
 

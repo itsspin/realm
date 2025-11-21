@@ -453,21 +453,8 @@
         text: `Defeated ${currentMonster.name}`
       });
     } else {
-      global.Narrative?.addEntry({
-        type: 'combat',
-        text: `You have been defeated by the ${currentMonster.name}. The darkness claims you...`,
-        meta: 'Defeat'
-      });
-
-      // Resurrect with half HP
-      const player = global.State?.getPlayer();
-      const maxHp = player.stats.maxHp || 20;
-      global.State?.updatePlayer({
-        stats: {
-          ...player.stats,
-          hp: Math.floor(maxHp / 2)
-        }
-      });
+      // Player death
+      handlePlayerDeath();
     }
 
     currentMonster = null;
@@ -496,6 +483,82 @@
     combatState = null;
     global.Rendering?.updateCombatUI();
     global.Rendering?.updateActionButtons();
+  }
+
+  /**
+   * Handle player death
+   */
+  function handlePlayerDeath() {
+    const player = global.State?.getPlayer();
+    if (!player) return;
+
+    global.Narrative?.addEntry({
+      type: 'combat',
+      text: `You have been defeated. The darkness claims you...`,
+      meta: 'Defeat'
+    });
+
+    // Wipe skillbar
+    if (global.Skillbar && global.Skillbar.wipeSkillbar) {
+      global.Skillbar.wipeSkillbar();
+    }
+
+    // Respawn at bind location (or starting point)
+    const bindLocation = player.bindLocation;
+    let respawnZone = player.currentZone || 'thronehold';
+    let respawnTile = player.currentTile || { x: 20, y: 20 };
+
+    if (bindLocation && bindLocation.zone && bindLocation.tile) {
+      respawnZone = bindLocation.zone;
+      respawnTile = bindLocation.tile;
+      
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: `Your soul returns to your bind point.`,
+        meta: 'Respawn'
+      });
+    } else {
+      // Starting point (first spawn)
+      const startingZone = global.REALM?.data?.zonesById?.['thronehold'];
+      if (startingZone && startingZone.spawnPoint) {
+        respawnZone = 'thronehold';
+        respawnTile = startingZone.spawnPoint;
+      }
+      
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: `You awaken at the starting point, your memory clouded.`,
+        meta: 'Respawn'
+      });
+    }
+
+    // Update player position
+    global.State?.updatePlayer({
+      currentZone: respawnZone,
+      currentTile: respawnTile,
+      stats: {
+        ...player.stats,
+        hp: Math.floor((player.stats.maxHp || 20) / 2) // Respawn with half HP
+      }
+    });
+
+    // Move player on map
+    if (global.WorldMapRender && global.WorldMapRender.centerOnTile) {
+      setTimeout(() => {
+        global.WorldMapRender.centerOnTile(respawnTile.x, respawnTile.y);
+        global.WorldMapRender.renderMap();
+      }, 500);
+    }
+
+    // Update UI
+    if (global.Rendering) {
+      global.Rendering.updateCharacterPanel();
+      global.Rendering.updateZoneHeader();
+    }
+
+    if (global.ChatSystem) {
+      global.ChatSystem.addSystemMessage('You have died. Your skillbar has been cleared.');
+    }
   }
 
   /**

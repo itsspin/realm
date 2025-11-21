@@ -279,6 +279,73 @@
     document.body.appendChild(adminPanel);
     setupEventListeners();
     loadData();
+    
+    // Also set up button handlers directly (in case onclick doesn't work)
+    setTimeout(() => {
+      setupButtonHandlers();
+    }, 100);
+  }
+
+  /**
+   * Setup button handlers directly (fallback for onclick issues)
+   */
+  function setupButtonHandlers() {
+    // Map editor buttons
+    const fillBtn = adminPanel.querySelector('button[onclick*="fillZoneWithTile"]');
+    if (fillBtn) {
+      fillBtn.onclick = () => {
+        console.log('[AdminPanel] Fill button clicked');
+        fillZoneWithTile();
+      };
+    }
+
+    const clearBtn = adminPanel.querySelector('button[onclick*="clearZone"]');
+    if (clearBtn) {
+      clearBtn.onclick = () => {
+        console.log('[AdminPanel] Clear button clicked');
+        clearZone();
+      };
+    }
+
+    const genMapBtn = adminPanel.querySelector('button[onclick*="generateMap"]');
+    if (genMapBtn) {
+      genMapBtn.onclick = () => {
+        console.log('[AdminPanel] Generate Map button clicked');
+        generateMap();
+      };
+    }
+
+    const genFantasyBtn = adminPanel.querySelector('button[onclick*="generateFantasyMap"]');
+    if (genFantasyBtn) {
+      genFantasyBtn.onclick = () => {
+        console.log('[AdminPanel] Generate Fantasy Map button clicked');
+        generateFantasyMap();
+      };
+    }
+
+    const saveBtn = adminPanel.querySelector('button[onclick*="saveAll"]');
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        console.log('[AdminPanel] Save All button clicked');
+        saveAll();
+      };
+    }
+
+    const reloadBtn = adminPanel.querySelector('button[onclick*="reloadData"]');
+    if (reloadBtn) {
+      reloadBtn.onclick = () => {
+        console.log('[AdminPanel] Reload Data button clicked');
+        reloadData();
+      };
+    }
+
+    const undoBtn = adminPanel.querySelector('button[onclick*="undoChanges"]');
+    if (undoBtn) {
+      undoBtn.onclick = () => {
+        console.log('[AdminPanel] Undo button clicked');
+        undoChanges();
+      };
+    }
   }
 
   /**
@@ -520,18 +587,21 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw tiles directly from worldData.tiles (more reliable than getZoneTiles)
+    let tilesDrawn = 0;
     for (let y = 0; y < zone.gridHeight; y++) {
       for (let x = 0; x < zone.gridWidth; x++) {
         const key = `${zoneId}_${x}_${y}`;
         let tile = worldData.tiles[key];
         
-        // If tile doesn't exist, create a default one for display
+        // If tile doesn't exist, create a default one for display (but don't save it)
         if (!tile) {
-          tile = {
-            x, y, zoneId,
-            terrainType: 'grass',
-            walkable: true
-          };
+          // Show empty/undefined tiles as dark gray
+          ctx.fillStyle = '#1a1a1a';
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x * tileSize, y * tileSize, tileSize, tileSize);
+          continue;
         }
 
         const screenX = x * tileSize;
@@ -546,8 +616,11 @@
           ctx.lineWidth = 1;
           ctx.strokeRect(screenX, screenY, tileSize, tileSize);
         }
+        tilesDrawn++;
       }
     }
+    
+    console.log('[AdminPanel] Rendered', tilesDrawn, 'tiles for zone', zoneId);
 
     // Add click handler
     canvas.onclick = (e) => {
@@ -614,66 +687,79 @@
    * Fill zone with selected tile type
    */
   function fillZoneWithTile() {
-    console.log('[AdminPanel] fillZoneWithTile called');
-    const zoneSelect = document.getElementById('adminZoneSelect');
-    if (!zoneSelect) {
-      console.error('[AdminPanel] Zone select not found');
-      alert('Zone selector not found. Please refresh the admin panel.');
-      return;
-    }
-    
-    const zoneId = zoneSelect.value;
-    if (!zoneId) {
-      alert('Please select a zone first');
-      return;
-    }
-
-    if (!confirm('This will replace all tiles in the zone. Continue?')) {
-      return;
-    }
-
-    const zone = global.World?.getZone(zoneId);
-    if (!zone) {
-      alert('Zone not found: ' + zoneId);
-      return;
-    }
-
-    const tileType = document.getElementById('tileTypeSelect')?.value || selectedTileType;
-    const walkable = document.getElementById('tileWalkable')?.checked ?? true;
-    const worldData = global.World?.getWorldData();
-    if (!worldData) {
-      alert('World data not available');
-      return;
-    }
-
-    if (!worldData.tiles) {
-      worldData.tiles = {};
-    }
-
-    for (let y = 0; y < zone.gridHeight; y++) {
-      for (let x = 0; x < zone.gridWidth; x++) {
-        const key = `${zoneId}_${x}_${y}`;
-        worldData.tiles[key] = {
-          x, y, zoneId,
-          terrainType: tileType,
-          walkable: walkable
-        };
+    try {
+      console.log('[AdminPanel] fillZoneWithTile called');
+      const zoneSelect = document.getElementById('adminZoneSelect');
+      if (!zoneSelect) {
+        console.error('[AdminPanel] Zone select not found');
+        alert('Zone selector not found. Please refresh the admin panel.');
+        return;
       }
-    }
+      
+      const zoneId = zoneSelect.value;
+      if (!zoneId) {
+        alert('Please select a zone first');
+        return;
+      }
 
-    unsavedChanges = true;
-    updateStatus('Zone filled');
-    
-    // Force re-render
-    setTimeout(() => {
-      renderMapEditor();
-      console.log('[AdminPanel] Zone filled, tiles updated:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
-    }, 50);
-    
-    // Update live game map if in same zone
-    const player = global.State?.getPlayer();
-    if (player && player.currentZone === zoneId && global.WorldMapRender) {
-      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      if (!confirm('This will replace all tiles in the zone. Continue?')) {
+        return;
+      }
+
+      const zone = global.World?.getZone(zoneId);
+      if (!zone) {
+        alert('Zone not found: ' + zoneId);
+        return;
+      }
+
+      const tileTypeSelect = document.getElementById('tileTypeSelect');
+      const tileType = tileTypeSelect?.value || selectedTileType || 'grass';
+      const walkableCheckbox = document.getElementById('tileWalkable');
+      const walkable = walkableCheckbox ? walkableCheckbox.checked : true;
+      
+      const worldData = global.World?.getWorldData();
+      if (!worldData) {
+        alert('World data not available. Is the World system initialized?');
+        console.error('[AdminPanel] World.getWorldData() returned:', worldData);
+        return;
+      }
+
+      if (!worldData.tiles) {
+        worldData.tiles = {};
+      }
+
+      console.log('[AdminPanel] Filling zone', zoneId, 'with', zone.gridWidth, 'x', zone.gridHeight, 'tiles');
+      let tileCount = 0;
+      for (let y = 0; y < zone.gridHeight; y++) {
+        for (let x = 0; x < zone.gridWidth; x++) {
+          const key = `${zoneId}_${x}_${y}`;
+          worldData.tiles[key] = {
+            x, y, zoneId,
+            terrainType: tileType,
+            walkable: walkable
+          };
+          tileCount++;
+        }
+      }
+
+      console.log('[AdminPanel] Created', tileCount, 'tiles');
+      unsavedChanges = true;
+      updateStatus(`Zone filled with ${tileCount} tiles`);
+      
+      // Force re-render
+      setTimeout(() => {
+        renderMapEditor();
+        console.log('[AdminPanel] Zone filled, total tiles in worldData:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
+      }, 50);
+      
+      // Update live game map if in same zone
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone === zoneId && global.WorldMapRender) {
+        setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      }
+    } catch (error) {
+      console.error('[AdminPanel] Error in fillZoneWithTile:', error);
+      alert('Error filling zone: ' + error.message);
     }
   }
 
@@ -681,55 +767,70 @@
    * Clear zone
    */
   function clearZone() {
-    console.log('[AdminPanel] clearZone called');
-    const zoneSelect = document.getElementById('adminZoneSelect');
-    if (!zoneSelect) {
-      alert('Zone selector not found');
-      return;
-    }
-    
-    const zoneId = zoneSelect.value;
-    if (!zoneId) {
-      alert('Please select a zone first');
-      return;
-    }
-
-    if (!confirm('This will clear all tiles in the zone. Continue?')) {
-      return;
-    }
-
-    const zone = global.World?.getZone(zoneId);
-    if (!zone) {
-      alert('Zone not found: ' + zoneId);
-      return;
-    }
-
-    const worldData = global.World?.getWorldData();
-    if (!worldData) {
-      alert('World data not available');
-      return;
-    }
-
-    for (let y = 0; y < zone.gridHeight; y++) {
-      for (let x = 0; x < zone.gridWidth; x++) {
-        const key = `${zoneId}_${x}_${y}`;
-        delete worldData.tiles[key];
+    try {
+      console.log('[AdminPanel] clearZone called');
+      const zoneSelect = document.getElementById('adminZoneSelect');
+      if (!zoneSelect) {
+        alert('Zone selector not found');
+        return;
       }
-    }
+      
+      const zoneId = zoneSelect.value;
+      if (!zoneId) {
+        alert('Please select a zone first');
+        return;
+      }
 
-    unsavedChanges = true;
-    updateStatus('Zone cleared');
-    
-    // Force re-render
-    setTimeout(() => {
-      renderMapEditor();
-      console.log('[AdminPanel] Zone cleared');
-    }, 50);
-    
-    // Update live game map if in same zone
-    const player = global.State?.getPlayer();
-    if (player && player.currentZone === zoneId && global.WorldMapRender) {
-      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      if (!confirm('This will clear all tiles in the zone. Continue?')) {
+        return;
+      }
+
+      const zone = global.World?.getZone(zoneId);
+      if (!zone) {
+        alert('Zone not found: ' + zoneId);
+        return;
+      }
+
+      const worldData = global.World?.getWorldData();
+      if (!worldData) {
+        alert('World data not available. Is the World system initialized?');
+        console.error('[AdminPanel] World.getWorldData() returned:', worldData);
+        return;
+      }
+
+      if (!worldData.tiles) {
+        worldData.tiles = {};
+      }
+
+      let deletedCount = 0;
+      for (let y = 0; y < zone.gridHeight; y++) {
+        for (let x = 0; x < zone.gridWidth; x++) {
+          const key = `${zoneId}_${x}_${y}`;
+          if (worldData.tiles[key]) {
+            delete worldData.tiles[key];
+            deletedCount++;
+          }
+        }
+      }
+
+      console.log('[AdminPanel] Deleted', deletedCount, 'tiles');
+      unsavedChanges = true;
+      updateStatus(`Zone cleared (${deletedCount} tiles removed)`);
+      
+      // Force re-render
+      setTimeout(() => {
+        renderMapEditor();
+        console.log('[AdminPanel] Zone cleared, remaining tiles:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
+      }, 50);
+      
+      // Update live game map if in same zone
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone === zoneId && global.WorldMapRender) {
+        setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      }
+    } catch (error) {
+      console.error('[AdminPanel] Error in clearZone:', error);
+      alert('Error clearing zone: ' + error.message);
     }
   }
 
@@ -1613,22 +1714,27 @@
    * Save all changes and apply live
    */
   async function saveAll() {
-    if (!unsavedChanges) {
-      updateStatus('No changes to save');
-      return;
-    }
-
-    if (!confirm('This will apply changes to the live game for all players. Continue?')) {
-      return;
-    }
-
-    updateStatus('Creating backup and saving...');
-
     try {
+      console.log('[AdminPanel] saveAll called, unsavedChanges:', unsavedChanges);
+      
+      if (!unsavedChanges) {
+        updateStatus('No changes to save');
+        return;
+      }
+
+      if (!confirm('This will apply changes to the live game for all players. Continue?')) {
+        return;
+      }
+
+      updateStatus('Creating backup and saving...');
+
       const worldData = global.World?.getWorldData();
       if (!worldData) {
-        throw new Error('World data not available');
+        throw new Error('World data not available. Is the World system initialized?');
       }
+
+      console.log('[AdminPanel] World data available, zones:', Object.keys(worldData.zones).length);
+      console.log('[AdminPanel] Tiles:', Object.keys(worldData.tiles).length);
 
       // Create backup before saving
       createBackup();
@@ -1650,10 +1756,12 @@
           text: 'All changes have been saved and applied to the live game for all players.'
         });
       }
+      
+      console.log('[AdminPanel] Save completed successfully');
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('[AdminPanel] Save error:', error);
       updateStatus('Error saving: ' + error.message);
-      alert('Error saving changes: ' + error.message);
+      alert('Error saving changes: ' + error.message + '\n\nCheck console for details.');
     }
   }
 
@@ -2174,67 +2282,86 @@
    * Generate map based on type (context-aware)
    */
   function generateMap() {
-    console.log('[AdminPanel] generateMap called');
-    const zoneSelect = document.getElementById('adminZoneSelect');
-    if (!zoneSelect) {
-      alert('Zone selector not found');
-      return;
-    }
-    
-    const zoneId = zoneSelect.value;
-    if (!zoneId) {
-      alert('Please select a zone first');
-      return;
-    }
+    try {
+      console.log('[AdminPanel] generateMap called');
+      const zoneSelect = document.getElementById('adminZoneSelect');
+      if (!zoneSelect) {
+        alert('Zone selector not found');
+        return;
+      }
+      
+      const zoneId = zoneSelect.value;
+      if (!zoneId) {
+        alert('Please select a zone first');
+        return;
+      }
 
-    const zone = global.World?.getZone(zoneId);
-    if (!zone) {
-      alert('Zone not found: ' + zoneId);
-      return;
-    }
+      const zone = global.World?.getZone(zoneId);
+      if (!zone) {
+        alert('Zone not found: ' + zoneId);
+        return;
+      }
 
-    const genType = document.getElementById('mapGenType')?.value || 'outdoor';
-    const roadWidth = parseInt(document.getElementById('mapGenRoadWidth')?.value || '2');
-    const buildingDensity = parseInt(document.getElementById('mapGenBuildingDensity')?.value || '30');
-    const mainRoads = document.getElementById('mapGenMainRoads')?.checked ?? true;
-    const sidePaths = document.getElementById('mapGenSidePaths')?.checked ?? true;
+      const genTypeSelect = document.getElementById('mapGenType');
+      const genType = genTypeSelect?.value || 'outdoor';
+      const roadWidthInput = document.getElementById('mapGenRoadWidth');
+      const roadWidth = parseInt(roadWidthInput?.value || '2');
+      const buildingDensityInput = document.getElementById('mapGenBuildingDensity');
+      const buildingDensity = parseInt(buildingDensityInput?.value || '30');
+      const mainRoadsCheckbox = document.getElementById('mapGenMainRoads');
+      const mainRoads = mainRoadsCheckbox ? mainRoadsCheckbox.checked : true;
+      const sidePathsCheckbox = document.getElementById('mapGenSidePaths');
+      const sidePaths = sidePathsCheckbox ? sidePathsCheckbox.checked : true;
 
-    if (!confirm(`Generate ${genType} map for ${zone.name}? This will replace existing tiles.`)) {
-      return;
-    }
+      if (!confirm(`Generate ${genType} map for ${zone.name}? This will replace existing tiles.`)) {
+        return;
+      }
 
-    const worldData = global.World?.getWorldData();
-    if (!worldData) {
-      alert('World data not available');
-      return;
-    }
+      const worldData = global.World?.getWorldData();
+      if (!worldData) {
+        alert('World data not available. Is the World system initialized?');
+        console.error('[AdminPanel] World.getWorldData() returned:', worldData);
+        return;
+      }
 
-    if (!worldData.tiles) {
-      worldData.tiles = {};
-    }
+      if (!worldData.tiles) {
+        worldData.tiles = {};
+      }
 
-    // Generate based on type (context-aware)
-    if (genType === 'city') {
-      generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
-    } else if (genType === 'outdoor') {
-      generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths);
-    } else if (genType === 'dungeon') {
-      generateDungeonMap(zone, worldData);
-    }
+      console.log('[AdminPanel] Generating', genType, 'map for zone', zoneId);
+      
+      // Generate based on type (context-aware)
+      if (genType === 'city') {
+        generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
+      } else if (genType === 'outdoor') {
+        generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths);
+      } else if (genType === 'dungeon') {
+        generateDungeonMap(zone, worldData);
+      } else {
+        alert('Unknown map generation type: ' + genType);
+        return;
+      }
 
-    unsavedChanges = true;
-    updateStatus('Map generated');
-    
-    // Force re-render
-    setTimeout(() => {
-      renderMapEditor();
-      console.log('[AdminPanel] Map generated, tiles updated:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
-    }, 50);
-    
-    // Update live game map if in same zone
-    const player = global.State?.getPlayer();
-    if (player && player.currentZone === zoneId && global.WorldMapRender) {
-      setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      const tileCount = Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length;
+      console.log('[AdminPanel] Generated', tileCount, 'tiles');
+      
+      unsavedChanges = true;
+      updateStatus(`Map generated (${tileCount} tiles)`);
+      
+      // Force re-render
+      setTimeout(() => {
+        renderMapEditor();
+        console.log('[AdminPanel] Map generated, total tiles:', tileCount);
+      }, 50);
+      
+      // Update live game map if in same zone
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone === zoneId && global.WorldMapRender) {
+        setTimeout(() => global.WorldMapRender.renderMap(), 100);
+      }
+    } catch (error) {
+      console.error('[AdminPanel] Error in generateMap:', error);
+      alert('Error generating map: ' + error.message);
     }
   }
 
