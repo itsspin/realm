@@ -819,9 +819,26 @@
       return false;
     }
 
-    if (!currentMonster) {
-      global.ChatSystem?.addSystemMessage('You are not in combat.');
-      return false;
+    // Get skill data to check if it requires combat
+    const skill = global.REALM?.data?.skillsById?.[skillId?.toLowerCase()];
+    if (skill) {
+      // Check if skill requires combat (pet summoning, buffs, etc. don't)
+      const effectType = skill.effect?.type;
+      const requiresCombat = !(effectType === 'summon_pet' || effectType === 'summon_item' || 
+                                effectType === 'buff' || skill.canTargetSelf || 
+                                skill.requiresTarget === false);
+      
+      // Only check combat state if skill requires combat
+      if (requiresCombat && !currentMonster) {
+        global.ChatSystem?.addSystemMessage('You are not in combat.');
+        return false;
+      }
+    } else {
+      // If skill not found, still check combat (default behavior)
+      if (!currentMonster) {
+        global.ChatSystem?.addSystemMessage('You are not in combat.');
+        return false;
+      }
     }
 
     // Get target (use current target or current monster)

@@ -11,6 +11,7 @@
   ];
 
   // Classes are loaded from data/classes.json
+  // Note: Also includes enhanced classes like warden, stalker, arcanist, templar, necromancer, magician
   const CLASSES = [
     { id: 'warrior', name: 'Warrior', description: 'Masters of melee combat, warriors excel in close quarters.', bonuses: { atk: 2, def: 4, hp: 8 }, skills: ['combat'] },
     { id: 'cleric', name: 'Cleric', description: 'Divine servants who channel the power of the gods to heal wounds.', bonuses: { atk: 1, def: 2, hp: 4 }, skills: ['healing'] },
@@ -20,7 +21,8 @@
     { id: 'monk', name: 'Monk', description: 'Unarmed combat masters who rely on speed and agility.', bonuses: { atk: 4, def: 2, hp: 4 }, skills: ['combat', 'unarmed'] },
     { id: 'mage', name: 'Mage', description: 'Wielders of destructive arcane power.', bonuses: { atk: 5, def: 0, hp: 2 }, skills: ['arcane'] },
     { id: 'enchanter', name: 'Enchanter', description: 'Masters of illusion and mind control.', bonuses: { atk: 3, def: 1, hp: 2 }, skills: ['arcane', 'enchantment'] },
-    { id: 'necromancer', name: 'Necromancer', description: 'Dark mages who command the dead.', bonuses: { atk: 4, def: 0, hp: 3 }, skills: ['dark_magic'] },
+    { id: 'necromancer', name: 'Necromancer', description: 'Dark mages who command the dead. They drain life from foes and raise skeletal minions to fight by their side.', bonuses: { atk: 4, def: 0, hp: 3 }, skills: ['dark_magic'] },
+    { id: 'magician', name: 'Magician', description: 'Wielders of elemental power who summon powerful elemental companions and conjure items from thin air.', bonuses: { atk: 5, def: 0, hp: 2 }, skills: ['arcane'] },
     { id: 'wizard', name: 'Wizard', description: 'Pure destructive magic users.', bonuses: { atk: 6, def: 0, hp: 1 }, skills: ['arcane'] },
     { id: 'druid', name: 'Druid', description: 'Nature priests who heal with the power of the wilds.', bonuses: { atk: 2, def: 2, hp: 4 }, skills: ['healing', 'nature_magic'] },
     { id: 'shaman', name: 'Shaman', description: 'Spiritual guides who combine healing with powerful buffs.', bonuses: { atk: 2, def: 2, hp: 5 }, skills: ['healing', 'shamanism'] },

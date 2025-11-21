@@ -135,13 +135,32 @@
    * Use skill from hotbar
    */
   function useSkillFromHotbar(skillId) {
+    // Get skill data to check if it requires a target
+    const skill = global.REALM?.data?.skillsById?.[skillId?.toLowerCase()];
+    const target = global.Targeting?.getTarget();
+    
+    // Check if skill requires target (pet summoning, buffs, etc. don't)
+    const effectType = skill?.effect?.type;
+    const isNoTargetSpell = effectType === 'summon_pet' || effectType === 'summon_item' || 
+                            effectType === 'buff' || skill?.canTargetSelf || 
+                            skill?.requiresTarget === false;
+    const requiresTarget = skill?.requiresTarget !== false && !isNoTargetSpell;
+    
+    // If skill requires target but we don't have one, try combat system (which handles errors)
+    if (requiresTarget && !target) {
+      if (global.Combat?.useSkillInCombat) {
+        global.Combat.useSkillInCombat(skillId);
+      } else if (global.CombatEnhanced?.useSkill) {
+        global.CombatEnhanced.useSkill(skillId, null);
+      }
+      return;
+    }
+    
+    // Use skill via appropriate system
     if (global.Combat?.useSkillInCombat) {
       global.Combat.useSkillInCombat(skillId);
     } else if (global.CombatEnhanced?.useSkill) {
-      const target = global.Targeting?.getTarget();
-      if (target) {
-        global.CombatEnhanced.useSkill(skillId, target);
-      }
+      global.CombatEnhanced.useSkill(skillId, target);
     }
   }
 
