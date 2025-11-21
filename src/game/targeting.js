@@ -274,6 +274,54 @@
       });
     }
 
+    // Attack button
+    const attackBtn = document.getElementById('attackBtn');
+    if (attackBtn) {
+      attackBtn.addEventListener('click', () => {
+        if (!currentTarget) {
+          if (global.ChatSystem) {
+            global.ChatSystem.addSystemMessage('You have no target.');
+          }
+          return;
+        }
+
+        const player = global.State?.getPlayer();
+        if (!player || !player.currentTile) return;
+
+        // Check if target is adjacent
+        const playerX = player.currentTile.x || 0;
+        const playerY = player.currentTile.y || 0;
+        const distance = Math.abs(currentTarget.x - playerX) + Math.abs(currentTarget.y - playerY);
+
+        if (distance > 1) {
+          if (global.ChatSystem) {
+            global.ChatSystem.addSystemMessage('You are too far away. Move closer.');
+          }
+          // Move towards target
+          if (global.Movement) {
+            global.Movement.moveToTile(currentTarget.x, currentTarget.y);
+          }
+          return;
+        }
+
+        // Check if it's a hostile mob
+        if (currentTarget.mobTemplate && !currentTarget.mobTemplate.isGuard && currentTarget.alive) {
+          // Start combat
+          if (global.Combat) {
+            if (global.Combat.startCombatWithMob) {
+              global.Combat.startCombatWithMob(currentTarget);
+            } else if (global.Combat.startCombat) {
+              global.Combat.startCombat(currentTarget.mobTemplateId);
+            }
+          }
+        } else {
+          if (global.ChatSystem) {
+            global.ChatSystem.addSystemMessage('You cannot attack that target.');
+          }
+        }
+      });
+    }
+
     // Keyboard controls (Tab to cycle targets)
     document.addEventListener('keydown', (e) => {
       // Only handle if not typing in input

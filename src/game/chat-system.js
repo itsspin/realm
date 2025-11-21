@@ -2,35 +2,8 @@
   const CHAT_HISTORY_LIMIT = 200;
   let chatHistory = [];
   let whisperTarget = null;
-
-  function initChat() {
-    const chatInput = document.getElementById('chatInput');
-    const chatSendBtn = document.getElementById('chatSendBtn');
-    
-    if (chatInput) {
-      chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendChatMessage();
-        }
-      });
-    }
-
-    if (chatSendBtn) {
-      chatSendBtn.addEventListener('click', sendChatMessage);
-    }
-
-    // Load chat history from localStorage
-    const saved = localStorage.getItem('REALM_CHAT_HISTORY');
-    if (saved) {
-      try {
-        chatHistory = JSON.parse(saved).slice(-CHAT_HISTORY_LIMIT);
-        renderChat();
-      } catch (e) {
-        chatHistory = [];
-      }
-    }
-  }
+  let activeChatTab = 'all';
+  let chatFocused = false;
 
   function sendChatMessage() {
     const chatInput = document.getElementById('chatInput');
@@ -104,8 +77,27 @@
           addSystemMessage('You are not in a guild.');
         }
         break;
+      case '/sit':
+        if (global.HealthRegen) {
+          const wasSitting = player.isSitting === true;
+          if (global.HealthRegen.toggleSitting()) {
+            addSystemMessage(wasSitting ? 'You stand up.' : 'You sit down to rest.');
+          }
+        } else {
+          addSystemMessage('Sitting is not available.');
+        }
+        break;
+      case '/stand':
+        if (global.HealthRegen && player.isSitting) {
+          if (global.HealthRegen.setSitting(false)) {
+            addSystemMessage('You stand up.');
+          }
+        } else {
+          addSystemMessage('You are already standing.');
+        }
+        break;
       default:
-        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild`);
+        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild, /sit, /stand`);
     }
   }
 
@@ -181,18 +173,41 @@
     }
   }
 
-  let activeChatTab = 'all';
-
   function initChat() {
     const chatInput = document.getElementById('chatInput');
     const chatSendBtn = document.getElementById('chatSendBtn');
     
     if (chatInput) {
+      // Focus chat on Enter key (when not already focused)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          // Don't focus if already typing
+          if (!chatFocused && chatInput) {
+            e.preventDefault();
+            chatInput.focus();
+            chatFocused = true;
+            return;
+          }
+        }
+      });
+
+      // Send message on Enter (when chat is focused)
       chatInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
           sendChatMessage();
+          chatFocused = false;
+          chatInput.blur();
         }
+      });
+
+      // Track focus state
+      chatInput.addEventListener('focus', () => {
+        chatFocused = true;
+      });
+
+      chatInput.addEventListener('blur', () => {
+        chatFocused = false;
       });
     }
 

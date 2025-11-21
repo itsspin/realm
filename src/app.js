@@ -443,6 +443,11 @@
         }
       }
 
+      // Initialize health regeneration system
+      if (window.HealthRegen && typeof window.HealthRegen.start === 'function') {
+        window.HealthRegen.start();
+      }
+
       // Render initial UI
       if (window.Rendering) {
         window.Rendering.updateZoneHeader();

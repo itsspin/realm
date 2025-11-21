@@ -1,13 +1,13 @@
 /**
  * World Map Rendering System
  * 
- * Renders a 12×12 player-centered grid viewport.
+ * Renders a 16×16 player-centered grid viewport.
  * The player stays in the center of the viewport, and tiles are calculated
  * relative to the player's position.
  * 
  * VIEWPORT:
- * - 12×12 tiles total
- * - Player always at viewport center (6, 6)
+ * - 16×16 tiles total
+ * - Player always at viewport center (8, 8)
  * - No dragging/panning - viewport follows player
  * - Zoom still works for accessibility
  */
@@ -20,9 +20,9 @@
   let hoveredTile = null; // {x, y} in world coordinates
 
   // Viewport constants
-  const VIEW_SIZE = 12; // 12×12 tiles
-  const VIEW_CENTER = 6; // Center index (0-11, center is 6)
-  const VIEW_RADIUS = 6; // 6 tiles on each side of center
+  const VIEW_SIZE = 16; // 16×16 tiles
+  const VIEW_CENTER = 8; // Center index (0-15, center is 8)
+  const VIEW_RADIUS = 8; // 8 tiles on each side of center
 
   // Expose for movement system and compatibility
   global.WorldMapRender = global.WorldMapRender || {};
@@ -247,7 +247,7 @@
   }
 
   /**
-   * Render the map using 12×12 viewport centered on player
+   * Render the map using 16×16 viewport centered on player
    */
   function renderMap() {
     if (!mapCanvas || !mapCtx) return;
@@ -284,7 +284,7 @@
     const allPlayers = global.MapEntities?.getNearbyPlayers() || [];
     const currentTarget = global.Targeting?.getTarget();
 
-    // Draw tiles in 12×12 viewport
+    // Draw tiles in 16×16 viewport
     for (let vy = 0; vy < VIEW_SIZE; vy++) {
       for (let vx = 0; vx < VIEW_SIZE; vx++) {
         // Calculate world coordinates
@@ -341,12 +341,21 @@
         // Draw crowding indicator (+N badge if multiple entities)
         const entityCount = getEntityCount(entities);
         if (entityCount > 1 && tileSize >= 16) {
+          mapCtx.save();
           mapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-          mapCtx.fillRect(screenX + tileSize - 18, screenY + 2, 16, 12);
+          mapCtx.fillRect(Math.round(screenX + tileSize - 18), Math.round(screenY + 2), 16, 12);
           mapCtx.fillStyle = '#fff';
-          mapCtx.font = `bold ${Math.max(8, tileSize / 4)}px monospace`;
+          mapCtx.strokeStyle = '#000';
+          mapCtx.lineWidth = 1;
+          mapCtx.font = `bold ${Math.max(8, Math.floor(tileSize / 4))}px monospace`;
           mapCtx.textAlign = 'center';
-          mapCtx.fillText(`+${entityCount}`, screenX + tileSize - 10, screenY + 11);
+          mapCtx.textBaseline = 'middle';
+          const badgeText = `+${entityCount}`;
+          const badgeX = Math.round(screenX + tileSize - 10);
+          const badgeY = Math.round(screenY + 8);
+          mapCtx.strokeText(badgeText, badgeX, badgeY);
+          mapCtx.fillText(badgeText, badgeX, badgeY);
+          mapCtx.restore();
         }
 
         // Draw spawn point indicator (for debugging)
@@ -387,12 +396,21 @@
     mapCtx.lineWidth = 3;
     mapCtx.stroke();
     
-    // Draw player name
+    // Draw player name (with better text rendering)
     if (tileSize >= 20) {
+      mapCtx.save();
       mapCtx.fillStyle = '#fff';
-      mapCtx.font = `bold ${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+      mapCtx.strokeStyle = '#000';
+      mapCtx.lineWidth = 2;
+      mapCtx.font = `bold ${Math.max(10, Math.floor(tileSize / 3))}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
       mapCtx.textAlign = 'center';
-      mapCtx.fillText(player.name || 'You', playerScreenX + tileSize / 2, playerScreenY - tileSize * 0.3);
+      mapCtx.textBaseline = 'bottom';
+      const name = player.name || 'You';
+      const textX = Math.round(playerScreenX + tileSize / 2);
+      const textY = Math.round(playerScreenY - tileSize * 0.3);
+      mapCtx.strokeText(name, textX, textY);
+      mapCtx.fillText(name, textX, textY);
+      mapCtx.restore();
     }
 
     // Draw debug overlay (spawn points)
@@ -438,12 +456,22 @@
       mapCtx.lineWidth = isTargeted ? 3 : 2;
       mapCtx.stroke();
 
-      // Draw mob name
+      // Draw mob name (with better text rendering)
       if (tileSize >= 20) {
+        mapCtx.save();
         mapCtx.fillStyle = '#fff';
-        mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.strokeStyle = '#000';
+        mapCtx.lineWidth = 2;
+        mapCtx.font = `bold ${Math.max(10, Math.floor(tileSize / 3))}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
         mapCtx.textAlign = 'center';
-        mapCtx.fillText(mob.mobTemplate?.name || 'Mob', screenX + tileSize / 2, screenY - 2);
+        mapCtx.textBaseline = 'bottom';
+        // Draw text with outline for readability
+        const name = mob.mobTemplate?.name || 'Mob';
+        const textX = Math.round(screenX + tileSize / 2);
+        const textY = Math.round(screenY - 2);
+        mapCtx.strokeText(name, textX, textY);
+        mapCtx.fillText(name, textX, textY);
+        mapCtx.restore();
       }
 
       // Highlight targeted tile
@@ -475,12 +503,21 @@
       mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
       mapCtx.fill();
       
-      // Draw player name
+      // Draw player name (with better text rendering)
       if (tileSize >= 20) {
+        mapCtx.save();
         mapCtx.fillStyle = '#fff';
-        mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.strokeStyle = '#000';
+        mapCtx.lineWidth = 2;
+        mapCtx.font = `${Math.max(10, Math.floor(tileSize / 3))}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
         mapCtx.textAlign = 'center';
-        mapCtx.fillText(p.name || 'Player', screenX + tileSize / 2, screenY - 2);
+        mapCtx.textBaseline = 'bottom';
+        const name = p.name || 'Player';
+        const textX = Math.round(screenX + tileSize / 2);
+        const textY = Math.round(screenY - 2);
+        mapCtx.strokeText(name, textX, textY);
+        mapCtx.fillText(name, textX, textY);
+        mapCtx.restore();
       }
     });
   }
@@ -776,26 +813,36 @@
     }
 
     if (targetEntity) {
-      // Set as target
+      // Check if entity is actually visible in viewport (prevent interacting with entities outside viewport)
+      const dx = worldX - player.currentTile.x;
+      const dy = worldY - player.currentTile.y;
+      const isInViewport = Math.abs(dx) <= VIEW_RADIUS && Math.abs(dy) <= VIEW_RADIUS;
+      
+      if (!isInViewport) {
+        // Entity is outside viewport - don't interact
+        return;
+      }
+
+      // Set as target (don't auto-attack - user must use Attack button or skillbar)
       if (global.Targeting) {
         global.Targeting.setTarget(targetEntity);
       }
       
-      // If adjacent and mob, attack
+      // For mobs, just set as target - don't auto-attack
       if (targetEntity.mobTemplate && !targetEntity.mobTemplate.isGuard) {
         const playerX = player.currentTile?.x || 0;
         const playerY = player.currentTile?.y || 0;
         const distance = Math.abs(worldX - playerX) + Math.abs(worldY - playerY);
         
-        if (distance <= 1) {
-          if (global.Combat) {
-            global.Combat.startCombat(targetEntity.mobTemplateId);
-          }
-        } else {
+        if (distance > 1) {
           // Move towards target
           if (global.Movement) {
             global.Movement.moveToTile(worldX, worldY);
           }
+        }
+        // Update tile detail panel so user can see Attack option
+        if (global.TileDetailPanel) {
+          global.TileDetailPanel.updateTile(player.currentZone, worldX, worldY);
         }
       } else {
         // Update tile detail panel

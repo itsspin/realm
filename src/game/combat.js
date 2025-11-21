@@ -141,6 +141,12 @@
       turnCount: 0
     };
 
+    // Cancel sitting when combat starts
+    const player = global.State?.getPlayer();
+    if (player && player.isSitting && global.HealthRegen) {
+      global.HealthRegen.setSitting(false);
+    }
+
     global.Narrative?.addEntry({
       type: 'combat',
       text: `A ${currentMonster.name} appears! ${currentMonster.description || ''}`,
@@ -203,6 +209,12 @@
       playerTurn: true,
       turnCount: 0
     };
+
+    // Cancel sitting when combat starts
+    const player = global.State?.getPlayer();
+    if (player && player.isSitting && global.HealthRegen) {
+      global.HealthRegen.setSitting(false);
+    }
 
     global.Narrative?.addEntry({
       type: 'combat',

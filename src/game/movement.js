@@ -89,6 +89,11 @@
       return false;
     }
 
+    // Cancel sitting when moving
+    if (player.isSitting && global.HealthRegen) {
+      global.HealthRegen.setSitting(false);
+    }
+
     // Start movement
     isMoving = true;
     currentMovement = { x: targetX, y: targetY };
@@ -170,14 +175,26 @@
 
   function checkNearbyEnemies(x, y) {
     // Check for monsters on this tile or adjacent tiles
-    const zone = global.Zones?.getCurrentZone();
-    if (!zone) return;
+    // REMOVED: Random encounters - mobs are now visible on map
+    // Only check for actual mobs at current tile position for aggro
+    const player = global.State?.getPlayer();
+    if (!player || !player.currentZone) return;
 
-    // 30% chance to encounter a monster when moving
-    if (Math.random() < 0.3) {
-      const monster = global.Zones?.getRandomMonster();
-      if (monster) {
-        global.Combat?.startCombat(monster.id);
+    // Check if there's a hostile mob at current position
+    const mob = global.SpawnSystem?.getMobAtTile(player.currentZone, x, y);
+    if (mob && mob.alive && mob.mobTemplate && !mob.mobTemplate.isGuard) {
+      // Auto-engage if stepping directly on mob (aggro)
+      // But don't auto-attack - just set as target
+      if (global.Targeting) {
+        global.Targeting.setTarget(mob);
+      }
+      
+      // Only auto-start combat if player is already in combat mode or mob is aggressive
+      // Otherwise, user must manually attack using Attack button or skillbar
+      const isInCombat = global.Combat?.isInCombat?.() || false;
+      if (!isInCombat) {
+        // Just target, don't auto-attack
+        return;
       }
     }
   }
