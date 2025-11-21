@@ -124,10 +124,30 @@
         await global.Auth?.login(email, password);
       }
 
-      // Success - hide auth screen and show character select
+      // Success - hide auth screen
       hideAuthScreen();
-      if (global.CharacterSelect) {
+      
+      // Check if we have backend - if not, go directly to character creation
+      const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
+                        (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
+      
+      if (hasBackend && global.CharacterSelect) {
+        // Backend mode: show character select
         global.CharacterSelect.show();
+      } else {
+        // Local-only mode: check if character exists, if not show creation
+        const player = global.State?.getPlayer();
+        if (!player || !player.race || !player.class || !player.name) {
+          // Show character creation
+          if (global.CharacterCreation && typeof global.CharacterCreation.showCharacterCreation === 'function') {
+            global.CharacterCreation.showCharacterCreation();
+          }
+        } else {
+          // Character exists, initialize game
+          if (global.App && global.App.initializeGame) {
+            global.App.initializeGame();
+          }
+        }
       }
     } catch (error) {
       showError(error.message || 'Authentication failed. Please try again.');

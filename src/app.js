@@ -292,14 +292,65 @@
    * Initialize the game after data is loaded
    * 
    * FLOW:
-   * 1. Initialize world map (create or load from localStorage)
-   * 2. Render map canvas
-   * 3. Initialize game state (load player from localStorage)
-   * 4. Check if character exists, show creation if not
+   * 1. Initialize game state (load player from localStorage) - MUST BE FIRST
+   * 2. Check if character exists, show creation if not
+   * 3. Initialize world map (create or load from localStorage)
+   * 4. Render map canvas
    * 5. Initialize quests, narrative, and UI systems
    */
   window.initializeGame = async function initializeGame() {
     try {
+      console.log('[App] initializeGame called');
+      
+      // Initialize state FIRST - this is critical!
+      if (window.State && typeof window.State.init === 'function') {
+        console.log('[App] Initializing State...');
+        const stateData = window.State.init();
+        console.log('[App] State initialized:', stateData);
+        if (stateData) {
+          REALM.state = stateData;
+          window.GameState = stateData;
+        }
+      } else {
+        console.error('[App] State system not available!');
+        return;
+      }
+
+      // Check for character creation BEFORE doing anything else
+      const player = window.State?.getPlayer();
+      console.log('[App] Checking character creation');
+      console.log('[App] Player object:', player);
+      console.log('[App] Player race:', player?.race);
+      console.log('[App] Player class:', player?.class);
+      console.log('[App] Player name:', player?.name);
+      
+      // Check if character is complete (has race, class, and name)
+      const needsCreation = !player || !player.race || !player.class || !player.name;
+      console.log('[App] Needs character creation?', needsCreation);
+      
+      if (needsCreation) {
+        console.log('[App] Character not complete, showing character creation');
+        // Show character creation immediately
+        if (window.CharacterCreation && typeof window.CharacterCreation.showCharacterCreation === 'function') {
+          console.log('[App] CharacterCreation exists, calling showCharacterCreation');
+          window.CharacterCreation.showCharacterCreation();
+        } else {
+          console.error('[App] CharacterCreation not available!');
+          console.error('[App] window.CharacterCreation:', window.CharacterCreation);
+          console.error('[App] Type:', typeof window.CharacterCreation);
+          if (window.CharacterCreation) {
+            console.error('[App] showCharacterCreation method:', typeof window.CharacterCreation.showCharacterCreation);
+          }
+        }
+        // Still initialize basic systems for character creation UI
+        if (window.Rendering) {
+          window.Rendering.updateResourceBar();
+        }
+        return; // Don't initialize full game until character is created
+      }
+
+      console.log('[App] Character exists, continuing initialization');
+      
       // Initialize world map
       if (window.Settlement && typeof window.Settlement.initializeWorldMap === 'function') {
         window.Settlement.initializeWorldMap();
@@ -314,37 +365,6 @@
             window.WorldMapRender.centerOnPlayer();
           }
         }, 200);
-      }
-
-      // Initialize state
-      if (window.State && typeof window.State.init === 'function') {
-        const stateData = window.State.init();
-        if (stateData) {
-          REALM.state = stateData;
-          window.GameState = stateData;
-        }
-      }
-
-      // Check for character creation
-      const player = window.State?.getPlayer();
-      console.log('[App] Checking character creation, player:', player);
-      if (!player || !player.race || !player.class || !player.name) {
-        console.log('[App] Character not complete, showing character creation');
-        // Show character creation
-        setTimeout(() => {
-          console.log('[App] CharacterCreation available?', window.CharacterCreation);
-          if (window.CharacterCreation && typeof window.CharacterCreation.showCharacterCreation === 'function') {
-            console.log('[App] Calling showCharacterCreation');
-            window.CharacterCreation.showCharacterCreation();
-          } else {
-            console.error('[App] CharacterCreation not available!');
-          }
-        }, 500);
-        // Still initialize basic systems for character creation UI
-        if (window.Rendering) {
-          window.Rendering.updateResourceBar();
-        }
-        return; // Don't initialize full game until character is created
       }
 
       // Initialize quests
@@ -431,9 +451,10 @@
     }
   }
 
-  // Expose for character select
+  // Expose for character select and auth screen
   global.App = global.App || {};
   global.App.initGame = initGame;
+  global.App.initializeGame = initializeGame;
 
   document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -460,17 +481,55 @@
         DIAG.ok('guard:initialized');
       }
 
+      // Initialize State first (needed for both flows)
+      if (window.State && typeof window.State.init === 'function') {
+        console.log('[App] Pre-initializing State...');
+        window.State.init();
+      }
+      
+      // Initialize State FIRST - critical for both flows
+      if (!window.State || !window.State.data) {
+        if (window.State && typeof window.State.init === 'function') {
+          console.log('[App] Initializing State...');
+          window.State.init();
+        }
+      }
+      
       // Initialize auth and character systems first
       // Only use auth flow if backend is configured
       const hasBackend = (window.REALM_SUPABASE_URL && window.REALM_SUPABASE_ANON_KEY) || 
                         (window.REALM_API_URL && window.REALM_API_URL !== 'http://localhost:3000/api');
       
+      console.log('[App] Has backend?', hasBackend);
+      console.log('[App] Auth available?', !!global.Auth);
+      console.log('[App] AuthScreen available?', !!global.AuthScreen);
+      console.log('[App] CharacterSelect available?', !!global.CharacterSelect);
+      console.log('[App] State.data:', window.State?.data);
+      
       if (global.Auth && global.AuthScreen && global.CharacterSelect && hasBackend) {
         // Use authenticated flow with backend
+        console.log('[App] Using authenticated flow with backend');
         await initGame();
       } else {
         // Use local storage flow (no backend required)
-        await initializeGame();
+        // Allow local account creation OR skip directly to character creation
+        console.log('[App] Using local flow (no backend)');
+        
+        // Check if user is already authenticated (local account)
+        const isAuth = global.Auth?.isAuthenticated();
+        console.log('[App] Is authenticated (local)?', isAuth);
+        
+        if (!isAuth && global.AuthScreen && global.Auth) {
+          // Show auth screen - user can register/login for local account
+          console.log('[App] Showing auth screen (local mode - create account)');
+          if (global.AuthScreen) {
+            global.AuthScreen.show();
+          }
+        } else {
+          // Skip auth, go directly to character creation/game check
+          console.log('[App] Going to game initialization (check for character creation)');
+          await initializeGame();
+        }
       }
       DIAG.ok('game:initialized');
       

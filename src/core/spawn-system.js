@@ -381,6 +381,27 @@
     }
   }
 
+  /**
+   * Debug method: Add mob directly (for debug commands)
+   * @private
+   */
+  function _debugAddMob(entityId, mobEntity) {
+    activeMobs.set(entityId, mobEntity);
+  }
+
+  /**
+   * Debug method: Create mob entity (exposed for debug commands)
+   * @param {Object} mobTemplate - Mob template
+   * @param {string} zoneId - Zone ID
+   * @param {number} x - X coordinate
+   * @param {number} y - Y coordinate
+   * @param {string|null} spawnPointId - Spawn point ID (null for roaming)
+   * @returns {Object} Mob entity
+   */
+  function _debugCreateMobEntity(mobTemplate, zoneId, x, y, spawnPointId) {
+    return createMobEntity(mobTemplate, zoneId, x, y, spawnPointId);
+  }
+
   const SpawnSystem = {
     initializeZone,
     clearZone,
@@ -388,7 +409,10 @@
     getAliveMobs,
     getMobAtTile,
     getNearbyMobs,
-    updateMobs
+    updateMobs,
+    // Debug methods (only in dev mode)
+    _debugAddMob: (typeof window !== 'undefined' && (localStorage.getItem('realm_dev_mode') === 'true' || new URLSearchParams(window.location.search).get('dev') === 'true')) ? _debugAddMob : undefined,
+    _debugCreateMobEntity: (typeof window !== 'undefined' && (localStorage.getItem('realm_dev_mode') === 'true' || new URLSearchParams(window.location.search).get('dev') === 'true')) ? _debugCreateMobEntity : undefined
   };
 
   global.SpawnSystem = SpawnSystem;
