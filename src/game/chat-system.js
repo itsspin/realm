@@ -120,9 +120,65 @@
           addSystemMessage('You are already standing.');
         }
         break;
+      case '/give':
+        handleGiveCommand(args, player);
+        break;
       default:
-        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild, /sit, /meditate, /stand`);
+        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild, /sit, /meditate, /stand, /give [item] [npc]`);
     }
+  }
+
+  /**
+   * Handle GIVE command: /give [item] [npc]
+   */
+  function handleGiveCommand(args, player) {
+    const parts = args.trim().split(/\s+/);
+    if (parts.length < 2) {
+      addSystemMessage('Usage: /give [item] [npc]. Example: /give goblin_ear guard_captain');
+      return;
+    }
+
+    const itemId = parts[0];
+    const npcName = parts.slice(1).join(' ');
+
+    // Find NPC by name (check nearby NPCs first)
+    const currentTarget = global.Targeting?.getTarget();
+    let npc = null;
+    let npcId = null;
+
+    // Check if current target is an NPC
+    if (currentTarget && (currentTarget.type === 'npc' || currentTarget.mobTemplate?.isGuard)) {
+      npcId = currentTarget.id;
+      npc = global.REALM?.data?.npcsById?.[npcId];
+    }
+
+    // If not, search by name
+    if (!npc) {
+      const npcs = Object.values(global.REALM?.data?.npcsById || {});
+      npc = npcs.find(n => n.name.toLowerCase() === npcName.toLowerCase());
+      if (npc) npcId = npc.id;
+    }
+
+    if (!npc || !npcId) {
+      addSystemMessage(`NPC "${npcName}" not found. Target an NPC first or use the full NPC name.`);
+      return;
+    }
+
+    // Check if player has the item
+    const inventoryItem = (player.inventory || []).find(inv => inv.itemId === itemId);
+    if (!inventoryItem) {
+      addSystemMessage(`You don't have ${itemId.replace(/_/g, ' ')} in your inventory.`);
+      return;
+    }
+
+    // Try to turn in quest item
+    if (global.Quests?.turnInQuestItem(npcId, itemId)) {
+      addSystemMessage(`You give ${itemId.replace(/_/g, ' ')} to ${npc.name}.`);
+      return;
+    }
+
+    // Not a quest item, just give it to NPC (for future trading/quest systems)
+    addSystemMessage(`${npc.name} doesn't need this item for any quest.`);
   }
 
   function addChatMessage(type, senderName, message, senderId, targetName = null) {

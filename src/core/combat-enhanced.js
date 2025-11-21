@@ -253,6 +253,22 @@
     if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
 
     if (effect.type === 'damage') {
+      // Check if this is a ranged attack that should pull instead of engage
+      const playerTile = player.currentTile || { x: 0, y: 0 };
+      const attackRange = skill.range || 1;
+      const attackType = skill.type === 'spell' ? 'spell' : 'melee';
+      
+      // Check if ranged attack should pull (P99 mechanic)
+      if (global.PullingSystem && global.PullingSystem.shouldPullOnAttack) {
+        if (global.PullingSystem.shouldPullOnAttack(target, playerTile, attackRange, attackType)) {
+          // Pull the mob instead of full engage
+          if (global.PullingSystem.handleRangedAttack(target, attackRange, attackType)) {
+            // Pull initiated, still apply damage
+            // Continue to damage calculation below
+          }
+        }
+      }
+      
       // Calculate spell damage or ability damage
       let damage = 0;
       

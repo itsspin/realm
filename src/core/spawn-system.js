@@ -329,17 +329,35 @@
 
   /**
    * Handle mobs that are chasing the player
+   * Enhanced for smooth movement support
    */
   function handleChasingMobs(player, zone) {
     if (!player || !player.currentTile) return;
 
-    const playerX = player.currentTile.x;
-    const playerY = player.currentTile.y;
+    // Get player position (support both tile and smooth positions)
+    let playerX, playerY;
+    if (player.position && typeof player.position.x === 'number') {
+      // Smooth position - convert to tile for game logic
+      const playerTile = global.SmoothMovement?.pixelToTile?.(player.position.x, player.position.y);
+      if (playerTile) {
+        playerX = playerTile.x;
+        playerY = playerTile.y;
+      } else {
+        playerX = player.currentTile.x;
+        playerY = player.currentTile.y;
+      }
+    } else {
+      playerX = player.currentTile.x;
+      playerY = player.currentTile.y;
+    }
 
     // Check if player is in combat
     const isInCombat = global.Combat?.isInCombat?.() || false;
     const currentTarget = global.Targeting?.getTarget();
     const currentMonster = global.Combat?.currentMonster;
+
+    const now = Date.now();
+    const CHASE_MOVE_INTERVAL = 500; // Move every 500ms for smoother chasing
 
     chasingMobs.forEach((chaseState, entityId) => {
       const mob = activeMobs.get(entityId);
@@ -349,23 +367,53 @@
         return;
       }
 
-      // Calculate distance to player
+      // Initialize mob position if not set
+      if (!mob.position || typeof mob.position.x !== 'number') {
+        // Convert tile to pixel position
+        const mobPixelPos = global.SmoothMovement?.tileToPixel?.(mob.x, mob.y);
+        if (mobPixelPos) {
+          mob.position = { x: mobPixelPos.x, y: mobPixelPos.y };
+          activeMobs.set(entityId, mob);
+        }
+      }
+
+      // Calculate distance to player (in tiles)
       const distance = Math.abs(mob.x - playerX) + Math.abs(mob.y - playerY);
 
-      // Check if player is still in combat with this mob
+      // Check if player is still in combat with this mob or was pulled
       const isTargetingThisMob = currentTarget && currentTarget.id === mob.id;
       const isCombatWithThisMob = isInCombat && currentMonster && currentMonster.mobEntity && currentMonster.mobEntity.id === mob.id;
+      const wasPulled = chaseState.wasPulled || false; // Track if mob was pulled (vs. aggroed)
 
-      // If player got too far away, reset mob to spawn
-      if (distance > CHASE_RESET_DISTANCE) {
+      // Check leash distance (if pulled or too far from spawn)
+      const leashDistance = wasPulled ? global.PullingSystem?.LEASH_DISTANCE || 15 : CHASE_RESET_DISTANCE;
+      const distanceFromSpawn = chaseState.spawnX !== undefined && chaseState.spawnY !== undefined
+        ? Math.abs(mob.x - chaseState.spawnX) + Math.abs(mob.y - chaseState.spawnY)
+        : 0;
+
+      // If player got too far away or mob too far from spawn, reset mob to spawn
+      if (distance > leashDistance || (distanceFromSpawn > leashDistance && !wasPulled)) {
         // Reset mob to spawn position
         if (chaseState.spawnX !== undefined && chaseState.spawnY !== undefined) {
           mob.x = chaseState.spawnX;
           mob.y = chaseState.spawnY;
+          const resetPixelPos = global.SmoothMovement?.tileToPixel?.(mob.x, mob.y);
+          if (resetPixelPos) {
+            mob.position = { x: resetPixelPos.x, y: resetPixelPos.y };
+          }
           activeMobs.set(entityId, mob);
           
           // Remove from chasing
           chasingMobs.delete(entityId);
+          
+          // Notify player
+          if (global.Narrative && wasPulled) {
+            global.Narrative.addEntry({
+              type: 'combat',
+              text: `${mob.mobTemplate?.name || 'Mob'} has lost interest and returned to its spawn.`,
+              meta: 'Leash Reset'
+            });
+          }
           
           // Update map rendering
           if (global.WorldMapRender) {
@@ -375,14 +423,18 @@
         return;
       }
 
-      // If player is not in combat with this mob anymore, reset after a delay
-      if (!isTargetingThisMob && !isCombatWithThisMob) {
+      // If player is not in combat with this mob anymore and wasn't pulled, reset after a delay
+      if (!isTargetingThisMob && !isCombatWithThisMob && !wasPulled) {
         // Wait a bit before resetting (player might be switching targets)
         if (!chaseState.resetTimer) {
           chaseState.resetTimer = setTimeout(() => {
             if (chaseState.spawnX !== undefined && chaseState.spawnY !== undefined) {
               mob.x = chaseState.spawnX;
               mob.y = chaseState.spawnY;
+              const resetPixelPos = global.SmoothMovement?.tileToPixel?.(mob.x, mob.y);
+              if (resetPixelPos) {
+                mob.position = { x: resetPixelPos.x, y: resetPixelPos.y };
+              }
               activeMobs.set(entityId, mob);
               chasingMobs.delete(entityId);
               
@@ -395,37 +447,90 @@
         return;
       }
 
-      // Clear reset timer if mob is still in combat
+      // Clear reset timer if mob is still chasing
       if (chaseState.resetTimer) {
         clearTimeout(chaseState.resetTimer);
         chaseState.resetTimer = null;
       }
 
       // Chase player if mob is not adjacent
-      if (distance > 1) {
-        // Move mob towards player
-        const dx = playerX > mob.x ? 1 : playerX < mob.x ? -1 : 0;
-        const dy = playerY > mob.y ? 1 : playerY < mob.y ? -1 : 0;
+      if (distance > 0.5) { // Allow some tolerance for smooth movement
+        // Check if it's time to move (throttle movement updates)
+        if (now - (chaseState.lastMoveTime || 0) < CHASE_MOVE_INTERVAL) {
+          return; // Not time to move yet
+        }
 
-        const newX = mob.x + dx;
-        const newY = mob.y + dy;
+        // Get player pixel position for smooth movement
+        let targetPixelX, targetPixelY;
+        if (player.position && typeof player.position.x === 'number') {
+          targetPixelX = player.position.x;
+          targetPixelY = player.position.y;
+        } else {
+          const playerPixelPos = global.SmoothMovement?.tileToPixel?.(playerX, playerY);
+          if (playerPixelPos) {
+            targetPixelX = playerPixelPos.x;
+            targetPixelY = playerPixelPos.y;
+          } else {
+            targetPixelX = playerX * 16;
+            targetPixelY = playerY * 16;
+          }
+        }
 
-        // Check if new position is walkable and not occupied
-        if (global.World?.isTileWalkable(zone.id, newX, newY)) {
-          const mobsAtTile = Array.from(activeMobs.values()).filter(m => 
-            m.x === newX && m.y === newY && m.zoneId === zone.id && m.id !== mob.id
-          );
+        // Get mob pixel position
+        const mobPixelX = mob.position?.x || (mob.x * 16);
+        const mobPixelY = mob.position?.y || (mob.y * 16);
 
-          if (mobsAtTile.length === 0) {
-            // Move mob
-            mob.x = newX;
-            mob.y = newY;
-            activeMobs.set(entityId, mob);
-            
-            // Update map rendering
-            if (global.WorldMapRender) {
-              global.WorldMapRender.renderMap();
+        // Calculate direction towards player (normalized)
+        const dx = targetPixelX - mobPixelX;
+        const dy = targetPixelY - mobPixelY;
+        const distancePixels = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distancePixels > 5) { // Only move if more than 5 pixels away
+          // Normalize direction
+          const dirX = dx / distancePixels;
+          const dirY = dy / distancePixels;
+
+          // Mob move speed (pixels per second) - slightly slower than player
+          const mobSpeed = 80; // pixels per second
+          const moveDistance = (mobSpeed * CHASE_MOVE_INTERVAL) / 1000; // pixels per update
+
+          // Calculate new pixel position
+          let newPixelX = mobPixelX + (dirX * moveDistance);
+          let newPixelY = mobPixelY + (dirY * moveDistance);
+
+          // Convert to tile for collision check
+          const newTile = global.SmoothMovement?.pixelToTile?.(newPixelX, newPixelY);
+          if (!newTile) return;
+
+          const currentTile = { x: mob.x, y: mob.y };
+
+          // Check collision (only check if moving to a different tile)
+          if (newTile.x !== currentTile.x || newTile.y !== currentTile.y) {
+            // Check if new tile is walkable
+            if (!global.World?.isTileWalkable(zone.id, newTile.x, newTile.y)) {
+              // Hit a wall - stop movement
+              return;
             }
+
+            // Check if there's a blocking entity at new tile (excluding player)
+            const blockingEntity = getBlockingEntityForChase(zone.id, newTile.x, newTile.y, mob.id);
+            if (blockingEntity && blockingEntity.id !== player.id) {
+              // Blocked - stop movement
+              return;
+            }
+          }
+
+          // Update mob position
+          mob.position = { x: newPixelX, y: newPixelY };
+          mob.x = newTile.x;
+          mob.y = newTile.y;
+          chaseState.lastMoveTime = now;
+          activeMobs.set(entityId, mob);
+          
+          // Update map rendering (throttle to avoid too many renders)
+          if (global.WorldMapRender && (now - (chaseState.lastRenderTime || 0) > 100)) {
+            global.WorldMapRender.renderMap();
+            chaseState.lastRenderTime = now;
           }
         }
       }
@@ -433,9 +538,24 @@
   }
 
   /**
-   * Start chasing player (called when mob is attacked)
+   * Check if there's a blocking entity at a tile (for mob chase)
    */
-  function startChasing(mobEntity) {
+  function getBlockingEntityForChase(zoneId, tileX, tileY, excludeMobId) {
+    // Check for other mobs
+    const otherMobs = Array.from(activeMobs.values()).filter(m => 
+      m.zoneId === zoneId && m.x === tileX && m.y === tileY && m.alive && m.id !== excludeMobId
+    );
+    if (otherMobs.length > 0) {
+      return otherMobs[0];
+    }
+    
+    return null;
+  }
+
+  /**
+   * Start chasing player (called when mob is attacked or pulled)
+   */
+  function startChasing(mobEntity, wasPulled = false) {
     if (!mobEntity || !mobEntity.alive) return;
 
     const player = global.State?.getPlayer();
@@ -446,15 +566,34 @@
       const spawnX = mobEntity.spawnX || mobEntity.x;
       const spawnY = mobEntity.spawnY || mobEntity.y;
       
+      // Initialize mob position for smooth movement
+      if (!mobEntity.position || typeof mobEntity.position.x !== 'number') {
+        const mobPixelPos = global.SmoothMovement?.tileToPixel?.(mobEntity.x, mobEntity.y);
+        if (mobPixelPos) {
+          mobEntity.position = { x: mobPixelPos.x, y: mobPixelPos.y };
+          activeMobs.set(mobEntity.id, mobEntity);
+        }
+      }
+      
       chasingMobs.set(mobEntity.id, {
         playerId: player.id || 'player',
         spawnX: spawnX,
         spawnY: spawnY,
-        lastUpdate: Date.now()
+        lastUpdate: Date.now(),
+        wasPulled: wasPulled, // Track if this was a pull vs. normal aggro
+        lastMoveTime: 0,
+        lastRenderTime: 0
       });
 
       // Remove from roaming while chasing
       roamingMobs.delete(mobEntity.id);
+    } else {
+      // Update chase state if already chasing
+      const chaseState = chasingMobs.get(mobEntity.id);
+      if (chaseState) {
+        chaseState.wasPulled = wasPulled || chaseState.wasPulled;
+        chaseState.lastUpdate = Date.now();
+      }
     }
   }
 
@@ -547,8 +686,8 @@
     }
   }
 
-  // Update mobs periodically
-  setInterval(updateMobs, 1000); // Update every second
+    // Update mobs periodically (more frequent for smoother chasing)
+    setInterval(updateMobs, 500); // Update every 500ms for smoother mob movement
 
   // Initialize on load
   if (window.State) {
@@ -594,4 +733,5 @@
 
   global.SpawnSystem = SpawnSystem;
 })(window);
+
 

@@ -221,8 +221,9 @@
     const zone = global.World?.getZone(player.currentZone);
     if (!zone) return;
 
-    const playerX = player.currentTile.x;
-    const playerY = player.currentTile.y;
+    // Get player tile position (for game logic)
+    const playerX = player.currentTile?.x || player.x || 0;
+    const playerY = player.currentTile?.y || player.y || 0;
     
     // Calculate tile size to fit 16x16 viewport in container
     const mapContainer = mapCanvas.parentElement;
@@ -249,6 +250,23 @@
     const allMobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];
     const allPlayers = global.MapEntities?.getNearbyPlayers() || [];
     const currentTarget = global.Targeting?.getTarget();
+
+    // Get player pixel position for smooth movement rendering
+    let playerPixelX, playerPixelY;
+    if (player.position && typeof player.position.x === 'number') {
+      playerPixelX = player.position.x;
+      playerPixelY = player.position.y;
+    } else {
+      // Fallback to tile position
+      const playerPixelPos = global.SmoothMovement?.tileToPixel?.(playerX, playerY);
+      if (playerPixelPos) {
+        playerPixelX = playerPixelPos.x;
+        playerPixelY = playerPixelPos.y;
+      } else {
+        playerPixelX = playerX * tileSize;
+        playerPixelY = playerY * tileSize;
+      }
+    }
 
     // Draw tiles in 16×16 viewport
     for (let vy = 0; vy < VIEW_SIZE; vy++) {
@@ -351,9 +369,10 @@
     // Draw entities (monsters, NPCs, players)
     drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY);
 
-    // Draw player (always at center)
-    const playerScreenX = VIEW_CENTER * tileSize + offsetX;
-    const playerScreenY = VIEW_CENTER * tileSize + offsetY;
+    // Draw player (always at center for smooth movement)
+    // Calculate player screen position from pixel position
+    const playerScreenX = VIEW_CENTER * tileSize + offsetX - (playerPixelX - playerX * tileSize);
+    const playerScreenY = VIEW_CENTER * tileSize + offsetY - (playerPixelY - playerY * tileSize);
     mapCtx.fillStyle = '#ff4444';
     mapCtx.beginPath();
     mapCtx.arc(playerScreenX + tileSize / 2, playerScreenY + tileSize / 2, tileSize / 2.5, 0, Math.PI * 2);
@@ -401,14 +420,30 @@
     if (player && player.pet && player.pet.alive) {
       const pet = player.pet;
       if (pet.zone === player.currentZone && typeof pet.x === 'number' && typeof pet.y === 'number') {
-        // Check if pet is in viewport
-        const dx = pet.x - playerX;
-        const dy = pet.y - playerY;
+        // Get pet pixel position (for smooth movement)
+        let petPixelX, petPixelY;
+        if (pet.position && typeof pet.position.x === 'number') {
+          petPixelX = pet.position.x;
+          petPixelY = pet.position.y;
+        } else {
+          // Fallback to tile position
+          const petPixelPos = global.SmoothMovement?.tileToPixel?.(pet.x, pet.y);
+          if (petPixelPos) {
+            petPixelX = petPixelPos.x;
+            petPixelY = petPixelPos.y;
+          } else {
+            petPixelX = pet.x * tileSize;
+            petPixelY = pet.y * tileSize;
+          }
+        }
+        
+        // Check if pet is in viewport (using pixel positions)
+        const dx = (petPixelX - playerPixelX) / tileSize;
+        const dy = (petPixelY - playerPixelY) / tileSize;
         if (Math.abs(dx) <= VIEW_RADIUS && Math.abs(dy) <= VIEW_RADIUS) {
-          const vx = VIEW_CENTER + dx;
-          const vy = VIEW_CENTER + dy;
-          const screenX = vx * tileSize + offsetX;
-          const screenY = vy * tileSize + offsetY;
+          // Calculate screen position from pixel offset
+          const screenX = VIEW_CENTER * tileSize + offsetX + (petPixelX - playerPixelX);
+          const screenY = VIEW_CENTER * tileSize + offsetY + (petPixelY - playerPixelY);
           
           // Draw pet (purple/blue color to distinguish from mobs)
           mapCtx.fillStyle = '#9c27b0';
@@ -487,15 +522,31 @@
     allMobs.forEach(mob => {
       if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
       
-      // Check if mob is in viewport
-      const dx = mob.x - playerX;
-      const dy = mob.y - playerY;
+      // Get mob pixel position (for smooth movement)
+      let mobPixelX, mobPixelY;
+      if (mob.position && typeof mob.position.x === 'number') {
+        mobPixelX = mob.position.x;
+        mobPixelY = mob.position.y;
+      } else {
+        // Fallback to tile position
+        const mobPixelPos = global.SmoothMovement?.tileToPixel?.(mob.x, mob.y);
+        if (mobPixelPos) {
+          mobPixelX = mobPixelPos.x;
+          mobPixelY = mobPixelPos.y;
+        } else {
+          mobPixelX = mob.x * tileSize;
+          mobPixelY = mob.y * tileSize;
+        }
+      }
+      
+      // Check if mob is in viewport (using pixel positions)
+      const dx = (mobPixelX - playerPixelX) / tileSize;
+      const dy = (mobPixelY - playerPixelY) / tileSize;
       if (Math.abs(dx) > VIEW_RADIUS || Math.abs(dy) > VIEW_RADIUS) return;
 
-      const vx = VIEW_CENTER + dx;
-      const vy = VIEW_CENTER + dy;
-      const screenX = vx * tileSize + offsetX;
-      const screenY = vy * tileSize + offsetY;
+      // Calculate screen position from pixel offset
+      const screenX = VIEW_CENTER * tileSize + offsetX + (mobPixelX - playerPixelX);
+      const screenY = VIEW_CENTER * tileSize + offsetY + (mobPixelY - playerPixelY);
       
       const isTargeted = currentTarget && currentTarget.id === mob.id;
       

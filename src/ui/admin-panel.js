@@ -19,6 +19,8 @@
   let selectedSpawnGroup = null;
   let editingMob = null;
   let editingPatrol = null;
+  let editingQuest = null;
+  let editingLootTable = null;
   let unsavedChanges = false;
   let backupData = null; // For undo functionality
 
@@ -59,6 +61,8 @@
           <button class="admin-tab" data-tab="zones">Zone Lines</button>
           <button class="admin-tab" data-tab="mobs">Mob Editor</button>
           <button class="admin-tab" data-tab="patrols">Guard Patrols</button>
+          <button class="admin-tab" data-tab="quests">Quest Editor</button>
+          <button class="admin-tab" data-tab="loot">Loot Tables</button>
         </div>
 
         <!-- Map Editor Tab -->
@@ -264,6 +268,99 @@
             </div>
           </div>
         </div>
+
+        <!-- Quests Tab -->
+        <div class="admin-tab-content" data-content="quests">
+          <div class="admin-quest-editor">
+            <div class="admin-quest-list">
+              <h3>Quest Editor</h3>
+              <div class="quest-selector">
+                <label>NPC/Mob:</label>
+                <select id="questNpcSelect">
+                  <option value="">-- Select NPC/Mob --</option>
+                </select>
+                <button class="admin-btn" onclick="window.AdminPanel.createQuest()">Create New Quest</button>
+              </div>
+              <div class="quest-list" id="questList"></div>
+            </div>
+            <div class="admin-quest-properties" id="questProperties" style="display: none;">
+              <h3>Edit Quest</h3>
+              <div class="quest-props-form">
+                <label>Quest ID:</label>
+                <input type="text" id="questId" placeholder="unique_quest_id">
+                <label>Quest Title:</label>
+                <input type="text" id="questTitle" placeholder="Quest Title">
+                <label>Quest Description:</label>
+                <textarea id="questDescription" rows="3" placeholder="Quest description shown to players"></textarea>
+                <label>Quest Type:</label>
+                <select id="questType">
+                  <option value="kill">Kill Quest</option>
+                  <option value="turnin">Turn-in Quest</option>
+                </select>
+                <div id="questKillProps">
+                  <label>Target Mob ID:</label>
+                  <input type="text" id="questTargetMob" placeholder="goblin_scout">
+                  <label>Target Count:</label>
+                  <input type="number" id="questTargetCount" value="1" min="1">
+                </div>
+                <div id="questTurninProps" style="display: none;">
+                  <label>Required Items (comma-separated):</label>
+                  <input type="text" id="questRequiredItems" placeholder="item1, item2">
+                  <label>Item Counts (JSON, e.g. {"item1": 5, "item2": 1}):</label>
+                  <textarea id="questItemCounts" rows="2" placeholder='{"item1": 5, "item2": 1}'></textarea>
+                </div>
+                <label>Rewards:</label>
+                <div class="quest-rewards">
+                  <label>XP:</label>
+                  <input type="number" id="questRewardXp" value="0" min="0">
+                  <label>Gold:</label>
+                  <input type="number" id="questRewardGold" value="0" min="0">
+                  <label>Items (comma-separated):</label>
+                  <input type="text" id="questRewardItems" placeholder="item1, item2">
+                </div>
+                <label>Prerequisites (comma-separated quest IDs):</label>
+                <input type="text" id="questPrerequisites" placeholder="quest1, quest2">
+                <label>NPC ID (for turn-in quests):</label>
+                <input type="text" id="questNpcId" placeholder="npc_id">
+                <label>Quest Dialogue:</label>
+                <textarea id="questDialogue" rows="3" placeholder="What the NPC says when offering the quest"></textarea>
+                <button class="admin-btn" onclick="window.AdminPanel.saveQuest()">Save Quest</button>
+                <button class="admin-btn admin-btn-danger" onclick="window.AdminPanel.deleteQuest()">Delete Quest</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loot Tables Tab -->
+        <div class="admin-tab-content" data-content="loot">
+          <div class="admin-loot-editor">
+            <div class="admin-loot-list">
+              <h3>Loot Table Editor</h3>
+              <div class="loot-selector">
+                <label>Loot Table:</label>
+                <select id="lootTableSelect">
+                  <option value="">-- Create New --</option>
+                </select>
+                <button class="admin-btn" onclick="window.AdminPanel.createLootTable()">New Loot Table</button>
+              </div>
+              <div class="loot-list" id="lootList"></div>
+            </div>
+            <div class="admin-loot-properties" id="lootProperties" style="display: none;">
+              <h3>Edit Loot Table</h3>
+              <div class="loot-props-form">
+                <label>Loot Table ID:</label>
+                <input type="text" id="lootTableId" readonly>
+                <label>Loot Table Name:</label>
+                <input type="text" id="lootTableName" placeholder="Loot Table Name">
+                <h4>Loot Entries</h4>
+                <div id="lootEntriesList"></div>
+                <button class="admin-btn" onclick="window.AdminPanel.addLootEntry()">Add Entry</button>
+                <button class="admin-btn" onclick="window.AdminPanel.saveLootTable()">Save Loot Table</button>
+                <button class="admin-btn admin-btn-danger" onclick="window.AdminPanel.deleteLootTable()">Delete Loot Table</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="admin-panel-footer">
@@ -418,6 +515,28 @@
         filterMobs(e.target.value);
       });
     }
+
+    // Quest type selector
+    const questTypeSelect = document.getElementById('questType');
+    if (questTypeSelect) {
+      questTypeSelect.addEventListener('change', (e) => {
+        const type = e.target.value;
+        const killProps = document.getElementById('questKillProps');
+        const turninProps = document.getElementById('questTurninProps');
+        if (killProps) killProps.style.display = type === 'kill' ? 'block' : 'none';
+        if (turninProps) turninProps.style.display = type === 'turnin' ? 'block' : 'none';
+      });
+    }
+
+    // Loot table selector
+    const lootTableSelect = document.getElementById('lootTableSelect');
+    if (lootTableSelect) {
+      lootTableSelect.addEventListener('change', (e) => {
+        if (e.target.value) {
+          editLootTable(e.target.value);
+        }
+      });
+    }
   }
 
   /**
@@ -457,6 +576,10 @@
         renderMobEditor();
       } else if (tabName === 'patrols') {
         renderPatrolEditor();
+      } else if (tabName === 'quests') {
+        renderQuestEditor();
+      } else if (tabName === 'loot') {
+        renderLootEditor();
       }
     }, 100);
   }
@@ -469,6 +592,9 @@
     loadSpawnGroups();
     loadMobTemplates();
     loadPatrolGroups();
+    loadQuests();
+    loadLootTables();
+    loadNPCsForQuests();
   }
 
   /**
@@ -1661,6 +1787,9 @@
     const spawnGroups = Object.values(worldData.spawnGroups);
     const mobTemplates = Object.values(worldData.mobTemplates);
     const guardPatrols = global.REALM?.data?.guardPatrols || [];
+    const quests = global.REALM?.data?.quests || [];
+    const lootTables = global.REALM?.data?.lootTables || [];
+    const npcs = Object.values(global.REALM?.data?.npcsById || {});
 
     // Save to localStorage for immediate effect
     try {
@@ -1668,6 +1797,9 @@
       localStorage.setItem('REALM_SPAWN_GROUPS', JSON.stringify(spawnGroups));
       localStorage.setItem('REALM_MOB_TEMPLATES', JSON.stringify(mobTemplates));
       localStorage.setItem('REALM_GUARD_PATROLS', JSON.stringify(guardPatrols));
+      localStorage.setItem('REALM_QUESTS', JSON.stringify(quests));
+      localStorage.setItem('REALM_LOOT_TABLES', JSON.stringify(lootTables));
+      localStorage.setItem('REALM_NPCS', JSON.stringify(npcs));
       localStorage.setItem('REALM_WORLD_TILES', JSON.stringify(worldData.tiles));
       localStorage.setItem('REALM_WORLD_DATA_SAVED', Date.now().toString());
       console.log('[AdminPanel] Saved to localStorage');
@@ -1690,6 +1822,9 @@
             spawnGroups: spawnGroups,
             mobTemplates: mobTemplates,
             guardPatrols: guardPatrols,
+            quests: quests,
+            lootTables: lootTables,
+            npcs: npcs,
             tiles: worldData.tiles
           })
         });
@@ -1708,6 +1843,9 @@
     await saveJSONFile('data/spawn-groups.json', spawnGroups);
     await saveJSONFile('data/mob-templates.json', mobTemplates);
     await saveJSONFile('data/guard-patrols.json', guardPatrols);
+    await saveJSONFile('data/quests.json', quests);
+    await saveJSONFile('data/loot-tables.json', lootTables);
+    await saveJSONFile('data/npcs.json', npcs);
   }
 
   /**
@@ -2767,6 +2905,416 @@
   }
 
   /**
+   * Load NPCs for quest editor
+   */
+  function loadNPCsForQuests() {
+    const npcs = Object.values(global.REALM?.data?.npcsById || {});
+    const mobTemplates = Object.values(global.World?.getWorldData()?.mobTemplates || {});
+    const select = document.getElementById('questNpcSelect');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Select NPC/Mob --</option>' +
+      npcs.map(npc => `<option value="npc_${npc.id}">NPC: ${npc.name} (${npc.id})</option>`).join('') +
+      mobTemplates.map(mob => `<option value="mob_${mob.id}">Mob: ${mob.name} (${mob.id})</option>`).join('');
+  }
+
+  /**
+   * Load quests
+   */
+  function loadQuests() {
+    const quests = global.REALM?.data?.quests || [];
+    const questList = document.getElementById('questList');
+    if (!questList) return;
+
+    questList.innerHTML = quests.map(quest => `
+      <div class="quest-item" onclick="window.AdminPanel.editQuest('${quest.id}')">
+        <strong>${quest.title}</strong> (${quest.id})<br>
+        <small>Type: ${quest.type || 'kill'} | NPC: ${quest.npcId || 'N/A'}</small>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Render quest editor
+   */
+  function renderQuestEditor() {
+    loadQuests();
+    loadNPCsForQuests();
+  }
+
+  /**
+   * Create new quest
+   */
+  function createQuest() {
+    const questId = prompt('Enter quest ID:');
+    if (!questId) return;
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return;
+
+    if (!worldData.quests) {
+      worldData.quests = [];
+    }
+
+    if (worldData.quests.find(q => q.id === questId)) {
+      alert('Quest already exists');
+      return;
+    }
+
+    const newQuest = {
+      id: questId,
+      title: questId,
+      description: '',
+      type: 'kill',
+      rewards: { xp: 0, gold: 0, items: [] },
+      prerequisites: []
+    };
+
+    worldData.quests.push(newQuest);
+    
+    // Update REALM.data
+    if (global.REALM && global.REALM.data) {
+      if (!global.REALM.data.quests) global.REALM.data.quests = [];
+      global.REALM.data.quests.push(newQuest);
+      if (!global.REALM.data.questsById) global.REALM.data.questsById = {};
+      global.REALM.data.questsById[questId] = newQuest;
+    }
+
+    loadQuests();
+    editQuest(questId);
+    unsavedChanges = true;
+    updateStatus('Quest created');
+  }
+
+  /**
+   * Edit quest
+   */
+  function editQuest(questId) {
+    const quest = global.REALM?.data?.questsById?.[questId];
+    if (!quest) return;
+
+    const propsDiv = document.getElementById('questProperties');
+    propsDiv.style.display = 'block';
+
+    document.getElementById('questId').value = quest.id || '';
+    document.getElementById('questTitle').value = quest.title || '';
+    document.getElementById('questDescription').value = quest.description || '';
+    document.getElementById('questType').value = quest.type || 'kill';
+    
+    // Update type-specific fields
+    const questType = document.getElementById('questType');
+    questType.dispatchEvent(new Event('change'));
+
+    if (quest.type === 'kill') {
+      document.getElementById('questTargetMob').value = quest.target || '';
+      document.getElementById('questTargetCount').value = quest.targetCount || 1;
+    } else if (quest.type === 'turnin') {
+      document.getElementById('questRequiredItems').value = (quest.requiredItems || []).join(', ');
+      document.getElementById('questItemCounts').value = JSON.stringify(quest.requiredItemCounts || {}, null, 2);
+      document.getElementById('questNpcId').value = quest.npcId || '';
+      document.getElementById('questDialogue').value = quest.dialogue || '';
+    }
+
+    document.getElementById('questRewardXp').value = quest.rewards?.xp || 0;
+    document.getElementById('questRewardGold').value = quest.rewards?.gold || 0;
+    document.getElementById('questRewardItems').value = (quest.rewards?.items || []).join(', ');
+    document.getElementById('questPrerequisites').value = (quest.prerequisites || []).join(', ');
+
+    // Store editing quest
+    editingQuest = quest;
+  }
+
+  /**
+   * Save quest
+   */
+  function saveQuest() {
+    if (!editingQuest) {
+      alert('No quest selected');
+      return;
+    }
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return;
+
+    editingQuest.title = document.getElementById('questTitle')?.value || editingQuest.id;
+    editingQuest.description = document.getElementById('questDescription')?.value || '';
+    editingQuest.type = document.getElementById('questType')?.value || 'kill';
+
+    if (editingQuest.type === 'kill') {
+      editingQuest.target = document.getElementById('questTargetMob')?.value || '';
+      editingQuest.targetCount = parseInt(document.getElementById('questTargetCount')?.value || '1');
+    } else if (editingQuest.type === 'turnin') {
+      const requiredItemsStr = document.getElementById('questRequiredItems')?.value || '';
+      editingQuest.requiredItems = requiredItemsStr.split(',').map(s => s.trim()).filter(s => s);
+      
+      try {
+        const itemCountsStr = document.getElementById('questItemCounts')?.value || '{}';
+        editingQuest.requiredItemCounts = JSON.parse(itemCountsStr);
+      } catch (e) {
+        alert('Invalid JSON in item counts. Using default.');
+        editingQuest.requiredItemCounts = {};
+      }
+      
+      editingQuest.npcId = document.getElementById('questNpcId')?.value || '';
+      editingQuest.dialogue = document.getElementById('questDialogue')?.value || '';
+
+      // Update NPC quest list
+      if (editingQuest.npcId) {
+        const npc = global.REALM?.data?.npcsById?.[editingQuest.npcId];
+        if (npc) {
+          if (!npc.quests) npc.quests = [];
+          if (!npc.quests.includes(editingQuest.id)) {
+            npc.quests.push(editingQuest.id);
+          }
+          if (editingQuest.dialogue) {
+            npc.questDialogue = editingQuest.dialogue;
+          }
+        }
+      }
+    }
+
+    editingQuest.rewards = {
+      xp: parseInt(document.getElementById('questRewardXp')?.value || '0'),
+      gold: parseInt(document.getElementById('questRewardGold')?.value || '0'),
+      items: (document.getElementById('questRewardItems')?.value || '').split(',').map(s => s.trim()).filter(s => s)
+    };
+
+    const prereqsStr = document.getElementById('questPrerequisites')?.value || '';
+    editingQuest.prerequisites = prereqsStr.split(',').map(s => s.trim()).filter(s => s);
+
+    unsavedChanges = true;
+    updateStatus('Quest saved');
+    loadQuests();
+  }
+
+  /**
+   * Delete quest
+   */
+  function deleteQuest() {
+    if (!editingQuest) {
+      alert('No quest selected');
+      return;
+    }
+
+    if (!confirm(`Delete quest "${editingQuest.title}"?`)) {
+      return;
+    }
+
+    const worldData = global.World?.getWorldData();
+    if (!worldData) return;
+
+    if (worldData.quests) {
+      worldData.quests = worldData.quests.filter(q => q.id !== editingQuest.id);
+    }
+
+    if (global.REALM && global.REALM.data) {
+      if (global.REALM.data.quests) {
+        global.REALM.data.quests = global.REALM.data.quests.filter(q => q.id !== editingQuest.id);
+      }
+      if (global.REALM.data.questsById) {
+        delete global.REALM.data.questsById[editingQuest.id];
+      }
+    }
+
+    editingQuest = null;
+    document.getElementById('questProperties').style.display = 'none';
+    loadQuests();
+    unsavedChanges = true;
+    updateStatus('Quest deleted');
+  }
+
+  /**
+   * Load loot tables
+   */
+  function loadLootTables() {
+    const lootTables = global.REALM?.data?.lootTables || [];
+    const select = document.getElementById('lootTableSelect');
+    const list = document.getElementById('lootList');
+    
+    if (select) {
+      select.innerHTML = '<option value="">-- Create New --</option>' +
+        lootTables.map(lt => `<option value="${lt.id}">${lt.name || lt.id}</option>`).join('');
+    }
+
+    if (list) {
+      list.innerHTML = lootTables.map(lt => `
+        <div class="loot-item" onclick="window.AdminPanel.editLootTable('${lt.id}')">
+          <strong>${lt.name || lt.id}</strong> (${lt.id})<br>
+          <small>${lt.entries?.length || 0} entries</small>
+        </div>
+      `).join('');
+    }
+  }
+
+  /**
+   * Render loot editor
+   */
+  function renderLootEditor() {
+    loadLootTables();
+  }
+
+  /**
+   * Create loot table
+   */
+  function createLootTable() {
+    const lootTableId = prompt('Enter loot table ID:');
+    if (!lootTableId) return;
+
+    if (!global.REALM.data.lootTables) {
+      global.REALM.data.lootTables = [];
+    }
+
+    if (global.REALM.data.lootTables.find(lt => lt.id === lootTableId)) {
+      alert('Loot table already exists');
+      return;
+    }
+
+    const newLootTable = {
+      id: lootTableId,
+      name: lootTableId,
+      entries: []
+    };
+
+    global.REALM.data.lootTables.push(newLootTable);
+    loadLootTables();
+    editLootTable(lootTableId);
+    unsavedChanges = true;
+    updateStatus('Loot table created');
+  }
+
+  /**
+   * Edit loot table
+   */
+  function editLootTable(lootTableId) {
+    const lootTable = global.REALM?.data?.lootTables?.find(lt => lt.id === lootTableId);
+    if (!lootTable) return;
+
+    const propsDiv = document.getElementById('lootProperties');
+    propsDiv.style.display = 'block';
+
+    document.getElementById('lootTableId').value = lootTable.id;
+    document.getElementById('lootTableName').value = lootTable.name || '';
+
+    editingLootTable = lootTable;
+    updateLootEntriesList();
+  }
+
+  /**
+   * Update loot entries list
+   */
+  function updateLootEntriesList() {
+    if (!editingLootTable) return;
+
+    const entriesList = document.getElementById('lootEntriesList');
+    if (!entriesList) return;
+
+    if (!editingLootTable.entries) {
+      editingLootTable.entries = [];
+    }
+
+    entriesList.innerHTML = editingLootTable.entries.map((entry, idx) => `
+      <div class="loot-entry-item" style="padding: 0.5rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>${entry.itemId}</strong><br>
+            <small>Chance: ${(entry.chance * 100).toFixed(1)}% | Quantity: ${entry.minQuantity || 1}-${entry.maxQuantity || 1}</small>
+          </div>
+          <button class="admin-btn-small" onclick="window.AdminPanel.removeLootEntry(${idx})">Remove</button>
+        </div>
+      </div>
+    `).join('') || '<p>No entries. Click "Add Entry" to add items.</p>';
+  }
+
+  /**
+   * Add loot entry
+   */
+  function addLootEntry() {
+    if (!editingLootTable) {
+      alert('Please select a loot table first');
+      return;
+    }
+
+    const itemId = prompt('Enter item ID:');
+    if (!itemId) return;
+
+    const chance = parseFloat(prompt('Enter drop chance (0.0-1.0):', '0.5'));
+    if (isNaN(chance) || chance < 0 || chance > 1) {
+      alert('Invalid chance. Must be between 0 and 1.');
+      return;
+    }
+
+    const minQuantity = parseInt(prompt('Enter minimum quantity:', '1')) || 1;
+    const maxQuantity = parseInt(prompt('Enter maximum quantity:', '1')) || 1;
+
+    if (!editingLootTable.entries) {
+      editingLootTable.entries = [];
+    }
+
+    editingLootTable.entries.push({
+      itemId: itemId,
+      chance: chance,
+      minQuantity: minQuantity,
+      maxQuantity: maxQuantity
+    });
+
+    updateLootEntriesList();
+    unsavedChanges = true;
+    updateStatus('Loot entry added');
+  }
+
+  /**
+   * Remove loot entry
+   */
+  function removeLootEntry(index) {
+    if (!editingLootTable || !editingLootTable.entries) return;
+
+    editingLootTable.entries.splice(index, 1);
+    updateLootEntriesList();
+    unsavedChanges = true;
+    updateStatus('Loot entry removed');
+  }
+
+  /**
+   * Save loot table
+   */
+  function saveLootTable() {
+    if (!editingLootTable) {
+      alert('No loot table selected');
+      return;
+    }
+
+    editingLootTable.name = document.getElementById('lootTableName')?.value || editingLootTable.id;
+
+    unsavedChanges = true;
+    updateStatus('Loot table saved');
+    loadLootTables();
+  }
+
+  /**
+   * Delete loot table
+   */
+  function deleteLootTable() {
+    if (!editingLootTable) {
+      alert('No loot table selected');
+      return;
+    }
+
+    if (!confirm(`Delete loot table "${editingLootTable.name}"?`)) {
+      return;
+    }
+
+    if (global.REALM.data.lootTables) {
+      global.REALM.data.lootTables = global.REALM.data.lootTables.filter(lt => lt.id !== editingLootTable.id);
+    }
+
+    editingLootTable = null;
+    document.getElementById('lootProperties').style.display = 'none';
+    loadLootTables();
+    unsavedChanges = true;
+    updateStatus('Loot table deleted');
+  }
+
+  /**
    * Generate dungeon map with corridors
    */
   function generateDungeonMap(zone, worldData) {
@@ -2829,7 +3377,17 @@
     removePatrolWaypoint,
     generateMap,
     generateFantasyMap,
-    undoChanges
+    undoChanges,
+    createQuest,
+    editQuest,
+    saveQuest,
+    deleteQuest,
+    createLootTable,
+    editLootTable,
+    addLootEntry,
+    removeLootEntry,
+    saveLootTable,
+    deleteLootTable
   };
 
   global.AdminPanel = AdminPanel;

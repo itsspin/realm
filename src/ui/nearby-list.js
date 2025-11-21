@@ -146,7 +146,12 @@
         else icon = '👤';
       } else if (item.type === 'player') icon = '👤';
 
-      html += `<div class="nearby-list-item${selectedClass}${targetedClass}" data-index="${index}">`;
+      // Check if this is an NPC that can receive quest items
+      const isQuestNPC = item.type === 'npc' && entity.mobTemplate?.isGuard || 
+                         (item.type === 'npc' && global.REALM?.data?.npcsById?.[entity.id]?.quests);
+      const dropZoneClass = isQuestNPC ? ' quest-npc-drop-zone' : '';
+      
+      html += `<div class="nearby-list-item${selectedClass}${targetedClass}${dropZoneClass}" data-index="${index}" data-entity-id="${entity.id}" data-entity-type="${item.type}">`;
       html += `<span class="entity-icon">${icon}</span>`;
       html += `<span class="entity-direction">[${item.direction}]</span>`;
       html += `<span class="entity-name">${entity.name || entity.mobTemplate?.name || 'Unknown'}</span>`;
@@ -171,6 +176,72 @@
 
     // Attach click handlers
     attachClickHandlers();
+    
+    // Attach drag-and-drop handlers for quest items
+    attachDragAndDropHandlers();
+  }
+
+  /**
+   * Attach drag-and-drop handlers for quest items
+   */
+  function attachDragAndDropHandlers() {
+    if (!listElement) return;
+
+    const items = listElement.querySelectorAll('.nearby-list-item.quest-npc-drop-zone');
+    items.forEach(item => {
+      // Allow dropping items on NPCs
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        item.classList.add('drag-over');
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.classList.remove('drag-over');
+      });
+
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        item.classList.remove('drag-over');
+        
+        const itemId = e.dataTransfer.getData('text/plain');
+        const entityId = item.dataset.entityId;
+        const entityType = item.dataset.entityType;
+        
+        if (!itemId || !entityId) return;
+
+        // Find NPC ID (could be from npcsById or mob template)
+        let npcId = entityId;
+        if (entityType === 'npc') {
+          // Check if it's a guard mob or actual NPC
+          const npc = global.REALM?.data?.npcsById?.[entityId];
+          if (npc) {
+            npcId = entityId;
+          } else {
+            // Might be a guard mob, try to find NPC by mob template ID
+            const mob = Array.from(global.SpawnSystem?.getAliveMobs(global.State?.getPlayer()?.currentZone) || [])
+              .find(m => m.id === entityId);
+            if (mob && mob.mobTemplate) {
+              // Try to find NPC by mob template ID
+              const npcs = Object.values(global.REALM?.data?.npcsById || {});
+              const matchingNpc = npcs.find(n => n.id === mob.mobTemplate.id || n.name === mob.mobTemplate.name);
+              if (matchingNpc) {
+                npcId = matchingNpc.id;
+              } else {
+                // For guards without NPC entry, use mob template ID
+                npcId = mob.mobTemplate.id;
+              }
+            }
+          }
+        }
+
+        // Try to turn in quest item
+        if (global.Quests?.turnInQuestItem(npcId, itemId)) {
+          global.ChatSystem?.addSystemMessage(`You give ${itemId.replace(/_/g, ' ')} to the NPC.`);
+        } else {
+          global.ChatSystem?.addSystemMessage('This NPC does not need this item for any quest.');
+        }
+      });
+    });
   }
 
   /**

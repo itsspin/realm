@@ -658,6 +658,21 @@ h3 {
   font-style: italic;
 }
 
+/* Drag and drop for quest items */
+.nearby-list-item.quest-npc-drop-zone {
+  cursor: grab;
+}
+
+.nearby-list-item.quest-npc-drop-zone.drag-over {
+  background: rgba(201, 125, 61, 0.2);
+  border: 2px dashed var(--ember-orange);
+}
+
+.inventory-slot.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
 /* Combat UI */
 .combat-panel {
   background: rgba(74, 138, 138, 0.1);

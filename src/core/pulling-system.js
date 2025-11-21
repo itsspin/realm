@@ -83,9 +83,9 @@
       global.Targeting.setTarget(mobEntity);
     }
     
-    // Start mob chase (would be handled by spawn system)
-    if (global.SpawnSystem && global.SpawnSystem.startMobChase) {
-      global.SpawnSystem.startMobChase(mobEntity.id, pullerId);
+    // Start mob chase (handled by spawn system) - mark as pulled
+    if (global.SpawnSystem && global.SpawnSystem.startChasing) {
+      global.SpawnSystem.startChasing(mobEntity, true); // true = was pulled
     }
     
     return true;

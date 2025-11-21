@@ -51,6 +51,15 @@
       }
     }
 
+    // Check for quest dialogue first
+    if (npc.quests && npc.quests.length > 0) {
+      const questDialogue = global.Quests?.getQuestDialogue(npcId);
+      if (questDialogue) {
+        showQuestDialogue(npc, questDialogue);
+        return;
+      }
+    }
+
     switch (npc.type) {
       case 'class_trainer':
         if (npc.class === player.class) {
@@ -91,6 +100,82 @@
           text: `${npc.name}: "${npc.description}"`,
           meta: 'NPC'
         });
+    }
+  }
+
+  /**
+   * Show quest dialogue window
+   */
+  function showQuestDialogue(npc, questDialogue) {
+    const overlay = document.createElement('div');
+    overlay.id = 'questDialogueWindow';
+    overlay.className = 'character-creation-overlay';
+    
+    const availableQuests = questDialogue.availableQuests || [];
+    const activeQuests = questDialogue.activeQuests || [];
+
+    overlay.innerHTML = `
+      <div class="creation-panel" style="max-width: 600px;">
+        <h2 class="creation-title">${npc.name}</h2>
+        <p style="text-align: center; color: var(--fg-secondary); margin-bottom: 1.5rem;">
+          ${questDialogue.dialogue || npc.description}
+        </p>
+        
+        ${availableQuests.length > 0 ? `
+          <div>
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Available Quests</h3>
+            ${availableQuests.map(quest => `
+              <div style="padding: 0.75rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+                <div style="font-weight: 600; color: var(--fg-primary); margin-bottom: 0.5rem;">${quest.title}</div>
+                <div style="font-size: 0.85rem; color: var(--fg-secondary); margin-bottom: 0.5rem;">${quest.description}</div>
+                <button class="action-btn" onclick="global.NPCs.acceptQuestFromNPC('${quest.id}'); document.getElementById('questDialogueWindow')?.remove();" style="padding: 0.5rem 1rem;">
+                  Accept Quest
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        ${activeQuests.length > 0 ? `
+          <div style="margin-top: 1.5rem;">
+            <h3 style="color: var(--gold-muted); margin-bottom: 0.5rem;">Active Quests</h3>
+            ${activeQuests.map(quest => {
+              let progressText = '';
+              if (quest.type === 'kill') {
+                progressText = `Progress: ${quest.progress || 0}/${quest.targetCount || 1}`;
+              } else if (quest.type === 'turnin') {
+                const requiredItems = quest.requiredItems || [];
+                const player = global.State?.getPlayer();
+                const itemStatus = requiredItems.map(itemId => {
+                  const count = quest.requiredItemCounts?.[itemId] || 1;
+                  const playerCount = (player.inventory || []).filter(inv => inv.itemId === itemId).length;
+                  return `${itemId.replace(/_/g, ' ')}: ${playerCount}/${count}`;
+                }).join(', ');
+                progressText = `Required: ${itemStatus}`;
+              }
+              return `
+                <div style="padding: 0.75rem; background: rgba(10, 14, 26, 0.4); border-radius: 0.25rem; margin-bottom: 0.5rem;">
+                  <div style="font-weight: 600; color: var(--fg-primary); margin-bottom: 0.5rem;">${quest.title}</div>
+                  <div style="font-size: 0.85rem; color: var(--fg-secondary);">${progressText}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+        
+        <button class="action-btn" onclick="document.getElementById('questDialogueWindow')?.remove()" style="margin-top: 1rem; width: 100%;">Close</button>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+  }
+
+  /**
+   * Accept quest from NPC
+   */
+  function acceptQuestFromNPC(questId) {
+    if (global.Quests?.acceptQuest(questId)) {
+      global.ChatSystem?.addSystemMessage(`Quest accepted: ${global.REALM?.data?.questsById?.[questId]?.title || questId}`);
     }
   }
 
@@ -227,7 +312,9 @@
     interactWithNPC,
     showClassTrainer,
     learnSkill,
-    getTrainableSkills
+    getTrainableSkills,
+    showQuestDialogue,
+    acceptQuestFromNPC
   };
 
   global.NPCs = NPCs;

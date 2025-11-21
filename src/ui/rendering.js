@@ -164,6 +164,17 @@
       const itemId = slot.dataset.itemId;
       const itemData = global.REALM?.data?.itemsById?.[itemId];
       
+      // Make item draggable for quest turn-ins
+      slot.setAttribute('draggable', 'true');
+      slot.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', itemId);
+        e.dataTransfer.effectAllowed = 'move';
+        slot.classList.add('dragging');
+      });
+      slot.addEventListener('dragend', () => {
+        slot.classList.remove('dragging');
+      });
+      
       // Click handler - show context menu
       slot.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -306,13 +317,28 @@
     }
 
     questListEl.innerHTML = activeQuests.map(quest => {
-      const progress = quest.progress || 0;
-      const target = quest.targetCount || 1;
+      let progressText = '';
+      if (quest.type === 'kill') {
+        const progress = quest.progress || 0;
+        const target = quest.targetCount || 1;
+        progressText = `Progress: ${progress}/${target}`;
+      } else if (quest.type === 'turnin') {
+        const requiredItems = quest.requiredItems || [];
+        const itemStatus = requiredItems.map(itemId => {
+          const count = quest.requiredItemCounts?.[itemId] || 1;
+          const playerCount = (player.inventory || []).filter(inv => inv.itemId === itemId).length;
+          const itemName = global.REALM?.data?.itemsById?.[itemId]?.name || itemId.replace(/_/g, ' ');
+          return `${itemName}: ${playerCount}/${count}`;
+        }).join(', ');
+        progressText = `Required: ${itemStatus}`;
+      }
+      
       return `
         <div class="quest-item">
           <div class="quest-title">${quest.title}</div>
           <div class="quest-description">${quest.description}</div>
-          ${quest.type === 'kill' ? `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--fg-secondary);">Progress: ${progress}/${target}</div>` : ''}
+          ${progressText ? `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--fg-secondary);">${progressText}</div>` : ''}
+          ${quest.type === 'turnin' && quest.npcId ? `<div style="margin-top: 0.25rem; font-size: 0.8rem; color: var(--gold-muted);">Turn in to: ${global.REALM?.data?.npcsById?.[quest.npcId]?.name || quest.npcId}</div>` : ''}
         </div>
       `;
     }).join('');
