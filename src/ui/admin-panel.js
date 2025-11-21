@@ -2473,46 +2473,6 @@
   function generateCityMap(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths) {
     generateCityMapContextAware(zone, worldData, roadWidth, buildingDensity, mainRoads, sidePaths);
   }
-    for (let y = 0; y < zone.gridHeight; y++) {
-      for (let x = 0; x < zone.gridWidth; x++) {
-        const key = `${zone.id}_${x}_${y}`;
-        let terrainType = 'city_plaza';
-        let walkable = true;
-
-        // Walls on edges
-        if (x === 0 || x === zone.gridWidth - 1 || y === 0 || y === zone.gridHeight - 1) {
-          terrainType = 'wall';
-          walkable = false;
-        }
-        // Main roads (horizontal and vertical center)
-        else if (mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
-          terrainType = 'city_street';
-          walkable = true;
-        }
-        // Side paths (grid pattern)
-        else if (sidePaths && (x % 5 === 0 || y % 5 === 0)) {
-          terrainType = 'city_street';
-          walkable = true;
-        }
-        // Buildings based on density
-        else if (Math.random() * 100 < buildingDensity) {
-          terrainType = 'building';
-          walkable = false;
-        }
-        // Default to plaza
-        else {
-          terrainType = 'city_plaza';
-          walkable = true;
-        }
-
-        worldData.tiles[key] = {
-          x, y, zoneId: zone.id,
-          terrainType,
-          walkable
-        };
-      }
-    }
-  }
 
   /**
    * Generate outdoor map with paths and roads (context-aware)
@@ -2631,46 +2591,6 @@
    */
   function generateOutdoorMap(zone, worldData, roadWidth, mainRoads, sidePaths) {
     generateOutdoorMapContextAware(zone, worldData, roadWidth, mainRoads, sidePaths);
-  }
-    for (let y = 0; y < zone.gridHeight; y++) {
-      for (let x = 0; x < zone.gridWidth; x++) {
-        const key = `${zone.id}_${x}_${y}`;
-        let terrainType = 'grass';
-        let walkable = true;
-
-        // Main roads (horizontal and vertical center)
-        if (mainRoads && (Math.abs(y - Math.floor(zone.gridHeight / 2)) < roadWidth || Math.abs(x - Math.floor(zone.gridWidth / 2)) < roadWidth)) {
-          terrainType = 'path';
-          walkable = true;
-        }
-        // Side paths (diagonal or grid)
-        else if (sidePaths && ((x + y) % 8 === 0 || x % 10 === 0 || y % 10 === 0)) {
-          terrainType = 'path';
-          walkable = true;
-        }
-        // Trees (random)
-        else if (Math.random() > 0.85) {
-          terrainType = 'tree';
-          walkable = false;
-        }
-        // Rocks (edges)
-        else if ((x < 3 || x > zone.gridWidth - 4 || y < 3 || y > zone.gridHeight - 4) && Math.random() > 0.7) {
-          terrainType = 'rock';
-          walkable = false;
-        }
-        // Default to grass
-        else {
-          terrainType = 'grass';
-          walkable = true;
-        }
-
-        worldData.tiles[key] = {
-          x, y, zoneId: zone.id,
-          terrainType,
-          walkable
-        };
-      }
-    }
   }
 
   /**
