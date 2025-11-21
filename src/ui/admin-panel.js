@@ -486,19 +486,31 @@
    */
   function renderMapEditor() {
     const canvas = document.getElementById('adminMapCanvas');
-    if (!canvas) return;
+    if (!canvas) {
+      console.warn('[AdminPanel] Canvas not found');
+      return;
+    }
 
     const zoneSelect = document.getElementById('adminZoneSelect');
     const zoneId = zoneSelect?.value;
-    if (!zoneId) return;
+    if (!zoneId) {
+      console.warn('[AdminPanel] No zone selected');
+      return;
+    }
 
     const zone = global.World?.getZone(zoneId);
-    if (!zone) return;
+    if (!zone) {
+      console.warn('[AdminPanel] Zone not found:', zoneId);
+      return;
+    }
 
-    const tiles = global.World?.getZoneTiles(zoneId) || [];
-    const container = canvas.parentElement;
+    const worldData = global.World?.getWorldData();
+    if (!worldData) {
+      console.error('[AdminPanel] World data not available');
+      return;
+    }
+
     const tileSize = 20;
-    
     canvas.width = zone.gridWidth * tileSize;
     canvas.height = zone.gridHeight * tileSize;
     canvas.style.width = canvas.width + 'px';
@@ -507,21 +519,35 @@
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw tiles
-    tiles.forEach(tile => {
-      const x = tile.x * tileSize;
-      const y = tile.y * tileSize;
-      const color = getTerrainColor(tile.terrainType);
-      
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, tileSize, tileSize);
-      
-      if (!tile.walkable) {
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, tileSize, tileSize);
+    // Draw tiles directly from worldData.tiles (more reliable than getZoneTiles)
+    for (let y = 0; y < zone.gridHeight; y++) {
+      for (let x = 0; x < zone.gridWidth; x++) {
+        const key = `${zoneId}_${x}_${y}`;
+        let tile = worldData.tiles[key];
+        
+        // If tile doesn't exist, create a default one for display
+        if (!tile) {
+          tile = {
+            x, y, zoneId,
+            terrainType: 'grass',
+            walkable: true
+          };
+        }
+
+        const screenX = x * tileSize;
+        const screenY = y * tileSize;
+        const color = getTerrainColor(tile.terrainType);
+        
+        ctx.fillStyle = color;
+        ctx.fillRect(screenX, screenY, tileSize, tileSize);
+        
+        if (!tile.walkable) {
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(screenX, screenY, tileSize, tileSize);
+        }
       }
-    });
+    }
 
     // Add click handler
     canvas.onclick = (e) => {
@@ -637,7 +663,12 @@
 
     unsavedChanges = true;
     updateStatus('Zone filled');
-    renderMapEditor();
+    
+    // Force re-render
+    setTimeout(() => {
+      renderMapEditor();
+      console.log('[AdminPanel] Zone filled, tiles updated:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
+    }, 50);
     
     // Update live game map if in same zone
     const player = global.State?.getPlayer();
@@ -688,7 +719,12 @@
 
     unsavedChanges = true;
     updateStatus('Zone cleared');
-    renderMapEditor();
+    
+    // Force re-render
+    setTimeout(() => {
+      renderMapEditor();
+      console.log('[AdminPanel] Zone cleared');
+    }, 50);
     
     // Update live game map if in same zone
     const player = global.State?.getPlayer();
@@ -2188,7 +2224,12 @@
 
     unsavedChanges = true;
     updateStatus('Map generated');
-    renderMapEditor();
+    
+    // Force re-render
+    setTimeout(() => {
+      renderMapEditor();
+      console.log('[AdminPanel] Map generated, tiles updated:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
+    }, 50);
     
     // Update live game map if in same zone
     const player = global.State?.getPlayer();
@@ -2345,7 +2386,12 @@
 
     unsavedChanges = true;
     updateStatus('Fantasy map generated');
-    renderMapEditor();
+    
+    // Force re-render
+    setTimeout(() => {
+      renderMapEditor();
+      console.log('[AdminPanel] Fantasy map generated, tiles updated:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
+    }, 50);
     
     // Update live game map if in same zone
     const player = global.State?.getPlayer();
