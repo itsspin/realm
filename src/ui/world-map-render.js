@@ -67,8 +67,8 @@
       return;
     }
 
-    // Set canvas size
-    const container = mapCanvas.parentElement;
+    // Set canvas size (new UI structure: map-canvas-container)
+    const container = mapCanvas.closest('.map-canvas-container') || mapCanvas.parentElement;
     if (container) {
       const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();

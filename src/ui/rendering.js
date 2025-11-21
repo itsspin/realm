@@ -39,17 +39,18 @@
     const xp = player.xp || 0;
     const xpToNext = player.xpToNext || 100;
 
-    // Update name and level - FORCE UPDATE
+    // Update name and level
     const nameEl = document.getElementById('characterName');
     const levelEl = document.getElementById('characterLevel');
     if (nameEl) {
       nameEl.textContent = player.name || 'Wanderer';
-      // Force re-render
-      nameEl.style.display = 'none';
-      nameEl.offsetHeight; // Trigger reflow
-      nameEl.style.display = '';
     }
     if (levelEl) levelEl.textContent = `Level ${level}`;
+    
+    // Update class
+    if (global.UIRedesign?.updatePlayerClass) {
+      global.UIRedesign.updatePlayerClass();
+    }
 
     // Update XP bar
     const xpBarEl = document.getElementById('xpBar');
@@ -62,13 +63,21 @@
       xpTextEl.textContent = `${xp} / ${xpToNext}`;
     }
 
+    // Update HP bar (new UI)
+    const hpBar = document.getElementById('hpBar');
+    const statHp = document.getElementById('statHp');
+    if (hpBar) {
+      const hp = stats.hp || 0;
+      const maxHp = stats.maxHp || 20;
+      const percent = Math.min(100, (hp / maxHp) * 100);
+      hpBar.style.width = `${percent}%`;
+    }
+    if (statHp) statHp.textContent = `${stats.hp || 0} / ${stats.maxHp || 20}`;
+    
     // Update stats
-    const hpEl = document.getElementById('statHp');
     const atkEl = document.getElementById('statAtk');
     const defEl = document.getElementById('statDef');
     const goldEl = document.getElementById('statGold');
-
-    if (hpEl) hpEl.textContent = `${stats.hp || 0} / ${stats.maxHp || 20}`;
     if (atkEl) {
       let atk = stats.atk || 5;
       // Apply equipment

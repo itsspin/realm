@@ -206,11 +206,13 @@
 
     // Check hit chance
     if (!rollHit(player.level, currentMonster.level || 1, playerStats.dex || 50, currentMonster.agi || 50)) {
-      global.Narrative?.addEntry({
-        type: 'combat',
-        text: `You miss ${currentMonster.name}!`,
-        meta: `Monster HP: ${currentMonster.hp}/${currentMonster.maxHp}`
-      });
+        const combatMsg = `You miss ${currentMonster.name}!`;
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: combatMsg,
+          meta: `Monster HP: ${currentMonster.hp}/${currentMonster.maxHp}`
+        });
+        global.ChatSystem?.addChatMessage('combat', 'System', combatMsg, 'system');
       combatState.playerTurn = false;
       setTimeout(() => monsterAttack(), 1000);
       return;
@@ -222,12 +224,14 @@
 
     currentMonster.hp = Math.max(0, currentMonster.hp - damage);
 
-    const critText = isCritical ? ' CRITICAL HIT!' : '';
-    global.Narrative?.addEntry({
-      type: 'combat',
-      text: `You strike the ${currentMonster.name} for ${damage} damage!${critText}`,
-      meta: `Monster HP: ${currentMonster.hp}/${currentMonster.maxHp}`
-    });
+        const critText = isCritical ? ' CRITICAL HIT!' : '';
+        const combatMsg = `You strike the ${currentMonster.name} for ${damage} damage!${critText}`;
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: combatMsg,
+          meta: `Monster HP: ${currentMonster.hp}/${currentMonster.maxHp}`
+        });
+        global.ChatSystem?.addChatMessage('combat', 'System', combatMsg, 'system');
 
     if (currentMonster.hp <= 0) {
       endCombat(true);

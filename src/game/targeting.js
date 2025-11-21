@@ -107,16 +107,19 @@
       // Use enhanced faction system if available
       if (global.FactionSystem) {
         const conDesc = global.FactionSystem.getConDescription(currentTarget, player);
-        conEl.textContent = conDesc;
+        // Extract just the description part for display
+        const descMatch = conDesc.match(/\((.+)\)/);
+        const displayText = descMatch ? descMatch[1] : conDesc;
+        conEl.textContent = displayText;
         
         // Color based on faction standing
         const mob = currentTarget.mobTemplate;
         if (mob && mob.factionId) {
           const standing = global.FactionSystem.getPlayerStanding(mob.factionId);
           if (standing === 'scowls' || standing === 'threatening') {
-            conEl.style.color = '#ff0000'; // Red - hostile
+            conEl.style.color = '#ff4444'; // Red - hostile
           } else if (standing === 'ally' || standing === 'warmly' || standing === 'kindly') {
-            conEl.style.color = '#00ff00'; // Green - friendly
+            conEl.style.color = '#4caf50'; // Green - friendly
           } else {
             conEl.style.color = '#ffffff'; // White - neutral
           }
@@ -127,21 +130,21 @@
           const levelDiff = mobLevel - playerLevel;
           
           if (levelDiff <= -10) {
-            conEl.style.color = '#0000ff'; // Blue (trivial)
+            conEl.style.color = '#2196f3'; // Blue (trivial)
           } else if (levelDiff <= -5) {
-            conEl.style.color = '#00ffff'; // Cyan (easy)
+            conEl.style.color = '#00bcd4'; // Cyan (easy)
           } else if (levelDiff <= -3) {
-            conEl.style.color = '#00ff00'; // Green (weak)
+            conEl.style.color = '#4caf50'; // Green (weak)
           } else if (levelDiff <= -1) {
-            conEl.style.color = '#ffff00'; // Yellow (decent)
+            conEl.style.color = '#ffeb3b'; // Yellow (decent)
           } else if (levelDiff === 0) {
             conEl.style.color = '#ffffff'; // White (even)
           } else if (levelDiff <= 2) {
-            conEl.style.color = '#ff8000'; // Orange (tough)
+            conEl.style.color = '#ff9800'; // Orange (tough)
           } else if (levelDiff <= 4) {
-            conEl.style.color = '#ff0000'; // Red (very tough)
+            conEl.style.color = '#f44336'; // Red (very tough)
           } else {
-            conEl.style.color = '#800080'; // Purple (impossible)
+            conEl.style.color = '#9c27b0'; // Purple (impossible)
           }
         }
       } else {
@@ -154,28 +157,28 @@
         let conText = 'Even Match';
 
         if (levelDiff <= -10) {
-          conColor = '#0000ff';
+          conColor = '#2196f3';
           conText = 'Trivial';
         } else if (levelDiff <= -5) {
-          conColor = '#00ffff';
+          conColor = '#00bcd4';
           conText = 'Easy';
         } else if (levelDiff <= -3) {
-          conColor = '#00ff00';
+          conColor = '#4caf50';
           conText = 'Weak';
         } else if (levelDiff <= -1) {
-          conColor = '#ffff00';
+          conColor = '#ffeb3b';
           conText = 'Decent';
         } else if (levelDiff === 0) {
           conColor = '#ffffff';
           conText = 'Even Match';
         } else if (levelDiff <= 2) {
-          conColor = '#ff8000';
+          conColor = '#ff9800';
           conText = 'Tough';
         } else if (levelDiff <= 4) {
-          conColor = '#ff0000';
+          conColor = '#f44336';
           conText = 'Very Tough';
         } else {
-          conColor = '#800080';
+          conColor = '#9c27b0';
           conText = 'Impossible';
         }
 

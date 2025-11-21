@@ -6,33 +6,81 @@
   <title>REALM — Dark-Fantasy Text RPG</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-chat.css">
+  <link rel="stylesheet" href="styles-ui-redesign.css">
 </head>
 <body>
+  <!-- Header: Minimal, just title and resources -->
   <header class="app-header" role="banner">
     <h1>REALM</h1>
     <div class="resource-bar" id="resourceBar" role="status" aria-live="polite"></div>
   </header>
 
-  <main class="app-main" role="main">
-    <!-- Left Sidebar: Character Info, Inventory, Quests -->
-    <aside class="left-sidebar" aria-label="Character and game information">
-      <div class="sidebar-section character-header-section">
-        <h2 class="character-name" id="characterName">Wanderer</h2>
-        <div class="character-level" id="characterLevel">Level 1</div>
-        <div class="xp-bar-container">
-          <div class="xp-bar-label">
+  <!-- Main Game Area: Map-Centered Layout -->
+  <main class="game-container" role="main">
+    <!-- Left Panel: Player Info -->
+    <aside class="game-panel game-panel--left" aria-label="Player information">
+      <div class="player-panel">
+        <div class="player-header">
+          <h2 class="player-name" id="characterName">Wanderer</h2>
+          <div class="player-meta">
+            <span class="player-level" id="characterLevel">Level 1</span>
+            <span class="player-class" id="characterClass">-</span>
+          </div>
+        </div>
+        
+        <!-- Resource Bars: HP, Mana/Energy/Rage -->
+        <div class="resource-bars">
+          <div class="resource-bar-item">
+            <div class="resource-label">
+              <span>Health</span>
+              <span class="resource-value" id="statHp">20 / 20</span>
+            </div>
+            <div class="resource-bar-fill">
+              <div class="resource-fill resource-fill--hp" id="hpBar" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="resource-bar-item" id="manaBarContainer" style="display: none;">
+            <div class="resource-label">
+              <span>Mana</span>
+              <span class="resource-value" id="statMana">100 / 100</span>
+            </div>
+            <div class="resource-bar-fill">
+              <div class="resource-fill resource-fill--mana" id="manaBar" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="resource-bar-item" id="energyBarContainer" style="display: none;">
+            <div class="resource-label">
+              <span>Energy</span>
+              <span class="resource-value" id="statEnergy">100 / 100</span>
+            </div>
+            <div class="resource-bar-fill">
+              <div class="resource-fill resource-fill--energy" id="energyBar" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="resource-bar-item" id="rageBarContainer" style="display: none;">
+            <div class="resource-label">
+              <span>Rage</span>
+              <span class="resource-value" id="statRage">0 / 100</span>
+            </div>
+            <div class="resource-bar-fill">
+              <div class="resource-fill resource-fill--rage" id="rageBar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- XP Bar -->
+        <div class="xp-container">
+          <div class="xp-label">
             <span>Experience</span>
             <span id="xpText">0 / 100</span>
           </div>
           <div class="xp-bar">
-            <div class="xp-bar-fill" id="xpBar" style="width: 0%"></div>
+            <div class="xp-fill" id="xpBar" style="width: 0%"></div>
           </div>
         </div>
+
+        <!-- Stats Grid -->
         <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-label">Health</div>
-            <div class="stat-value" id="statHp">20 / 20</div>
-          </div>
           <div class="stat-item">
             <div class="stat-label">Attack</div>
             <div class="stat-value" id="statAtk">5</div>
@@ -46,99 +94,125 @@
             <div class="stat-value" id="statGold">25</div>
           </div>
         </div>
-      </div>
 
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Inventory</h3>
-        <div class="inventory-grid" id="inventoryGrid"></div>
-      </div>
+        <!-- Buffs/Debuffs -->
+        <div class="buffs-container">
+          <h3 class="panel-subtitle">Buffs</h3>
+          <div class="buffs-list" id="buffsList"></div>
+        </div>
 
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Active Quests</h3>
-        <div id="questList" class="quest-list"></div>
-      </div>
-
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Nearby Players</h3>
-        <div id="nearbyPlayers" class="nearby-players-list"></div>
+        <!-- Inventory -->
+        <div class="inventory-container">
+          <h3 class="panel-subtitle">Inventory</h3>
+          <div class="inventory-grid" id="inventoryGrid"></div>
+        </div>
       </div>
     </aside>
 
     <!-- Center: World Map (Main Focus) -->
-    <section class="main-map-area" id="mainMapArea" aria-label="World map">
-      <div class="map-header">
-        <div class="zone-header" id="zoneHeader">
-          <h2 class="zone-name" id="zoneName">Edgewood Clearing</h2>
-          <p class="zone-description" id="zoneDescription">A small clearing at the forest's edge. Sunlight filters through ancient oaks, but shadows gather in the undergrowth.</p>
-        </div>
-        <div class="map-controls-top">
-          <button class="map-zoom-btn" id="zoomInBtn">+</button>
-          <button class="map-zoom-btn" id="zoomOutBtn">-</button>
-          <button class="map-zoom-btn" id="centerPlayerBtn" title="Center on Player">⌂</button>
-        </div>
+    <section class="map-container" id="mainMapArea" aria-label="World map">
+      <!-- Zone Header -->
+      <div class="zone-header" id="zoneHeader">
+        <h2 class="zone-name" id="zoneName">Thronehold Gates</h2>
+        <p class="zone-description" id="zoneDescription">The outer gates of Thronehold, where new adventurers begin their journey.</p>
       </div>
-      <div class="world-map-container" id="worldMapContainer">
-        <div class="map-canvas-wrapper" id="mapCanvasWrapper">
+
+      <!-- Map Canvas -->
+      <div class="map-wrapper">
+        <div class="map-canvas-container" id="mapCanvasWrapper">
           <canvas id="worldMapCanvas" aria-label="Strategic world map" role="img"></canvas>
           <div class="map-overlay" id="mapOverlay"></div>
         </div>
+        
+        <!-- Map Controls -->
+        <div class="map-controls">
+          <button class="map-control-btn" id="zoomInBtn" title="Zoom In">+</button>
+          <button class="map-control-btn" id="zoomOutBtn" title="Zoom Out">-</button>
+          <button class="map-control-btn" id="centerPlayerBtn" title="Center on Player">⌂</button>
+        </div>
+
+        <!-- Map Legend -->
+        <div class="map-legend" id="mapLegend"></div>
       </div>
-      <div class="map-legend" id="mapLegend"></div>
+
+      <!-- Tile Tooltip -->
       <div id="tileTooltip" class="tooltip tooltip--tile hidden" role="tooltip" hidden></div>
+    </section>
+
+    <!-- Right Panel: Target, Skills, Mini-map -->
+    <aside class="game-panel game-panel--right" aria-label="Target and skills">
       <!-- Target Panel -->
       <div class="target-panel" id="targetPanel" role="region" aria-label="Target information" hidden>
         <div class="target-header">
           <h3 class="target-name" id="targetName">No Target</h3>
           <button class="target-close" id="targetClose" aria-label="Clear target">×</button>
         </div>
-        <div class="target-info" id="targetInfo">
+        <div class="target-info">
           <div class="target-level" id="targetLevel"></div>
           <div class="target-hp-container">
-            <div class="target-hp-bar" id="targetHpBar">
+            <div class="target-hp-bar">
               <div class="target-hp-fill" id="targetHpFill"></div>
             </div>
             <div class="target-hp-text" id="targetHpText"></div>
           </div>
           <div class="target-faction" id="targetFaction"></div>
           <div class="target-con" id="targetCon"></div>
+          <!-- Target Action Buttons -->
+          <div class="target-actions">
+            <button class="target-action-btn" id="conBtn" title="Consider target">Con</button>
+            <button class="target-action-btn" id="hailBtn" title="Hail target">Hail</button>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- Right Sidebar: Narrative/Combat Log -->
-    <aside class="right-sidebar" aria-label="Game narrative and combat log">
-      <div class="narrative-log" id="narrativeLog">
-        <div id="narrativeContent" class="narrative-content"></div>
-        <div id="combatPanel" class="combat-panel hidden">
-          <div class="combat-header">
-            <h3 class="monster-name" id="monsterName"></h3>
-            <span class="monster-hp" id="monsterHp"></span>
-          </div>
-          <div class="hp-bar">
-            <div class="hp-bar-fill" id="monsterHpBar"></div>
-          </div>
-          <div class="combat-actions" id="combatActions"></div>
+      <!-- Quick Hotbar (Skills) -->
+      <div class="hotbar-panel">
+        <h3 class="panel-subtitle">Skills</h3>
+        <div class="hotbar" id="skillHotbar">
+          <!-- Skills will be populated dynamically -->
         </div>
-        <div class="action-buttons" id="actionButtons"></div>
+      </div>
+
+      <!-- Mini-map / Zone Info -->
+      <div class="minimap-panel">
+        <h3 class="panel-subtitle">Zone Info</h3>
+        <div class="zone-info" id="zoneInfo">
+          <div class="zone-info-item">
+            <span class="zone-info-label">Zone:</span>
+            <span class="zone-info-value" id="zoneInfoName">-</span>
+          </div>
+          <div class="zone-info-item">
+            <span class="zone-info-label">Level:</span>
+            <span class="zone-info-value" id="zoneInfoLevel">-</span>
+          </div>
+          <div class="zone-info-item">
+            <span class="zone-info-label">Faction:</span>
+            <span class="zone-info-value" id="zoneInfoFaction">-</span>
+          </div>
+        </div>
       </div>
     </aside>
   </main>
 
-  <!-- Chat Window: Always Visible -->
+  <!-- Bottom: Chat Window (Collapsible) -->
   <div class="chat-window" id="chatWindow">
     <div class="chat-header">
       <h3>Chat</h3>
       <div class="chat-tabs">
         <button class="chat-tab active" data-tab="all">All</button>
         <button class="chat-tab" data-tab="say">Say</button>
-        <button class="chat-tab" data-tab="party">Party</button>
-        <button class="chat-tab" data-tab="guild">Guild</button>
+        <button class="chat-tab" data-tab="local">Local</button>
+        <button class="chat-tab" data-tab="system">System</button>
+        <button class="chat-tab" data-tab="combat">Combat</button>
       </div>
+      <button class="chat-toggle" id="chatToggle" title="Toggle chat">▼</button>
     </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-container">
-      <input type="text" id="chatInput" class="chat-input" placeholder="Type /say, /ooc, /shout, /tell [name], /party, /guild..." />
-      <button id="chatSendBtn" class="chat-send-btn">Send</button>
+    <div class="chat-content">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-container">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Type /say, /ooc, /shout, /tell [name]..." />
+        <button id="chatSendBtn" class="chat-send-btn">Send</button>
+      </div>
     </div>
   </div>
 
@@ -149,9 +223,7 @@
   <div id="itemTooltip" class="tooltip tooltip--item hidden" role="tooltip" hidden></div>
 
   <!-- Scripts -->
-  <!-- Type definitions (documentation only, no runtime code) -->
   <script src="src/types/core.js"></script>
-  <!-- Core world system -->
   <script src="src/core/world.js"></script>
   <script src="src/core/spawn-system.js"></script>
   <script src="src/core/combat-enhanced.js"></script>
@@ -195,5 +267,6 @@
   <script src="src/ui/map-render.js"></script>
   <script src="src/ui/world-map-render.js"></script>
   <script src="src/ui/faction-debug.js"></script>
+  <script src="src/ui/ui-redesign.js"></script>
 </body>
 </html>

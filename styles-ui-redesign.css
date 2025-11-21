@@ -1,0 +1,917 @@
+/**
+ * UI Redesign - Map-Centered Layout
+ * 
+ * DESIGN PHILOSOPHY:
+ * - Map is the primary focus, taking majority of vertical space
+ * - Panels are compact and positioned around the map
+ * - Fantasy game aesthetic (not admin dashboard)
+ * - Mobile-friendly with collapsible/stacking panels
+ * 
+ * FUTURE EVOLUTION:
+ * When 3D/pseudo-RuneScape elements are added:
+ * - Map container can transition to 3D canvas viewport
+ * - Panels can overlay on 3D view or remain as HUD elements
+ * - Mini-map can become a true minimap in corner
+ * - Hotbar can float above 3D view for quick access
+ * - Chat can remain bottom overlay or become in-world chat bubbles
+ */
+
+/* ============================================
+   Main Game Container
+   ============================================ */
+
+.game-container {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  padding-bottom: 280px; /* Space for chat (collapsed: 60px, expanded: 280px) */
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* ============================================
+   Game Panels (Left & Right)
+   ============================================ */
+
+.game-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.game-panel--left {
+  /* Player panel */
+}
+
+.game-panel--right {
+  /* Target, skills, minimap */
+}
+
+/* ============================================
+   Player Panel
+   ============================================ */
+
+.player-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.player-header {
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.player-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold-bright);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.player-meta {
+  display: flex;
+  gap: var(--spacing-sm);
+  font-size: 0.9rem;
+  color: var(--fg-secondary);
+}
+
+.player-level {
+  color: var(--ember-bright);
+  font-weight: 600;
+}
+
+.player-class {
+  color: var(--fg-secondary);
+}
+
+/* Resource Bars */
+.resource-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.resource-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.resource-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+}
+
+.resource-value {
+  font-family: var(--font-mono);
+  color: var(--fg-primary);
+}
+
+.resource-bar-fill {
+  height: 20px;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.resource-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.resource-fill--hp {
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+}
+
+.resource-fill--mana {
+  background: linear-gradient(90deg, #2196f3, #64b5f6);
+  box-shadow: 0 0 8px rgba(33, 150, 243, 0.4);
+}
+
+.resource-fill--energy {
+  background: linear-gradient(90deg, #9c27b0, #ba68c8);
+  box-shadow: 0 0 8px rgba(156, 39, 176, 0.4);
+}
+
+.resource-fill--rage {
+  background: linear-gradient(90deg, #f44336, #ef5350);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
+}
+
+/* XP Bar */
+.xp-container {
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.xp-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.xp-bar {
+  height: 16px;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-muted), var(--gold-bright));
+  box-shadow: 0 0 8px rgba(184, 154, 107, 0.4);
+  transition: width 0.3s ease;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+}
+
+.stat-item {
+  text-align: center;
+  padding: var(--spacing-xs);
+  background: rgba(10, 14, 26, 0.4);
+  border-radius: 0.25rem;
+  border: var(--border-subtle);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--fg-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+/* Buffs */
+.buffs-container {
+  margin-top: var(--spacing-sm);
+}
+
+.panel-subtitle {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--gold-muted);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.buffs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.buff-item {
+  padding: 0.25rem 0.5rem;
+  background: rgba(74, 138, 138, 0.2);
+  border: 1px solid var(--teal-arcane);
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--teal-bright);
+}
+
+/* Inventory */
+.inventory-container {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: var(--border-subtle);
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.inventory-slot {
+  aspect-ratio: 1;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+}
+
+.inventory-slot:hover {
+  background: rgba(201, 125, 61, 0.2);
+  border-color: var(--ember-orange);
+}
+
+.inventory-slot--empty {
+  opacity: 0.3;
+}
+
+/* ============================================
+   Map Container (Center - Main Focus)
+   ============================================ */
+
+.map-container {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(10, 14, 26, 0.95) 0%, rgba(26, 31, 46, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-medium);
+  overflow: hidden;
+  position: relative;
+}
+
+.zone-header {
+  padding: var(--spacing-md);
+  border-bottom: var(--border-subtle);
+  background: rgba(10, 14, 26, 0.6);
+}
+
+.zone-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold-bright);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.zone-description {
+  font-size: 0.9rem;
+  color: var(--fg-secondary);
+  margin: 0;
+  font-style: italic;
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.map-canvas-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#worldMapCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.map-controls {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  z-index: 10;
+}
+
+.map-control-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(26, 31, 46, 0.9);
+  border: var(--border-medium);
+  border-radius: 0.25rem;
+  color: var(--fg-primary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.map-control-btn:hover {
+  background: rgba(201, 125, 61, 0.3);
+  border-color: var(--ember-orange);
+  box-shadow: var(--glow-ember);
+}
+
+.map-legend {
+  position: absolute;
+  bottom: var(--spacing-md);
+  left: var(--spacing-md);
+  background: rgba(26, 31, 46, 0.9);
+  border: var(--border-medium);
+  border-radius: 0.25rem;
+  padding: var(--spacing-sm);
+  backdrop-filter: blur(8px);
+  font-size: 0.8rem;
+  z-index: 10;
+}
+
+/* ============================================
+   Target Panel
+   ============================================ */
+
+.target-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--spacing-md);
+}
+
+.target-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: var(--border-subtle);
+}
+
+.target-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--ember-bright);
+  margin: 0;
+}
+
+.target-close {
+  background: transparent;
+  border: none;
+  color: var(--fg-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.target-close:hover {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.target-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.target-level {
+  font-size: 0.9rem;
+  color: var(--fg-secondary);
+}
+
+.target-hp-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.target-hp-bar {
+  height: 20px;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.target-hp-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.target-hp-text {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+  text-align: center;
+}
+
+.target-faction {
+  font-size: 0.85rem;
+  color: var(--fg-secondary);
+}
+
+.target-con {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: var(--spacing-xs);
+  background: rgba(10, 14, 26, 0.4);
+  border-radius: 0.25rem;
+  text-align: center;
+}
+
+.target-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.target-action-btn {
+  flex: 1;
+  padding: var(--spacing-sm);
+  background: linear-gradient(135deg, rgba(201, 125, 61, 0.3), rgba(184, 154, 107, 0.25));
+  border: var(--border-medium);
+  border-radius: 0.25rem;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.target-action-btn:hover {
+  background: linear-gradient(135deg, rgba(201, 125, 61, 0.4), rgba(184, 154, 107, 0.3));
+  border-color: var(--ember-orange);
+  box-shadow: var(--glow-ember);
+}
+
+.target-action-btn:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   Hotbar (Skills)
+   ============================================ */
+
+.hotbar-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: var(--spacing-md);
+}
+
+.hotbar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-xs);
+}
+
+.hotbar-slot {
+  aspect-ratio: 1;
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.hotbar-slot:hover {
+  background: rgba(201, 125, 61, 0.2);
+  border-color: var(--ember-orange);
+}
+
+.hotbar-slot.active {
+  border-color: var(--ember-orange);
+  box-shadow: var(--glow-ember);
+}
+
+.hotbar-slot-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.hotbar-slot-name {
+  font-size: 0.7rem;
+  color: var(--fg-secondary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.hotbar-slot-keybind {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.65rem;
+  color: var(--fg-secondary);
+  background: rgba(10, 14, 26, 0.8);
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+.hotbar-slot-cooldown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--fg-primary);
+  border-radius: 0.25rem;
+}
+
+/* ============================================
+   Mini-map / Zone Info
+   ============================================ */
+
+.minimap-panel {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.zone-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.zone-info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.zone-info-label {
+  color: var(--fg-secondary);
+}
+
+.zone-info-value {
+  color: var(--fg-primary);
+  font-weight: 500;
+}
+
+/* ============================================
+   Chat Window (Bottom - Collapsible)
+   ============================================ */
+
+.chat-window {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 280px;
+  background: linear-gradient(180deg, rgba(26, 31, 46, 0.98) 0%, rgba(10, 14, 26, 0.98) 100%);
+  border-top: var(--border-strong);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(12px);
+  transition: height 0.3s ease;
+}
+
+.chat-window.collapsed {
+  height: 60px;
+}
+
+.chat-window.collapsed .chat-content {
+  display: none;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-subtle);
+  background: rgba(10, 14, 26, 0.6);
+  min-height: 60px;
+}
+
+.chat-header h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold-bright);
+  margin: 0;
+}
+
+.chat-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex: 1;
+  justify-content: center;
+}
+
+.chat-tab {
+  padding: 0.4rem 0.75rem;
+  background: rgba(10, 14, 26, 0.4);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.chat-tab:hover {
+  background: rgba(201, 125, 61, 0.2);
+  border-color: var(--ember-orange);
+  color: var(--fg-primary);
+}
+
+.chat-tab.active {
+  background: rgba(201, 125, 61, 0.3);
+  border-color: var(--ember-orange);
+  color: var(--ember-bright);
+}
+
+.chat-toggle {
+  padding: 0.4rem 0.75rem;
+  background: rgba(10, 14, 26, 0.4);
+  border: var(--border-subtle);
+  border-radius: 0.25rem;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.chat-toggle:hover {
+  background: rgba(201, 125, 61, 0.2);
+  border-color: var(--ember-orange);
+  color: var(--fg-primary);
+}
+
+.chat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+.chat-input-container {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: var(--border-subtle);
+  background: rgba(10, 14, 26, 0.6);
+}
+
+.chat-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(10, 14, 26, 0.6);
+  border: var(--border-medium);
+  border-radius: 0.25rem;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--ember-orange);
+  box-shadow: var(--glow-ember);
+}
+
+.chat-send-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: linear-gradient(135deg, rgba(201, 125, 61, 0.3), rgba(184, 154, 107, 0.25));
+  border: var(--border-medium);
+  border-radius: 0.25rem;
+  color: var(--fg-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.chat-send-btn:hover {
+  background: linear-gradient(135deg, rgba(201, 125, 61, 0.4), rgba(184, 154, 107, 0.3));
+  border-color: var(--ember-orange);
+  box-shadow: var(--glow-ember);
+}
+
+/* ============================================
+   Responsive Design (Mobile)
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .game-container {
+    grid-template-columns: 240px 1fr 260px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .game-container {
+    grid-template-columns: 220px 1fr;
+    padding-bottom: 300px;
+  }
+  
+  .game-panel--right {
+    display: none; /* Hide right panel on tablet, can be toggled */
+  }
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    padding-bottom: 320px;
+  }
+  
+  .game-panel--left {
+    order: 3;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .map-container {
+    order: 1;
+  }
+  
+  .game-panel--right {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-sm);
+    max-height: 150px;
+    overflow-x: auto;
+  }
+  
+  .target-panel,
+  .hotbar-panel,
+  .minimap-panel {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+  
+  .chat-window {
+    height: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-container {
+    padding: var(--spacing-xs);
+    padding-bottom: 340px;
+  }
+  
+  .game-panel--left {
+    max-height: 150px;
+  }
+  
+  .game-panel--right {
+    max-height: 120px;
+  }
+  
+  .chat-window {
+    height: 340px;
+  }
+  
+  .chat-tabs {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .chat-tab {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================
+   Design Notes for Future 3D Integration
+   ============================================
+   
+   When transitioning to 3D/pseudo-RuneScape view:
+   
+   1. MAP CONTAINER:
+      - Replace canvas with WebGL/Three.js viewport
+      - Maintain same container structure for easy swap
+      - Grid coordinates map to 3D world positions
+      - Camera follows player in 3D space
+   
+   2. PANELS:
+      - Can remain as HUD overlays (current approach)
+      - Or become in-world UI elements (floating panels)
+      - Consider transparency/blur for immersion
+   
+   3. MINI-MAP:
+      - Transform into true top-down minimap
+      - Show player position, nearby mobs, zone boundaries
+      - Can be toggled between full map and minimap
+   
+   4. HOTBAR:
+      - Float above 3D view for quick access
+      - Can be positioned bottom-center or bottom-right
+      - Support drag-and-drop for skill arrangement
+   
+   5. CHAT:
+      - Option 1: Keep as bottom overlay (current)
+      - Option 2: In-world chat bubbles above characters
+      - Option 3: Hybrid (overlay + bubbles for proximity)
+   
+   6. TARGET PANEL:
+      - Can show as floating health bar above target
+      - Or remain as side panel (current)
+      - Consider both options for flexibility
+   
+   7. RESPONSIVE:
+      - Mobile: Panels stack vertically or slide in/out
+      - Touch-friendly controls for 3D camera
+      - Gesture support for map navigation
+   
+   The current structure is designed to be easily adaptable
+   to these future enhancements without major refactoring.
+   ============================================ */
+

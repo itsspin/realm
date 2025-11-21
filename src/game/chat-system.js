@@ -175,11 +175,65 @@
     }
   }
 
+  let activeChatTab = 'all';
+
+  function initChat() {
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    
+    if (chatInput) {
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+    }
+
+    if (chatSendBtn) {
+      chatSendBtn.addEventListener('click', sendChatMessage);
+    }
+
+    // Setup chat tabs
+    const chatTabs = document.querySelectorAll('.chat-tab');
+    chatTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        activeChatTab = tab.dataset.tab;
+        chatTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderChat();
+      });
+    });
+
+    // Load chat history from localStorage
+    const saved = localStorage.getItem('REALM_CHAT_HISTORY');
+    if (saved) {
+      try {
+        chatHistory = JSON.parse(saved).slice(-CHAT_HISTORY_LIMIT);
+        renderChat();
+      } catch (e) {
+        chatHistory = [];
+      }
+    }
+  }
+
   function renderChat() {
     const chatContainer = document.getElementById('chatMessages');
     if (!chatContainer) return;
 
-    const html = chatHistory.slice(-50).map(entry => {
+    // Filter messages based on active tab
+    let filteredHistory = chatHistory;
+    if (activeChatTab !== 'all') {
+      filteredHistory = chatHistory.filter(entry => {
+        if (activeChatTab === 'say') return entry.type === 'say';
+        if (activeChatTab === 'local') return entry.type === 'say' || entry.type === 'ooc' || entry.type === 'shout';
+        if (activeChatTab === 'system') return entry.type === 'system';
+        if (activeChatTab === 'combat') return entry.type === 'combat';
+        return true;
+      });
+    }
+
+    const html = filteredHistory.slice(-50).map(entry => {
       const formatted = formatChatMessage(entry);
       const typeClass = `chat-message--${entry.type}`;
       return `<div class="chat-message ${typeClass}">${formatted}</div>`;
