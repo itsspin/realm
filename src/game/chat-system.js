@@ -87,6 +87,30 @@
           addSystemMessage('Sitting is not available.');
         }
         break;
+      case '/meditate':
+      case '/med':
+        if (global.HealthRegen) {
+          const wasSitting = player.isSitting === true;
+          // Check if player uses mana
+          const classData = global.REALM?.data?.classesEnhancedById?.[player.class?.toLowerCase()] ||
+                           global.REALM?.data?.classesById?.[player.class?.toLowerCase()];
+          const usesMana = classData?.resourceType === 'mana';
+          
+          if (global.HealthRegen.toggleSitting()) {
+            if (wasSitting) {
+              addSystemMessage('You stop meditating and stand up.');
+            } else {
+              if (usesMana) {
+                addSystemMessage('You sit down and begin to meditate, focusing your mind to restore mana.');
+              } else {
+                addSystemMessage('You sit down to rest.');
+              }
+            }
+          }
+        } else {
+          addSystemMessage('Meditation is not available.');
+        }
+        break;
       case '/stand':
         if (global.HealthRegen && player.isSitting) {
           if (global.HealthRegen.setSitting(false)) {
@@ -97,7 +121,7 @@
         }
         break;
       default:
-        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild, /sit, /stand`);
+        addSystemMessage(`Unknown command: ${cmd}. Use /say, /ooc, /shout, /yell, /emote, /tell [name], /party, /guild, /sit, /meditate, /stand`);
     }
   }
 

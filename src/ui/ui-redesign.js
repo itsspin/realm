@@ -303,34 +303,40 @@
     if (energyContainer) energyContainer.style.display = resourceType === 'energy' ? 'flex' : 'none';
     if (rageContainer) rageContainer.style.display = resourceType === 'rage' ? 'flex' : 'none';
     
-    // Update resource values (placeholder - would need actual resource tracking)
-    const resourceValue = player.resources?.[resourceType] || 100;
-    const maxResource = 100;
-    
+    // Update resource values from stats
     if (resourceType === 'mana' && manaContainer) {
       const manaBar = document.getElementById('manaBar');
       const statMana = document.getElementById('statMana');
+      const mana = stats.mana ?? 0;
+      const maxMana = stats.maxMana ?? 0;
+      
       if (manaBar) {
-        const percent = Math.min(100, (resourceValue / maxResource) * 100);
+        const percent = maxMana > 0 ? Math.min(100, (mana / maxMana) * 100) : 0;
         manaBar.style.width = `${percent}%`;
       }
-      if (statMana) statMana.textContent = `${resourceValue} / ${maxResource}`;
+      if (statMana) statMana.textContent = `${mana} / ${maxMana}`;
     } else if (resourceType === 'energy' && energyContainer) {
       const energyBar = document.getElementById('energyBar');
       const statEnergy = document.getElementById('statEnergy');
+      const energy = stats.energy ?? 100;
+      const maxEnergy = stats.maxEnergy ?? 100;
+      
       if (energyBar) {
-        const percent = Math.min(100, (resourceValue / maxResource) * 100);
+        const percent = maxEnergy > 0 ? Math.min(100, (energy / maxEnergy) * 100) : 0;
         energyBar.style.width = `${percent}%`;
       }
-      if (statEnergy) statEnergy.textContent = `${resourceValue} / ${maxResource}`;
+      if (statEnergy) statEnergy.textContent = `${energy} / ${maxEnergy}`;
     } else if (resourceType === 'rage' && rageContainer) {
       const rageBar = document.getElementById('rageBar');
       const statRage = document.getElementById('statRage');
+      const rage = stats.rage ?? 0;
+      const maxRage = stats.maxRage ?? 100;
+      
       if (rageBar) {
-        const percent = Math.min(100, (resourceValue / maxResource) * 100);
+        const percent = maxRage > 0 ? Math.min(100, (rage / maxRage) * 100) : 0;
         rageBar.style.width = `${percent}%`;
       }
-      if (statRage) statRage.textContent = `${resourceValue} / ${maxResource}`;
+      if (statRage) statRage.textContent = `${rage} / ${maxRage}`;
     }
   }
 

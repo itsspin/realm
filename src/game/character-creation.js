@@ -262,14 +262,8 @@
       }
     }
 
-    // Calculate starting stats
-    const baseStats = { hp: 20, maxHp: 20, atk: 5, def: 2 };
-    const finalStats = {
-      hp: baseStats.hp + race.bonuses.hp + cls.bonuses.hp,
-      maxHp: baseStats.maxHp + race.bonuses.hp + cls.bonuses.hp,
-      atk: baseStats.atk + race.bonuses.atk + cls.bonuses.atk,
-      def: baseStats.def + race.bonuses.def + cls.bonuses.def
-    };
+    // Calculate starting stats (use the same function for consistency)
+    const finalStats = calculateStartingStats(creationState.race, creationState.class);
 
     // Initialize skills
     const skills = {};
@@ -409,7 +403,11 @@
     const race = RACES.find(r => r.id === raceId);
     const cls = CLASSES.find(c => c.id === classId);
     
-    const baseStats = { hp: 20, maxHp: 20, atk: 5, def: 2 };
+    // Check enhanced class data for resource type
+    const enhancedClass = global.REALM?.data?.classesEnhancedById?.[classId?.toLowerCase()];
+    const resourceType = enhancedClass?.resourceType;
+    
+    const baseStats = { hp: 20, maxHp: 20, atk: 5, def: 2, mana: 0, maxMana: 0 };
     
     if (race) {
       baseStats.atk += race.bonuses.atk || 0;
@@ -423,6 +421,30 @@
       baseStats.def += cls.bonuses.def || 0;
       baseStats.hp += cls.bonuses.hp || 0;
       baseStats.maxHp += cls.bonuses.hp || 0;
+    }
+    
+    // Initialize mana for mana-using classes
+    if (resourceType === 'mana') {
+      // Base mana calculation: INT/WIS based, with class bonuses
+      // Pure casters get more mana, hybrid classes get less
+      const isPureCaster = enhancedClass?.role === 'dps' && 
+                          (enhancedClass?.id === 'arcanist' || 
+                           enhancedClass?.id === 'necromancer' || 
+                           enhancedClass?.id === 'magician');
+      const isPriest = enhancedClass?.role === 'healer';
+      
+      let baseMana = 50; // Base mana for level 1
+      if (isPureCaster) {
+        baseMana = 80;
+      } else if (isPriest) {
+        baseMana = 70;
+      } else {
+        // Hybrid classes (Bard, Paladin, Shadow Knight)
+        baseMana = 40;
+      }
+      
+      baseStats.mana = baseMana;
+      baseStats.maxMana = baseMana;
     }
     
     return baseStats;

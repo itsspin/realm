@@ -191,10 +191,52 @@
    */
   function executeSkillEffect(skill, target) {
     const player = global.State?.getPlayer();
-    if (!player || !target) return;
+    if (!player) return;
 
     const effect = skill.effect;
+    if (!effect) return;
+
+    // Handle pet summoning (no target required)
+    if (effect.type === 'summon_pet') {
+      if (global.PetSystem) {
+        global.PetSystem.summonPet(effect.petType, effect.petLevel);
+      }
+      return;
+    }
+
+    // Handle item summoning (no target required)
+    if (effect.type === 'summon_item') {
+      if (global.State && effect.itemId) {
+        global.State.addItem(effect.itemId);
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You summon ${effect.itemId}.`,
+          meta: 'Summon Item'
+        });
+      }
+      return;
+    }
+
+    // Other effects require target (except buffs and heals which can target self)
+    if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
+
     const playerStats = global.Combat?.getPlayerStats();
+
+    // Handle item summoning (no target required)
+    if (effect.type === 'summon_item') {
+      if (global.State && effect.itemId) {
+        global.State.addItem(effect.itemId);
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You summon ${effect.itemId}.`,
+          meta: 'Summon Item'
+        });
+      }
+      return;
+    }
+
+    // Other effects require target
+    if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
 
     if (effect.type === 'damage') {
       // Calculate spell damage or ability damage

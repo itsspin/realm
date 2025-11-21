@@ -50,6 +50,26 @@
     "services": ["train_skills", "train_spells"]
   },
   {
+    "id": "thronehold_class_trainer_necromancer",
+    "name": "Master Mordred",
+    "type": "class_trainer",
+    "class": "necromancer",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A dark necromancer who teaches the art of commanding the dead.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "thronehold_class_trainer_magician",
+    "name": "Archmage Thalos",
+    "type": "class_trainer",
+    "class": "magician",
+    "city": "thronehold",
+    "zone": "thronehold_gates",
+    "description": "A master magician who teaches the summoning of elemental servants.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
     "id": "thronehold_guard",
     "name": "Thronehold Guard",
     "type": "guard",
@@ -107,6 +127,26 @@
     "services": ["train_skills", "train_spells"]
   },
   {
+    "id": "silverweave_class_trainer_necromancer",
+    "name": "Necromancer Lyraeth",
+    "type": "class_trainer",
+    "class": "necromancer",
+    "city": "silverweave",
+    "zone": "weeping_woods_outskirts",
+    "description": "An elven necromancer who studies the balance between life and death.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "silverweave_class_trainer_magician",
+    "name": "Elementalist Kael",
+    "type": "class_trainer",
+    "class": "magician",
+    "city": "silverweave",
+    "zone": "weeping_woods_outskirts",
+    "description": "An elven magician who commands the elemental forces of nature.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
     "id": "silverweave_guard",
     "name": "Silverweave Warden",
     "type": "guard",
@@ -124,6 +164,26 @@
     "city": "ironhold",
     "zone": "stonecrag_outskirts",
     "description": "A dwarven warrior whose axe has never failed him.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "ironhold_class_trainer_necromancer",
+    "name": "Necromancer Grimbeard",
+    "type": "class_trainer",
+    "class": "necromancer",
+    "city": "ironhold",
+    "zone": "stonecrag_outskirts",
+    "description": "A dwarven necromancer who teaches the dark arts of death.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "ironhold_class_trainer_magician",
+    "name": "Magician Thane",
+    "type": "class_trainer",
+    "class": "magician",
+    "city": "ironhold",
+    "zone": "stonecrag_outskirts",
+    "description": "A dwarven magician who summons earth elementals to aid in battle.",
     "services": ["train_skills", "train_spells"]
   },
   {
@@ -147,6 +207,26 @@
     "services": ["train_skills", "train_spells"]
   },
   {
+    "id": "bloodmire_class_trainer_necromancer",
+    "name": "Necromancer Garthok",
+    "type": "class_trainer",
+    "class": "necromancer",
+    "city": "bloodmire",
+    "zone": "boglands_outskirts",
+    "description": "An orc necromancer who commands legions of the undead.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "bloodmire_class_trainer_magician",
+    "name": "Magician Zurk",
+    "type": "class_trainer",
+    "class": "magician",
+    "city": "bloodmire",
+    "zone": "boglands_outskirts",
+    "description": "An orc magician who wields destructive elemental magic.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
     "id": "shadowgrave_class_trainer_mage",
     "name": "Necromancer Zara",
     "type": "class_trainer",
@@ -154,6 +234,26 @@
     "city": "shadowgrave",
     "zone": "cryptlands_outskirts",
     "description": "A dark mage who has mastered the arts of death and shadow.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "shadowgrave_class_trainer_necromancer",
+    "name": "Necromancer Zara",
+    "type": "class_trainer",
+    "class": "necromancer",
+    "city": "shadowgrave",
+    "zone": "cryptlands_outskirts",
+    "description": "A dark necromancer who has mastered the arts of death and shadow.",
+    "services": ["train_skills", "train_spells"]
+  },
+  {
+    "id": "shadowgrave_class_trainer_magician",
+    "name": "Magician Malachar",
+    "type": "class_trainer",
+    "class": "magician",
+    "city": "shadowgrave",
+    "zone": "cryptlands_outskirts",
+    "description": "A dark magician who summons shadow elementals to do his bidding.",
     "services": ["train_skills", "train_spells"]
   }
 ]

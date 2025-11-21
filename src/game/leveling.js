@@ -23,6 +23,7 @@
       // Level up bonuses (class-based stat gains)
       const stats = player.stats || {};
       const maxHp = stats.maxHp || 20;
+      const maxMana = stats.maxMana || 0;
       const atk = stats.atk || 5;
       const def = stats.def || 2;
       
@@ -34,6 +35,9 @@
       let hpGain = 3;
       let atkGain = 1;
       let defGain = 1;
+      let manaGain = 0;
+      
+      const resourceType = classData?.resourceType;
       
       if (classData) {
         // Tanks get more HP and DEF
@@ -41,31 +45,58 @@
           hpGain = 5;
           defGain = 2;
           atkGain = 0.5;
+          // Hybrid tanks (Paladin, Shadow Knight) get some mana
+          if (resourceType === 'mana') {
+            manaGain = 3;
+          }
         }
         // DPS get more ATK
         else if (classData.role === 'dps') {
           hpGain = 2;
           atkGain = 2;
           defGain = 0.5;
+          // Pure casters get more mana
+          if (resourceType === 'mana') {
+            const isPureCaster = classData.id === 'arcanist' || 
+                                 classData.id === 'necromancer' || 
+                                 classData.id === 'magician';
+            manaGain = isPureCaster ? 8 : 5;
+          }
         }
         // Healers get balanced
         else if (classData.role === 'healer') {
           hpGain = 3;
           atkGain = 0.5;
           defGain = 1;
+          // Priests get good mana
+          if (resourceType === 'mana') {
+            manaGain = 6;
+          }
         }
+        // Support classes (Bard)
+        else if (classData.role === 'support' && resourceType === 'mana') {
+          manaGain = 4;
+        }
+      }
+
+      const updatedStats = {
+        hp: maxHp + hpGain, // Restore HP on level up
+        maxHp: maxHp + hpGain,
+        atk: atk + atkGain,
+        def: def + defGain
+      };
+      
+      // Add mana gains for mana-using classes
+      if (resourceType === 'mana' && manaGain > 0) {
+        updatedStats.mana = maxMana + manaGain; // Restore mana on level up
+        updatedStats.maxMana = maxMana + manaGain;
       }
 
       global.State?.updatePlayer({
         level: currentLevel,
         xp: currentXP,
         xpToNext: xpToNext,
-        stats: {
-          hp: maxHp + hpGain, // Restore HP on level up
-          maxHp: maxHp + hpGain,
-          atk: atk + atkGain,
-          def: def + defGain
-        }
+        stats: updatedStats
       });
 
       global.Toast?.show({

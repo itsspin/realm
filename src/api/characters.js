@@ -137,7 +137,9 @@
           hp: 20,
           maxHp: 20,
           atk: 5,
-          def: 2
+          def: 2,
+          mana: 0,
+          maxMana: 0
         },
         player_stats: {},
         inventory: [],

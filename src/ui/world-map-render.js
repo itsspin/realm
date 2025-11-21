@@ -428,9 +428,51 @@
   }
 
   /**
-   * Draw entities (mobs, NPCs, other players)
+   * Draw entities (mobs, NPCs, other players, pets)
    */
   function drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY) {
+    // Draw player's pet
+    if (player && player.pet && player.pet.alive) {
+      const pet = player.pet;
+      if (pet.zone === player.currentZone && typeof pet.x === 'number' && typeof pet.y === 'number') {
+        // Check if pet is in viewport
+        const dx = pet.x - playerX;
+        const dy = pet.y - playerY;
+        if (Math.abs(dx) <= VIEW_RADIUS && Math.abs(dy) <= VIEW_RADIUS) {
+          const vx = VIEW_CENTER + dx;
+          const vy = VIEW_CENTER + dy;
+          const screenX = vx * tileSize + offsetX;
+          const screenY = vy * tileSize + offsetY;
+          
+          // Draw pet (purple/blue color to distinguish from mobs)
+          mapCtx.fillStyle = '#9c27b0';
+          mapCtx.beginPath();
+          mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+          mapCtx.fill();
+          mapCtx.strokeStyle = '#7b1fa2';
+          mapCtx.lineWidth = 2;
+          mapCtx.stroke();
+          
+          // Draw pet name
+          if (tileSize >= 20) {
+            mapCtx.save();
+            mapCtx.fillStyle = '#fff';
+            mapCtx.strokeStyle = '#000';
+            mapCtx.lineWidth = 2;
+            mapCtx.font = `bold ${Math.max(10, Math.floor(tileSize / 3))}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+            mapCtx.textAlign = 'center';
+            mapCtx.textBaseline = 'bottom';
+            const name = pet.name || 'Pet';
+            const textX = Math.round(screenX + tileSize / 2);
+            const textY = Math.round(screenY - 2);
+            mapCtx.strokeText(name, textX, textY);
+            mapCtx.fillText(name, textX, textY);
+            mapCtx.restore();
+          }
+        }
+      }
+    }
+
     // Draw mobs
     allMobs.forEach(mob => {
       if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
