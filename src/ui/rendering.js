@@ -52,7 +52,7 @@
       global.UIRedesign.updatePlayerClass();
     }
 
-    // Update XP bar
+    // Update XP bar (now above chat window)
     const xpBarEl = document.getElementById('xpBar');
     const xpTextEl = document.getElementById('xpText');
     if (xpBarEl) {

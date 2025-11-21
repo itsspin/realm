@@ -36,8 +36,9 @@
       petPanel.innerHTML = `
         <div class="pet-panel-header">
           <h3>Pet</h3>
+          <button class="pet-panel-toggle" id="petPanelToggle" title="Minimize/Maximize Pet Panel">▼</button>
         </div>
-        <div class="pet-panel-content">
+        <div class="pet-panel-content" id="petPanelContent">
           <div class="pet-info">
             <div class="pet-name" id="petName">-</div>
             <div class="pet-level" id="petLevel">Level -</div>
@@ -51,7 +52,7 @@
               <div class="pet-hp-fill" id="petHpBar" style="width: 100%"></div>
             </div>
           </div>
-          <div class="pet-controls">
+          <div class="pet-controls" id="petControls">
             <button class="pet-control-btn" id="petAttackBtn" title="Command pet to attack target">Attack</button>
             <button class="pet-control-btn" id="petTauntBtn" title="Command pet to taunt target (generates high threat)">Taunt</button>
             <button class="pet-control-btn" id="petStayBtn" title="Command pet to stay in place">Stay</button>
@@ -62,14 +63,32 @@
             <button class="pet-control-btn pet-control-btn--dismiss" id="petDismissBtn" title="Dismiss pet">Dismiss</button>
           </div>
         </div>
+        <!-- Compact minimized view -->
+        <div class="pet-panel-compact" id="petPanelCompact" style="display: none;">
+          <div class="pet-compact-hp-bar">
+            <div class="pet-hp-fill-compact" id="petHpBarCompact" style="width: 100%"></div>
+            <span class="pet-hp-text-compact" id="petHpTextCompact">- / -</span>
+          </div>
+          <div class="pet-compact-controls" id="petCompactControls">
+            <!-- Compact buttons will be populated dynamically -->
+          </div>
+        </div>
       `;
 
-      // Insert after player panel
-      const playerPanel = leftPanel.querySelector('.player-panel');
-      if (playerPanel && playerPanel.nextSibling) {
-        leftPanel.insertBefore(petPanel, playerPanel.nextSibling);
+      // Insert after stats grid (before buffs/inventory)
+      const statsGrid = leftPanel.querySelector('.stats-grid');
+      if (statsGrid && statsGrid.nextSibling) {
+        leftPanel.insertBefore(petPanel, statsGrid.nextSibling);
+      } else if (statsGrid) {
+        statsGrid.insertAdjacentElement('afterend', petPanel);
       } else {
-        leftPanel.appendChild(petPanel);
+        // Fallback: insert after player panel
+        const playerPanel = leftPanel.querySelector('.player-panel');
+        if (playerPanel && playerPanel.nextSibling) {
+          leftPanel.insertBefore(petPanel, playerPanel.nextSibling);
+        } else {
+          leftPanel.appendChild(petPanel);
+        }
       }
     }
 
@@ -233,10 +252,122 @@
       if (!pet.alive) {
         petPanel.hidden = true;
       }
+      
+      // Update compact view if minimized
+      if (petPanel && petPanel.classList.contains('pet-panel--minimized')) {
+        updatePetPanelCompact(pet);
+      }
     } else {
       // Hide panel if no pet (even if pet class)
       petPanel.hidden = true;
     }
+  }
+  
+  /**
+   * Toggle pet panel minimized/maximized state
+   */
+  function togglePetPanel() {
+    if (!petPanel) return;
+    
+    const isMinimized = petPanel.classList.contains('pet-panel--minimized');
+    const content = document.getElementById('petPanelContent');
+    const compact = document.getElementById('petPanelCompact');
+    const toggleBtn = document.getElementById('petPanelToggle');
+    
+    if (isMinimized) {
+      // Expand
+      petPanel.classList.remove('pet-panel--minimized');
+      if (content) content.style.display = 'flex';
+      if (compact) compact.style.display = 'none';
+      if (toggleBtn) toggleBtn.textContent = '▼';
+    } else {
+      // Minimize
+      petPanel.classList.add('pet-panel--minimized');
+      if (content) content.style.display = 'none';
+      if (compact) compact.style.display = 'block';
+      if (toggleBtn) toggleBtn.textContent = '▲';
+      
+      // Update compact view
+      const player = global.State?.getPlayer();
+      if (player && player.pet) {
+        updatePetPanelCompact(player.pet);
+      }
+    }
+  }
+  
+  /**
+   * Update minimized pet panel view
+   */
+  function updatePetPanelCompact(pet) {
+    if (!pet) return;
+    
+    const hpBarCompact = document.getElementById('petHpBarCompact');
+    const hpTextCompact = document.getElementById('petHpTextCompact');
+    const compactControls = document.getElementById('petCompactControls');
+    
+    if (!hpBarCompact || !hpTextCompact || !compactControls) return;
+    
+    // Update HP bar
+    const hp = pet.stats?.hp || 0;
+    const maxHp = pet.stats?.maxHp || 1;
+    const hpPercent = (hp / maxHp) * 100;
+    
+    hpBarCompact.style.width = `${hpPercent}%`;
+    hpTextCompact.textContent = `${hp} / ${maxHp}`;
+    
+    // Color based on health
+    if (hpPercent > 75) hpBarCompact.style.backgroundColor = '#4caf50';
+    else if (hpPercent > 50) hpBarCompact.style.backgroundColor = '#ffeb3b';
+    else if (hpPercent > 25) hpBarCompact.style.backgroundColor = '#ff9800';
+    else hpBarCompact.style.backgroundColor = '#f44336';
+    
+    // Update compact control buttons
+    const behavior = pet.behavior || 'follow';
+    const compactButtons = [
+      { id: 'attack', label: '⚔', title: 'Attack', action: 'attack' },
+      { id: 'taunt', label: '🛡', title: 'Taunt', action: 'taunt' },
+      { id: 'stay', label: '📍', title: 'Stay', action: 'stay' },
+      { id: 'follow', label: '👣', title: 'Follow', action: 'follow' },
+      { id: 'guard', label: '🔒', title: 'Guard', action: 'guard' },
+      { id: 'sit', label: '🪑', title: 'Sit', action: 'sit' },
+      { id: 'hold', label: '✋', title: 'Hold', action: 'hold' },
+      { id: 'dismiss', label: '❌', title: 'Dismiss', action: 'dismiss', isDismiss: true }
+    ];
+    
+    compactControls.innerHTML = compactButtons.map(btn => {
+      const isActive = behavior === btn.action;
+      const btnClass = btn.isDismiss ? 'pet-compact-btn pet-compact-btn--dismiss' : 
+                       isActive ? 'pet-compact-btn pet-compact-btn--active' : 'pet-compact-btn';
+      return `<button class="${btnClass}" data-action="${btn.action}" title="${btn.title}">${btn.label}</button>`;
+    }).join('');
+    
+    // Attach event listeners to compact buttons
+    compactControls.querySelectorAll('.pet-compact-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action === 'dismiss') {
+          if (global.PetSystem && global.PetSystem.dismissPet) {
+            global.PetSystem.dismissPet();
+          }
+        } else if (action === 'attack' || action === 'taunt') {
+          const target = global.Targeting?.getTarget();
+          if (!target) {
+            global.ChatSystem?.addSystemMessage('You need a target for your pet to attack.');
+            return;
+          }
+          if (action === 'attack' && global.PetSystem && global.PetSystem.commandPetAttack) {
+            global.PetSystem.commandPetAttack(target);
+          } else if (action === 'taunt' && global.PetSystem && global.PetSystem.commandPetTaunt) {
+            global.PetSystem.commandPetTaunt(target);
+          }
+        } else {
+          if (global.PetSystem && global.PetSystem.setPetBehavior) {
+            global.PetSystem.setPetBehavior(action);
+          }
+        }
+        updatePetPanel(); // Refresh UI
+      });
+    });
   }
 
   // Initialize on load
@@ -248,7 +379,8 @@
 
   const PetUI = {
     init,
-    updatePetPanel
+    updatePetPanel,
+    togglePetPanel
   };
 
   global.PetUI = PetUI;

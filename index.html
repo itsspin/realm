@@ -75,17 +75,6 @@
           </div>
         </div>
 
-        <!-- XP Bar -->
-        <div class="xp-container">
-          <div class="xp-label">
-            <span>Experience</span>
-            <span id="xpText">0 / 100</span>
-          </div>
-          <div class="xp-bar">
-            <div class="xp-fill" id="xpBar" style="width: 0%"></div>
-          </div>
-        </div>
-
         <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-item">
@@ -102,6 +91,11 @@
           </div>
         </div>
 
+        <!-- Pet Panel (positioned near player stats) -->
+        <div class="pet-panel" id="petPanel" hidden>
+          <!-- Content will be populated by pet-ui.js -->
+        </div>
+
         <!-- Buffs/Debuffs -->
         <div class="buffs-container">
           <h3 class="panel-subtitle">Buffs</h3>
@@ -112,9 +106,14 @@
         <div class="inventory-container">
           <div class="inventory-header">
             <h3 class="panel-subtitle">Inventory</h3>
-            <button class="equipment-toggle-btn" id="equipmentToggleBtn" title="Toggle Equipment Panel">⚔️ Equipment</button>
+            <div class="inventory-header-buttons">
+              <button class="equipment-toggle-btn" id="equipmentToggleBtn" title="Toggle Equipment Panel">⚔️ Equipment</button>
+              <button class="panel-toggle-btn" id="inventoryToggleBtn" title="Minimize/Maximize Inventory">▼</button>
+            </div>
           </div>
-          <div class="inventory-grid" id="inventoryGrid"></div>
+          <div class="inventory-content" id="inventoryContent">
+            <div class="inventory-grid" id="inventoryGrid"></div>
+          </div>
         </div>
       </div>
     </aside>
@@ -202,6 +201,19 @@
       </div>
     </aside>
   </main>
+
+  <!-- Bottom: XP Bar Above Chat -->
+  <div class="xp-bar-container" id="xpBarContainer">
+    <div class="xp-bar-wrapper">
+      <div class="xp-label">
+        <span>Experience</span>
+        <span id="xpText">0 / 100</span>
+      </div>
+      <div class="xp-bar">
+        <div class="xp-fill" id="xpBar" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bottom: Skillbar Above Chat -->
   <div class="skillbar-container" id="skillbarContainer">
@@ -315,6 +327,7 @@
   <script src="src/ui/skillbar.js"></script>
   <script src="src/ui/full-map-modal.js"></script>
   <script src="src/ui/pet-ui.js"></script>
+  <script src="src/ui/inventory-ui.js"></script>
   <script src="src/ui/tome.js"></script>
   <script src="src/ui/faction-debug.js"></script>
   <script src="src/ui/equipment-ui.js"></script>

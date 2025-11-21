@@ -57,6 +57,16 @@
           gameContainer.style.paddingBottom = '300px';
         }
       }
+      
+      // Update XP bar position when chat collapses/expands
+      const xpBarContainer = document.getElementById('xpBarContainer');
+      if (xpBarContainer) {
+        if (chatWindow.classList.contains('collapsed')) {
+          xpBarContainer.style.bottom = '60px'; // Above collapsed chat
+        } else {
+          xpBarContainer.style.bottom = '280px'; // Above expanded chat
+        }
+      }
     });
   }
 
