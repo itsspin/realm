@@ -349,6 +349,13 @@
       if (window.World && typeof window.World.initialize === 'function') {
         await window.World.initialize();
         DIAG.ok('world:initialized');
+        
+        // Initialize spawn system for current zone
+        const player = window.State?.getPlayer();
+        if (player && player.currentZone && window.SpawnSystem) {
+          window.SpawnSystem.initializeZone(player.currentZone);
+          DIAG.ok('spawn:initialized');
+        }
       }
 
       await initializeGame();

@@ -85,6 +85,24 @@
       </div>
       <div class="map-legend" id="mapLegend"></div>
       <div id="tileTooltip" class="tooltip tooltip--tile hidden" role="tooltip" hidden></div>
+      <!-- Target Panel -->
+      <div class="target-panel" id="targetPanel" role="region" aria-label="Target information" hidden>
+        <div class="target-header">
+          <h3 class="target-name" id="targetName">No Target</h3>
+          <button class="target-close" id="targetClose" aria-label="Clear target">×</button>
+        </div>
+        <div class="target-info" id="targetInfo">
+          <div class="target-level" id="targetLevel"></div>
+          <div class="target-hp-container">
+            <div class="target-hp-bar" id="targetHpBar">
+              <div class="target-hp-fill" id="targetHpFill"></div>
+            </div>
+            <div class="target-hp-text" id="targetHpText"></div>
+          </div>
+          <div class="target-faction" id="targetFaction"></div>
+          <div class="target-con" id="targetCon"></div>
+        </div>
+      </div>
     </section>
 
     <!-- Right Sidebar: Narrative/Combat Log -->
@@ -135,6 +153,7 @@
   <script src="src/types/core.js"></script>
   <!-- Core world system -->
   <script src="src/core/world.js"></script>
+  <script src="src/core/spawn-system.js"></script>
   <script src="src/app.js"></script>
   <script src="src/game/state.js"></script>
   <script src="src/game/combat.js"></script>
@@ -167,6 +186,7 @@
   <script src="src/game/npcs.js"></script>
   <script src="src/game/movement.js"></script>
   <script src="src/game/map-entities.js"></script>
+  <script src="src/game/targeting.js"></script>
   <script src="src/ui/toast.js"></script>
   <script src="src/ui/rendering.js"></script>
   <script src="src/ui/map-render.js"></script>

@@ -14,12 +14,17 @@
   let isDragging = false;
   let dragStartX = 0;
   let dragStartY = 0;
+  let showDebugOverlay = false;
 
   // Expose for movement system
   global.WorldMapRender = global.WorldMapRender || {};
   global.WorldMapRender.zoomLevel = zoomLevel;
   global.WorldMapRender.panX = panX;
   global.WorldMapRender.panY = panY;
+  global.WorldMapRender.toggleDebugOverlay = () => {
+    showDebugOverlay = !showDebugOverlay;
+    renderMap();
+  };
 
   /**
    * Terrain color mapping
@@ -138,6 +143,25 @@
       centerPlayerBtn.addEventListener('click', centerOnPlayer);
     }
 
+    // Debug toggle button
+    const debugToggleBtn = document.getElementById('debugToggleBtn');
+    if (debugToggleBtn) {
+      debugToggleBtn.addEventListener('click', () => {
+        showDebugOverlay = !showDebugOverlay;
+        renderMap();
+      });
+    }
+
+    // Keyboard shortcut for debug (D key)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'd' || e.key === 'D') {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          showDebugOverlay = !showDebugOverlay;
+          renderMap();
+        }
+      }
+    });
+
     // Initial render
     renderMap();
   }
@@ -210,22 +234,44 @@
       }
     }
 
-    // Draw entities (monsters, players)
-    const monsters = global.MapEntities?.getNearbyMonsters() || [];
-    const players = global.MapEntities?.getNearbyPlayers() || [];
+    // Draw entities (monsters from spawn system)
+    if (player && player.currentZone && player.currentTile) {
+      const mobs = global.SpawnSystem?.getAliveMobs(player.currentZone) || [];
+      const currentTarget = global.Targeting?.getTarget();
 
-    // Draw monsters
-    monsters.forEach(monster => {
-      const screenX = monster.x * tileSize + panX;
-      const screenY = monster.y * tileSize + panY;
-      mapCtx.fillStyle = '#ff6666';
-      mapCtx.beginPath();
-      mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
-      mapCtx.fill();
-      mapCtx.strokeStyle = '#ff0000';
-      mapCtx.lineWidth = 2;
-      mapCtx.stroke();
-    });
+      // Draw monsters
+      mobs.forEach(mob => {
+        const screenX = mob.x * tileSize + panX;
+        const screenY = mob.y * tileSize + panY;
+        
+        // Check if this is the current target
+        const isTargeted = currentTarget && currentTarget.id === mob.id;
+        
+        // Draw mob
+        mapCtx.fillStyle = isTargeted ? '#ffff00' : '#ff6666'; // Yellow if targeted
+        mapCtx.beginPath();
+        mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+        mapCtx.fill();
+        mapCtx.strokeStyle = isTargeted ? '#ffaa00' : '#ff0000';
+        mapCtx.lineWidth = isTargeted ? 3 : 2;
+        mapCtx.stroke();
+
+        // Draw mob name
+        if (tileSize >= 20) {
+          mapCtx.fillStyle = '#fff';
+          mapCtx.font = `${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+          mapCtx.textAlign = 'center';
+          mapCtx.fillText(mob.mobTemplate?.name || 'Mob', screenX + tileSize / 2, screenY - 2);
+        }
+
+        // Highlight targeted tile
+        if (isTargeted) {
+          mapCtx.strokeStyle = '#ffff00';
+          mapCtx.lineWidth = 2;
+          mapCtx.strokeRect(screenX - 1, screenY - 1, tileSize + 2, tileSize + 2);
+        }
+      });
+    }
 
     // Draw other players
     players.forEach(p => {
@@ -252,8 +298,45 @@
       mapCtx.stroke();
     }
 
+    // Draw debug overlay (spawn points)
+    if (showDebugOverlay) {
+      drawDebugOverlay(zone, tileSize);
+    }
+
     // Update legend
     updateMapLegend(zone);
+  }
+
+  /**
+   * Draw debug overlay showing spawn points
+   */
+  function drawDebugOverlay(zone, tileSize) {
+    const spawnGroups = global.World?.getSpawnGroupsForZone(zone.id) || [];
+    
+    spawnGroups.forEach(spawnGroup => {
+      if (spawnGroup.spawnPoints && spawnGroup.spawnPoints.length > 0) {
+        spawnGroup.spawnPoints.forEach((spawnPoint, index) => {
+          const screenX = spawnPoint.x * tileSize + panX;
+          const screenY = spawnPoint.y * tileSize + panY;
+          
+          // Draw spawn point marker
+          const color = spawnGroup.spawnType === 'static' ? '#00ff00' : '#0000ff';
+          mapCtx.fillStyle = color + '80'; // Semi-transparent
+          mapCtx.beginPath();
+          mapCtx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+          mapCtx.fill();
+          mapCtx.strokeStyle = color;
+          mapCtx.lineWidth = 2;
+          mapCtx.stroke();
+
+          // Draw spawn point label
+          mapCtx.fillStyle = '#fff';
+          mapCtx.font = `${Math.max(8, tileSize / 4)}px monospace`;
+          mapCtx.textAlign = 'center';
+          mapCtx.fillText(`${spawnGroup.spawnType[0].toUpperCase()}${index}`, screenX + tileSize / 2, screenY + tileSize / 2 + 4);
+        });
+      }
+    });
   }
 
   /**
@@ -345,17 +428,35 @@
     // Validate coordinates
     if (tileX < 0 || tileX >= zone.gridWidth || tileY < 0 || tileY >= zone.gridHeight) return;
 
-    // Check if tile is walkable
-    if (!global.World?.isTileWalkable(player.currentZone, tileX, tileY)) {
-      global.ChatSystem?.addSystemMessage('You cannot move there.');
+    // Check for monster click (targeting)
+    const mob = global.SpawnSystem?.getMobAtTile(player.currentZone, tileX, tileY);
+    if (mob) {
+      // Set as target
+      global.Targeting?.setTarget(mob);
+      
+      // If adjacent, attack
+      const playerX = player.currentTile?.x || 0;
+      const playerY = player.currentTile?.y || 0;
+      const distance = Math.abs(tileX - playerX) + Math.abs(tileY - playerY);
+      
+      if (distance <= 1) {
+        // Attack if adjacent
+        global.Combat?.startCombat(mob.mobTemplateId);
+      } else {
+        // Move towards target
+        global.Movement?.moveToTile(tileX, tileY);
+      }
       return;
     }
 
-    // Check for monster click
-    const monsters = global.MapEntities?.getNearbyMonsters() || [];
-    const monster = monsters.find(m => m.x === tileX && m.y === tileY);
-    if (monster) {
-      global.MapEntities?.attackMonsterAtTile(tileX, tileY);
+    // Click on empty tile - clear target if just moving
+    if (global.Targeting?.getTarget()) {
+      // Keep target when moving
+    }
+
+    // Check if tile is walkable
+    if (!global.World?.isTileWalkable(player.currentZone, tileX, tileY)) {
+      global.ChatSystem?.addSystemMessage('You cannot move there.');
       return;
     }
 

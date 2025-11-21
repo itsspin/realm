@@ -181,6 +181,13 @@
         gold: (player.gold || 0) + goldGain
       });
 
+      // Kill the mob in spawn system
+      const currentTarget = global.Targeting?.getTarget();
+      if (currentTarget && currentTarget.mobTemplateId === currentMonster.id) {
+        global.SpawnSystem?.killMob(currentTarget.id);
+        global.Targeting?.clearTarget();
+      }
+
       // Check for loot (use dungeon system if in dungeon, otherwise regular loot)
       const currentZone = global.Zones?.getCurrentZone();
       const isDungeonZone = currentZone && global.Dungeons?.getDungeonZone('gloomfang_caverns', currentZone.id);
