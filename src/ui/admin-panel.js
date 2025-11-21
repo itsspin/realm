@@ -385,64 +385,102 @@
 
   /**
    * Setup button handlers directly (fallback for onclick issues)
+   * This ensures buttons work even if onclick handlers fail
    */
   function setupButtonHandlers() {
+    if (!adminPanel) return;
+
     // Map editor buttons
     const fillBtn = adminPanel.querySelector('button[onclick*="fillZoneWithTile"]');
     if (fillBtn) {
-      fillBtn.onclick = () => {
+      fillBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Fill button clicked');
         fillZoneWithTile();
-      };
+      });
+      fillBtn.onclick = null; // Remove onclick to use addEventListener instead
     }
 
     const clearBtn = adminPanel.querySelector('button[onclick*="clearZone"]');
     if (clearBtn) {
-      clearBtn.onclick = () => {
+      clearBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Clear button clicked');
         clearZone();
-      };
+      });
+      clearBtn.onclick = null;
     }
 
     const genMapBtn = adminPanel.querySelector('button[onclick*="generateMap"]');
     if (genMapBtn) {
-      genMapBtn.onclick = () => {
+      genMapBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Generate Map button clicked');
         generateMap();
-      };
+      });
+      genMapBtn.onclick = null;
     }
 
     const genFantasyBtn = adminPanel.querySelector('button[onclick*="generateFantasyMap"]');
     if (genFantasyBtn) {
-      genFantasyBtn.onclick = () => {
+      genFantasyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Generate Fantasy Map button clicked');
         generateFantasyMap();
-      };
+      });
+      genFantasyBtn.onclick = null;
     }
 
     const saveBtn = adminPanel.querySelector('button[onclick*="saveAll"]');
     if (saveBtn) {
-      saveBtn.onclick = () => {
+      saveBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Save All button clicked');
-        saveAll();
-      };
+        await saveAll();
+      });
+      saveBtn.onclick = null;
     }
 
     const reloadBtn = adminPanel.querySelector('button[onclick*="reloadData"]');
     if (reloadBtn) {
-      reloadBtn.onclick = () => {
+      reloadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Reload Data button clicked');
         reloadData();
-      };
+      });
+      reloadBtn.onclick = null;
     }
 
     const undoBtn = adminPanel.querySelector('button[onclick*="undoChanges"]');
     if (undoBtn) {
-      undoBtn.onclick = () => {
+      undoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         console.log('[AdminPanel] Undo button clicked');
         undoChanges();
-      };
+      });
+      undoBtn.onclick = null;
     }
+
+    // Close button
+    const closeBtn = adminPanel.querySelector('.admin-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[AdminPanel] Close button clicked');
+        close();
+      });
+      closeBtn.onclick = null;
+    }
+
+    console.log('[AdminPanel] Button handlers set up');
   }
 
   /**
@@ -1704,13 +1742,14 @@
       timestamp: Date.now()
     };
 
-    // Also save to localStorage as persistent backup
-    try {
-      localStorage.setItem('REALM_ADMIN_BACKUP', JSON.stringify(backupData));
-      console.log('[AdminPanel] Backup created and saved to localStorage');
-    } catch (e) {
-      console.warn('[AdminPanel] Failed to save backup to localStorage:', e);
-    }
+      // Also save to localStorage as persistent backup
+      try {
+        localStorage.setItem('REALM_ADMIN_BACKUP', JSON.stringify(backupData));
+        localStorage.setItem('REALM_ADMIN_BACKUP_TIME', Date.now().toString());
+        console.log('[AdminPanel] Backup created and saved to localStorage');
+      } catch (e) {
+        console.warn('[AdminPanel] Failed to save backup to localStorage:', e);
+      }
 
     // Show undo button
     const undoBtn = document.getElementById('undoBtn');
@@ -1802,9 +1841,16 @@
       localStorage.setItem('REALM_NPCS', JSON.stringify(npcs));
       localStorage.setItem('REALM_WORLD_TILES', JSON.stringify(worldData.tiles));
       localStorage.setItem('REALM_WORLD_DATA_SAVED', Date.now().toString());
-      console.log('[AdminPanel] Saved to localStorage');
+      console.log('[AdminPanel] Saved to localStorage - changes will be live for all players');
+      
+      // Verify save
+      const saved = localStorage.getItem('REALM_WORLD_DATA_SAVED');
+      if (saved) {
+        console.log('[AdminPanel] Save verified, timestamp:', saved);
+      }
     } catch (e) {
       console.error('[AdminPanel] Failed to save to localStorage:', e);
+      throw new Error('Failed to save to localStorage: ' + e.message);
     }
 
     // Try to save via backend API if available
@@ -1907,6 +1953,50 @@
    * Apply changes live to the game without restart
    */
   function applyChangesLive(worldData) {
+    console.log('[AdminPanel] Applying changes live to game...');
+    
+    // Update World data structures directly
+    if (global.World && typeof global.World.getWorldData === 'function') {
+      const currentWorldData = global.World.getWorldData();
+      if (currentWorldData) {
+        // Update zones
+        currentWorldData.zones = worldData.zones;
+        currentWorldData.tiles = worldData.tiles;
+        currentWorldData.spawnGroups = worldData.spawnGroups;
+        currentWorldData.mobTemplates = worldData.mobTemplates;
+        console.log('[AdminPanel] Updated World data structures');
+      }
+    }
+
+    // Update REALM.data structures for immediate access
+    if (global.REALM && global.REALM.data) {
+      // Update zonesById lookup
+      if (!global.REALM.data.zonesById) {
+        global.REALM.data.zonesById = {};
+      }
+      Object.values(worldData.zones).forEach(zone => {
+        global.REALM.data.zonesById[zone.id.toLowerCase()] = zone;
+      });
+
+      // Update monstersById lookup
+      if (!global.REALM.data.monstersById) {
+        global.REALM.data.monstersById = {};
+      }
+      Object.values(worldData.mobTemplates).forEach(mob => {
+        global.REALM.data.monstersById[mob.id.toLowerCase()] = mob;
+      });
+
+      // Update spawnGroups
+      if (!global.REALM.data.spawnGroupsById) {
+        global.REALM.data.spawnGroupsById = {};
+      }
+      Object.values(worldData.spawnGroups).forEach(sg => {
+        global.REALM.data.spawnGroupsById[sg.id.toLowerCase()] = sg;
+      });
+
+      console.log('[AdminPanel] Updated REALM.data structures');
+    }
+
     // Regenerate tiles for all zones (preserving manual edits)
     if (global.World && typeof global.World.generateZoneTiles === 'function') {
       Object.values(worldData.zones).forEach(zone => {
@@ -1921,9 +2011,13 @@
     const player = global.State?.getPlayer();
     if (player && player.currentZone && global.SpawnSystem) {
       // Clear current spawns
-      global.SpawnSystem.clearZone();
+      if (typeof global.SpawnSystem.clearZone === 'function') {
+        global.SpawnSystem.clearZone();
+      }
       // Reinitialize with new spawn data
-      global.SpawnSystem.initializeZone(player.currentZone);
+      if (typeof global.SpawnSystem.initializeZone === 'function') {
+        global.SpawnSystem.initializeZone(player.currentZone);
+      }
     }
 
     // Update guard system
@@ -1931,35 +2025,22 @@
       global.GuardSystem.reloadPatrols();
     }
 
-    // Update mob templates in REALM.data
-    if (global.REALM && global.REALM.data) {
-      // Update monstersById lookup
-      if (!global.REALM.data.monstersById) {
-        global.REALM.data.monstersById = {};
-      }
-      Object.values(worldData.mobTemplates).forEach(mob => {
-        global.REALM.data.monstersById[mob.id.toLowerCase()] = mob;
-      });
-    }
-
-    // Re-render map
+    // Re-render map immediately
     if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
       setTimeout(() => {
         global.WorldMapRender.renderMap();
+        console.log('[AdminPanel] Map re-rendered with new data');
       }, 100);
     }
 
-    // Update zone data in REALM.data
-    if (global.REALM && global.REALM.data) {
-      if (!global.REALM.data.zonesById) {
-        global.REALM.data.zonesById = {};
+    // Update UI components that display zone/mob data
+    if (global.Rendering) {
+      if (typeof global.Rendering.updateZoneHeader === 'function') {
+        global.Rendering.updateZoneHeader();
       }
-      Object.values(worldData.zones).forEach(zone => {
-        global.REALM.data.zonesById[zone.id.toLowerCase()] = zone;
-      });
     }
 
-    console.log('[AdminPanel] Changes applied live to game');
+    console.log('[AdminPanel] All changes applied live to game');
   }
 
   /**
@@ -3354,6 +3435,7 @@
     }
   }
 
+  // Export all functions to window.AdminPanel immediately so onclick handlers work
   const AdminPanel = {
     show,
     close,
@@ -3387,9 +3469,19 @@
     addLootEntry,
     removeLootEntry,
     saveLootTable,
-    deleteLootTable
+    deleteLootTable,
+    checkAndShowAdminButton // Export this for app.js to call
   };
 
+  // Set both global and window for maximum compatibility
   global.AdminPanel = AdminPanel;
+  window.AdminPanel = AdminPanel;
+  
+  // Initialize admin button check after a short delay
+  setTimeout(() => {
+    checkAndShowAdminButton();
+  }, 1000);
+  
+  console.log('[AdminPanel] Admin panel module loaded, functions exported to window.AdminPanel');
 })(window);
 
