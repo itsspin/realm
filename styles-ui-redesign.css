@@ -248,6 +248,7 @@
 }
 
 .pet-control-btn {
+  grid-column: span 1;
   padding: var(--spacing-xs) var(--spacing-sm);
   background: rgba(156, 39, 176, 0.2);
   border: var(--border-subtle);

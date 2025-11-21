@@ -66,8 +66,9 @@
         def: petTemplate.def,
         agi: petTemplate.agi || 50
       },
-      behavior: 'follow', // follow, stay, attack, taunt
+      behavior: 'follow', // follow, stay, attack, taunt, guard, sit, hold
       target: null,
+      guardLocation: null, // {x, y} for guard behavior
       ownerId: player.id,
       alive: true
     };
@@ -207,9 +208,16 @@
     const pet = { ...player.pet };
     pet.behavior = behavior;
 
-    // Clear target if switching to follow or stay
-    if (behavior === 'follow' || behavior === 'stay') {
+    // Clear target if switching to non-combat behaviors
+    if (behavior === 'follow' || behavior === 'stay' || behavior === 'sit' || behavior === 'hold') {
       pet.target = null;
+    }
+    
+    // Set guard location for guard behavior
+    if (behavior === 'guard') {
+      pet.guardLocation = { x: pet.x, y: pet.y };
+    } else {
+      pet.guardLocation = null;
     }
 
     global.State?.updatePlayer({ pet });
@@ -218,10 +226,13 @@
       follow: 'Follow',
       stay: 'Stay',
       attack: 'Attack',
-      taunt: 'Taunt'
+      taunt: 'Taunt',
+      guard: 'Guard',
+      sit: 'Sit',
+      hold: 'Hold'
     };
 
-    global.ChatSystem?.addSystemMessage(`${pet.name} is now set to ${behaviorNames[behavior]}.`);
+    global.ChatSystem?.addSystemMessage(`${pet.name} is now set to ${behaviorNames[behavior] || behavior}.`);
 
     // Update UI
     if (global.PetUI) {
@@ -339,6 +350,12 @@
       updatePetStay(pet, playerTile);
     } else if (pet.behavior === 'attack' || pet.behavior === 'taunt') {
       updatePetCombat(pet, playerTile);
+    } else if (pet.behavior === 'guard') {
+      updatePetGuard(pet, playerTile);
+    } else if (pet.behavior === 'sit') {
+      updatePetSit(pet, playerTile);
+    } else if (pet.behavior === 'hold') {
+      updatePetHold(pet, playerTile);
     }
   }
 
@@ -367,6 +384,68 @@
       global.State?.updatePlayer({ pet: updatedPet });
       return;
     }
+  }
+
+  /**
+   * Update pet guard behavior (P99 mechanic)
+   */
+  function updatePetGuard(pet, playerTile) {
+    // Pet guards at guardLocation, attacks anything that attacks player within range
+    const guardLoc = pet.guardLocation || { x: pet.x, y: pet.y };
+    
+    // Move pet to guard location if not there
+    const distance = Math.abs(pet.x - guardLoc.x) + Math.abs(pet.y - guardLoc.y);
+    if (distance > 0) {
+      movePetTowards(pet, guardLoc.x, guardLoc.y);
+    }
+    
+    // Check if player is being attacked within pet's range
+    const player = global.State?.getPlayer();
+    if (player && player.currentZone === pet.zone) {
+      // Check for mobs attacking player
+      const mobsNearPlayer = global.SpawnSystem?.getNearbyMobs(player.currentZone, playerTile.x, playerTile.y, 3) || [];
+      const attackingMob = mobsNearPlayer.find(mob => {
+        // In real game, check if mob is targeting player
+        // For now, check if mob is adjacent to player
+        const mobDistance = Math.abs(mob.x - playerTile.x) + Math.abs(mob.y - playerTile.y);
+        return mobDistance <= 1 && mob.alive && mob.mobTemplate && !mob.mobTemplate.isGuard;
+      });
+      
+      if (attackingMob) {
+        // Pet defends player - switch to attack mode
+        const updatedPet = { ...pet, behavior: 'attack', target: { id: attackingMob.id, x: attackingMob.x, y: attackingMob.y, zone: attackingMob.zone } };
+        global.State?.updatePlayer({ pet: updatedPet });
+        return;
+      }
+    }
+  }
+
+  /**
+   * Update pet sit behavior (P99 mechanic)
+   */
+  function updatePetSit(pet, playerTile) {
+    // Pet sits to regenerate HP/mana faster, less responsive to threats
+    // Pet will defend if directly attacked
+    const nearbyMob = global.SpawnSystem?.getMobAtTile(pet.zone, pet.x, pet.y);
+    if (nearbyMob && nearbyMob.alive && nearbyMob.mobTemplate && !nearbyMob.mobTemplate.isGuard) {
+      // Pet is being directly attacked, switch to attack mode
+      const updatedPet = { ...pet, behavior: 'attack', target: { id: nearbyMob.id, x: nearbyMob.x, y: nearbyMob.y, zone: nearbyMob.zone } };
+      global.State?.updatePlayer({ pet: updatedPet });
+      return;
+    }
+    
+    // Pet regenerates HP faster while sitting (handled in pet stats/regen)
+    // For now, pet just stays in place
+  }
+
+  /**
+   * Update pet hold behavior (P99 mechanic)
+   */
+  function updatePetHold(pet, playerTile) {
+    // Pet holds (stops all actions, ignores combat, passive)
+    // Pet does nothing, won't attack or defend
+    // Just stays in place
+    return; // Do nothing
   }
 
   /**

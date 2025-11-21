@@ -399,11 +399,14 @@
       
       const actualXPGain = Math.floor(xpGain * xpMultiplier);
       
-      // Award XP
-      global.Leveling?.addXP(actualXPGain);
-
-      // Award combat skill XP
-      global.Skills?.addSkillXP('combat', Math.floor(actualXPGain / 2));
+      // Award XP (with group distribution if in party)
+      if (global.P99Experience) {
+        global.P99Experience.awardXPForKill(actualXPGain, mobLevel, player.id);
+      } else {
+        // Fallback to solo XP
+        global.Leveling?.addXP(actualXPGain);
+        global.Skills?.addSkillXP('combat', Math.floor(actualXPGain / 2));
+      }
 
       // Award gold
       global.State?.updatePlayer({

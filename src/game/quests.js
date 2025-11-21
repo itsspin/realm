@@ -18,6 +18,180 @@
     }
   }
 
+  /**
+   * Check if player can turn in quest item to NPC
+   */
+  function canTurnInQuest(npcId, itemId) {
+    const player = global.State?.getPlayer();
+    if (!player || !player.activeQuests) return false;
+
+    const npc = global.REALM?.data?.npcsById?.[npcId];
+    if (!npc || !npc.quests) return false;
+
+    // Check if NPC has any quests that require this item
+    for (const questId of player.activeQuests) {
+      const quest = global.REALM?.data?.questsById?.[questId];
+      if (!quest || quest.type !== 'turnin') continue;
+      
+      // Check if this quest is from this NPC
+      if (quest.npcId !== npcId) continue;
+      
+      // Check if item matches quest requirements
+      if (quest.requiredItems && quest.requiredItems.includes(itemId)) {
+        return { quest, canComplete: true };
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Turn in quest item to NPC
+   */
+  function turnInQuestItem(npcId, itemId) {
+    const player = global.State?.getPlayer();
+    if (!player) return false;
+
+    const result = canTurnInQuest(npcId, itemId);
+    if (!result || !result.canComplete) {
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: 'This item is not needed for any quest.',
+        meta: 'Quest'
+      });
+      return false;
+    }
+
+    const quest = result.quest;
+    
+    // Check if player has all required items
+    const requiredItems = quest.requiredItems || [];
+    const requiredCounts = quest.requiredItemCounts || {};
+    
+    for (const reqItemId of requiredItems) {
+      const count = requiredCounts[reqItemId] || 1;
+      const playerItemCount = (player.inventory || []).filter(
+        invItem => invItem.itemId === reqItemId
+      ).length;
+      
+      if (playerItemCount < count) {
+        global.Narrative?.addEntry({
+          type: 'system',
+          text: `You need ${count}x ${reqItemId.replace(/_/g, ' ')} to complete this quest.`,
+          meta: 'Quest'
+        });
+        return false;
+      }
+    }
+
+    // Remove required items from inventory
+    for (const reqItemId of requiredItems) {
+      const count = requiredCounts[reqItemId] || 1;
+      for (let i = 0; i < count; i++) {
+        global.State?.removeItem(reqItemId);
+      }
+    }
+
+    // Complete quest
+    completeQuest(quest.id);
+    return true;
+  }
+
+  /**
+   * Get quest dialogue for NPC
+   */
+  function getQuestDialogue(npcId) {
+    const npc = global.REALM?.data?.npcsById?.[npcId];
+    if (!npc || !npc.quests) return null;
+
+    const player = global.State?.getPlayer();
+    if (!player) return null;
+
+    const availableQuests = [];
+    const activeQuests = [];
+    const completedQuests = new Set(player.completedQuests || []);
+
+    // Check each quest from this NPC
+    for (const questId of npc.quests) {
+      const quest = global.REALM?.data?.questsById?.[questId];
+      if (!quest) continue;
+
+      if (completedQuests.has(questId)) continue; // Already completed
+
+      // Check prerequisites
+      const prereqsMet = !quest.prerequisites || quest.prerequisites.every(
+        prereq => completedQuests.has(prereq)
+      );
+
+      if (player.activeQuests && player.activeQuests.includes(questId)) {
+        activeQuests.push(quest);
+      } else if (prereqsMet) {
+        availableQuests.push(quest);
+      }
+    }
+
+    return {
+      npc,
+      availableQuests,
+      activeQuests,
+      dialogue: npc.questDialogue || npc.description
+    };
+  }
+
+  /**
+   * Accept quest from NPC
+   */
+  function acceptQuest(questId) {
+    const player = global.State?.getPlayer();
+    if (!player) return false;
+
+    const quest = global.REALM?.data?.questsById?.[questId];
+    if (!quest) return false;
+
+    // Check prerequisites
+    const completedQuests = new Set(player.completedQuests || []);
+    if (quest.prerequisites && !quest.prerequisites.every(prereq => completedQuests.has(prereq))) {
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: 'You have not completed the prerequisites for this quest.',
+        meta: 'Quest'
+      });
+      return false;
+    }
+
+    // Check if already active or completed
+    if (player.activeQuests && player.activeQuests.includes(questId)) {
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: 'You already have this quest.',
+        meta: 'Quest'
+      });
+      return false;
+    }
+
+    if (completedQuests.has(questId)) {
+      global.Narrative?.addEntry({
+        type: 'system',
+        text: 'You have already completed this quest.',
+        meta: 'Quest'
+      });
+      return false;
+    }
+
+    // Add to active quests
+    player.activeQuests = [...(player.activeQuests || []), questId];
+    global.State?.updatePlayer({ activeQuests: player.activeQuests });
+
+    global.Narrative?.addEntry({
+      type: 'quest',
+      text: `Quest Accepted: ${quest.title}`,
+      meta: quest.description
+    });
+
+    global.Rendering?.updateQuestLog();
+    return true;
+  }
+
   function checkKillQuest(monsterId) {
     const player = global.State?.getPlayer();
     if (!player || !player.activeQuests) return;
@@ -133,7 +307,11 @@
     initializeQuests,
     checkKillQuest,
     completeQuest,
-    checkQuestPrerequisites
+    checkQuestPrerequisites,
+    canTurnInQuest,
+    turnInQuestItem,
+    getQuestDialogue,
+    acceptQuest
   };
 
   global.Quests = Quests;

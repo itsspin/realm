@@ -56,6 +56,9 @@
             <button class="pet-control-btn" id="petTauntBtn" title="Command pet to taunt target (generates high threat)">Taunt</button>
             <button class="pet-control-btn" id="petStayBtn" title="Command pet to stay in place">Stay</button>
             <button class="pet-control-btn" id="petFollowBtn" title="Command pet to follow you">Follow</button>
+            <button class="pet-control-btn" id="petGuardBtn" title="Command pet to guard location and defend you">Guard</button>
+            <button class="pet-control-btn" id="petSitBtn" title="Command pet to sit and regenerate faster">Sit</button>
+            <button class="pet-control-btn" id="petHoldBtn" title="Command pet to hold (passive, ignore combat)">Hold</button>
             <button class="pet-control-btn pet-control-btn--dismiss" id="petDismissBtn" title="Dismiss pet">Dismiss</button>
           </div>
         </div>
@@ -79,6 +82,9 @@
     petTauntBtn = document.getElementById('petTauntBtn');
     petStayBtn = document.getElementById('petStayBtn');
     petFollowBtn = document.getElementById('petFollowBtn');
+    petGuardBtn = document.getElementById('petGuardBtn');
+    petSitBtn = document.getElementById('petSitBtn');
+    petHoldBtn = document.getElementById('petHoldBtn');
     petDismissBtn = document.getElementById('petDismissBtn');
 
     // Attach event handlers
@@ -120,6 +126,30 @@
       petFollowBtn.addEventListener('click', () => {
         if (global.PetSystem) {
           global.PetSystem.setPetBehavior('follow');
+        }
+      });
+    }
+
+    if (petGuardBtn) {
+      petGuardBtn.addEventListener('click', () => {
+        if (global.PetSystem) {
+          global.PetSystem.setPetBehavior('guard');
+        }
+      });
+    }
+
+    if (petSitBtn) {
+      petSitBtn.addEventListener('click', () => {
+        if (global.PetSystem) {
+          global.PetSystem.setPetBehavior('sit');
+        }
+      });
+    }
+
+    if (petHoldBtn) {
+      petHoldBtn.addEventListener('click', () => {
+        if (global.PetSystem) {
+          global.PetSystem.setPetBehavior('hold');
         }
       });
     }
@@ -188,6 +218,15 @@
       }
       if (petFollowBtn) {
         petFollowBtn.classList.toggle('active', behavior === 'follow');
+      }
+      if (petGuardBtn) {
+        petGuardBtn.classList.toggle('active', behavior === 'guard');
+      }
+      if (petSitBtn) {
+        petSitBtn.classList.toggle('active', behavior === 'sit');
+      }
+      if (petHoldBtn) {
+        petHoldBtn.classList.toggle('active', behavior === 'hold');
       }
 
       // Check if pet is alive

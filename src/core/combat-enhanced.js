@@ -125,7 +125,7 @@
   }
 
   /**
-   * Use a skill in combat
+   * Use a skill (may pull if ranged attack from distance)
    */
   function useSkill(skillId, target) {
     const player = global.State?.getPlayer();
@@ -177,6 +177,30 @@
     // TODO: Check player resources (mana, rage, energy)
     // For now, allow all skills
 
+    // Check if this is a ranged attack that should pull instead of engage
+    const attackRange = skill.range || 1;
+    if (player && target && attackRange > 1) {
+      const playerTile = player.currentTile || { x: 0, y: 0 };
+      const targetX = target.x || 0;
+      const targetY = target.y || 0;
+      const distance = Math.abs(targetX - playerTile.x) + Math.abs(targetY - playerTile.y);
+      
+      // If target is more than 1 tile away and attack has range > 1, check if should pull
+      if (distance > 1 && global.PullingSystem) {
+        const shouldPull = global.PullingSystem.shouldPullOnAttack(target, playerTile, attackRange, skill.type);
+        if (shouldPull) {
+          // Pull the mob instead of engaging directly
+          const pulled = global.PullingSystem.pullMob(target, player.id, skill.type);
+          if (pulled) {
+            // Still execute skill (damage/effect) but mob is now chasing
+            skillCooldowns.set(skillId, Date.now());
+            executeSkillEffect(skill, target);
+            return true;
+          }
+        }
+      }
+    }
+    
     // Set cooldown
     skillCooldowns.set(skillId, Date.now());
 
@@ -265,6 +289,13 @@
       
       // Apply damage
       target.stats.hp = Math.max(0, target.stats.hp - damage);
+      
+      // Apply DoT if present (P99 mechanic)
+      if (effect.dot) {
+        if (global.DoTSystem) {
+          global.DoTSystem.applyDoT(target, player.id, skill.id, effect.dot);
+        }
+      }
       
       // Sync with currentMonster if in combat
       const currentMonster = global.Combat?.getCurrentMonster();
