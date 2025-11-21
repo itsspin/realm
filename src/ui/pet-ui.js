@@ -38,7 +38,7 @@
           <h3>Pet</h3>
           <button class="pet-panel-toggle" id="petPanelToggle" title="Minimize/Maximize Pet Panel">▼</button>
         </div>
-        <div class="pet-panel-content" id="petPanelContent" style="display: flex;">
+        <div class="pet-panel-content" id="petPanelContent">
           <div class="pet-info">
             <div class="pet-name" id="petName">-</div>
             <div class="pet-level" id="petLevel">Level -</div>
@@ -64,7 +64,7 @@
           </div>
         </div>
         <!-- Compact minimized view -->
-        <div class="pet-panel-compact" id="petPanelCompact" style="display: none; flex-direction: column;">
+        <div class="pet-panel-compact" id="petPanelCompact" style="display: none;">
           <div class="pet-compact-hp-bar">
             <div class="pet-hp-fill-compact" id="petHpBarCompact" style="width: 100%"></div>
             <span class="pet-hp-text-compact" id="petHpTextCompact">- / -</span>
@@ -191,9 +191,12 @@
       });
     }
 
+    // Populate compact controls
+    populateCompactControls();
+    
     // Update pet panel periodically
     setInterval(updatePetPanel, 500);
-    updatePetPanel();
+    updatePetPanel(); // Initial update
   }
 
   /**
@@ -343,6 +346,58 @@
     }, 50);
   }
   
+  /**
+   * Populate compact controls with buttons
+   */
+  function populateCompactControls() {
+    const compactControls = document.getElementById('petCompactControls');
+    if (!compactControls) return;
+    
+    const compactButtons = [
+      { id: 'attack', label: '⚔', title: 'Attack', action: 'attack' },
+      { id: 'taunt', label: '🛡', title: 'Taunt', action: 'taunt' },
+      { id: 'stay', label: '📍', title: 'Stay', action: 'stay' },
+      { id: 'follow', label: '👣', title: 'Follow', action: 'follow' },
+      { id: 'guard', label: '🔒', title: 'Guard', action: 'guard' },
+      { id: 'sit', label: '🪑', title: 'Sit', action: 'sit' },
+      { id: 'hold', label: '✋', title: 'Hold', action: 'hold' },
+      { id: 'dismiss', label: '❌', title: 'Dismiss', action: 'dismiss', isDismiss: true }
+    ];
+    
+    compactControls.innerHTML = compactButtons.map(btn => {
+      const btnClass = btn.isDismiss ? 'pet-compact-btn pet-compact-btn--dismiss' : 'pet-compact-btn';
+      return `<button class="${btnClass}" data-action="${btn.action}" title="${btn.title}">${btn.label}</button>`;
+    }).join('');
+    
+    // Attach event listeners to compact buttons
+    compactControls.querySelectorAll('.pet-compact-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if (action === 'dismiss') {
+          if (global.PetSystem && global.PetSystem.dismissPet) {
+            global.PetSystem.dismissPet();
+          }
+        } else if (action === 'attack' || action === 'taunt') {
+          const target = global.Targeting?.getTarget();
+          if (!target) {
+            global.ChatSystem?.addSystemMessage('You need a target for your pet to attack.');
+            return;
+          }
+          if (action === 'attack' && global.PetSystem && global.PetSystem.commandPetAttack) {
+            global.PetSystem.commandPetAttack(target);
+          } else if (action === 'taunt' && global.PetSystem && global.PetSystem.commandPetTaunt) {
+            global.PetSystem.commandPetTaunt(target);
+          }
+        } else {
+          if (global.PetSystem && global.PetSystem.setPetBehavior) {
+            global.PetSystem.setPetBehavior(action);
+          }
+        }
+        updatePetPanel(); // Refresh UI
+      });
+    });
+  }
+
   /**
    * Update minimized pet panel view
    */

@@ -18,7 +18,6 @@
     if (player && player.name) {
       const nameLower = player.name.toLowerCase().trim();
       if (nameLower === 'spin') {
-        console.log('[AdminUtils] Admin access granted via character name:', player.name);
         return true;
       }
     }
@@ -30,12 +29,10 @@
       const email = (session.email || '').toLowerCase().trim();
       
       if (username === 'travisrd') {
-        console.log('[AdminUtils] Admin access granted via username:', session.username);
         return true;
       }
       
       if (email === 'travisrd@gmail.com') {
-        console.log('[AdminUtils] Admin access granted via email:', session.email);
         return true;
       }
     }

@@ -163,8 +163,46 @@
       const attackBtn = panel.querySelector('#attackBtn');
       if (attackBtn) {
         attackBtn.addEventListener('click', () => {
-          if (global.Combat && currentTarget) {
-            global.Combat.attackTarget();
+          if (!currentTarget) {
+            if (global.ChatSystem) {
+              global.ChatSystem.addSystemMessage('You have no target.');
+            }
+            return;
+          }
+
+          const player = global.State?.getPlayer();
+          if (!player || !player.currentTile) return;
+
+          // Check if target is adjacent
+          const playerX = player.currentTile.x || 0;
+          const playerY = player.currentTile.y || 0;
+          const distance = Math.abs(currentTarget.x - playerX) + Math.abs(currentTarget.y - playerY);
+
+          if (distance > 1) {
+            if (global.ChatSystem) {
+              global.ChatSystem.addSystemMessage('You are too far away. Move closer.');
+            }
+            // Move towards target
+            if (global.Movement) {
+              global.Movement.moveToTile(currentTarget.x, currentTarget.y);
+            }
+            return;
+          }
+
+          // Check if it's a hostile mob
+          if (currentTarget.mobTemplate && !currentTarget.mobTemplate.isGuard && currentTarget.alive) {
+            // Start combat
+            if (global.Combat) {
+              if (global.Combat.startCombatWithMob) {
+                global.Combat.startCombatWithMob(currentTarget);
+              } else if (global.Combat.startCombat) {
+                global.Combat.startCombat(currentTarget.mobTemplateId || currentTarget.mobTemplate.id);
+              }
+            }
+          } else {
+            if (global.ChatSystem) {
+              global.ChatSystem.addSystemMessage('You cannot attack that target.');
+            }
           }
         });
       }
@@ -172,8 +210,80 @@
       const conBtn = panel.querySelector('#conBtn');
       if (conBtn) {
         conBtn.addEventListener('click', () => {
-          if (global.Combat && currentTarget) {
-            global.Combat.considerTarget();
+          if (!currentTarget) {
+            if (global.ChatSystem) {
+              global.ChatSystem.addSystemMessage('You have no target.');
+            }
+            return;
+          }
+
+          // Consider target - show detailed info
+          const player = global.State?.getPlayer();
+          if (!player) return;
+
+          let conText = '';
+          let conColor = '#ffffff';
+
+          // Use FactionSystem if available for faction-based con
+          if (global.FactionSystem && currentTarget.mobTemplate?.factionId) {
+            const conDesc = global.FactionSystem.getConDescription(currentTarget, player);
+            const descMatch = conDesc.match(/\((.+)\)/);
+            conText = descMatch ? descMatch[1] : conDesc;
+            
+            const standing = global.FactionSystem.getPlayerStanding(currentTarget.mobTemplate.factionId);
+            if (standing === 'scowls' || standing === 'threatening') {
+              conColor = '#ff4444'; // Red - hostile
+            } else if (standing === 'ally' || standing === 'warmly' || standing === 'kindly') {
+              conColor = '#4caf50'; // Green - friendly
+            } else {
+              conColor = '#ffffff'; // White - neutral
+            }
+          } else {
+            // Level-based con
+            const playerLevel = player.level || 1;
+            const mobLevel = currentTarget.level || 1;
+            const levelDiff = mobLevel - playerLevel;
+
+            if (levelDiff <= -10) {
+              conColor = '#2196f3';
+              conText = 'Trivial';
+            } else if (levelDiff <= -5) {
+              conColor = '#00bcd4';
+              conText = 'Easy';
+            } else if (levelDiff <= -3) {
+              conColor = '#4caf50';
+              conText = 'Weak';
+            } else if (levelDiff <= -1) {
+              conColor = '#ffeb3b';
+              conText = 'Decent';
+            } else if (levelDiff === 0) {
+              conColor = '#ffffff';
+              conText = 'Even Match';
+            } else if (levelDiff <= 2) {
+              conColor = '#ff9800';
+              conText = 'Tough';
+            } else if (levelDiff <= 4) {
+              conColor = '#f44336';
+              conText = 'Very Tough';
+            } else {
+              conColor = '#9c27b0';
+              conText = 'Impossible';
+            }
+          }
+
+          // Show consider message
+          const mobName = currentTarget.mobTemplate?.name || currentTarget.name || 'Target';
+          const conMessage = `${mobName} looks ${conText.toLowerCase()} to you.`;
+          
+          if (global.ChatSystem) {
+            global.ChatSystem.addSystemMessage(conMessage);
+          }
+          if (global.Narrative) {
+            global.Narrative.addEntry({
+              type: 'system',
+              text: conMessage,
+              meta: `Level ${currentTarget.level || '?'} ${mobName}`
+            });
           }
         });
       }
@@ -415,7 +525,7 @@
    * Initialize targeting system
    */
   function initialize() {
-    // Target panel is now integrated into main UI (no longer draggable)
+    // Target panel is now created dynamically as floating popup
     // Clear any saved draggable position data
     try {
       localStorage.removeItem('REALM_TARGET_PANEL_POSITION');
@@ -423,55 +533,9 @@
       // Ignore errors
     }
     
-    // Ensure panel is in normal flow (not fixed position)
-    const panel = document.getElementById('targetPanel');
-    if (panel) {
-      panel.style.position = '';
-      panel.style.left = '';
-      panel.style.top = '';
-      panel.style.zIndex = '';
-    }
-    
-    // Target close button
-    const closeBtn = document.getElementById('targetClose');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        clearTarget();
-      });
-    }
-
-    // Attack button
-    const attackBtn = document.getElementById('attackBtn');
-    if (attackBtn) {
-      attackBtn.addEventListener('click', () => {
-        if (!currentTarget) {
-          if (global.ChatSystem) {
-            global.ChatSystem.addSystemMessage('You have no target.');
-          }
-          return;
-        }
-
-        const player = global.State?.getPlayer();
-        if (!player || !player.currentTile) return;
-
-        // Check if target is adjacent
-        const playerX = player.currentTile.x || 0;
-        const playerY = player.currentTile.y || 0;
-        const distance = Math.abs(currentTarget.x - playerX) + Math.abs(currentTarget.y - playerY);
-
-        if (distance > 1) {
-          if (global.ChatSystem) {
-            global.ChatSystem.addSystemMessage('You are too far away. Move closer.');
-          }
-          // Move towards target
-          if (global.Movement) {
-            global.Movement.moveToTile(currentTarget.x, currentTarget.y);
-          }
-          return;
-        }
-
-        // Check if it's a hostile mob
-        if (currentTarget.mobTemplate && !currentTarget.mobTemplate.isGuard && currentTarget.alive) {
+    // Panel will be created on first target selection
+    // No need to set up handlers here - they're set up in updateTargetPanel when panel is created
+    console.log('[Targeting] Targeting system initialized');
           // Start combat
           if (global.Combat) {
             if (global.Combat.startCombatWithMob) {
@@ -540,7 +604,8 @@
     isTargeted,
     cycleTarget,
     handleTileClick,
-    updateNearbyTargets
+    updateNearbyTargets,
+    initialize
   };
 
   global.Targeting = Targeting;

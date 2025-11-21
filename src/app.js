@@ -461,6 +461,16 @@
         }
       }
 
+      // Initialize pet UI
+      if (window.PetUI && typeof window.PetUI.init === 'function') {
+        window.PetUI.init();
+      }
+
+      // Initialize targeting system
+      if (window.Targeting && typeof window.Targeting.initialize === 'function') {
+        window.Targeting.initialize();
+      }
+
       // Initialize equipment UI
       if (window.EquipmentUI && typeof window.EquipmentUI.init === 'function') {
         window.EquipmentUI.init();

@@ -25,13 +25,18 @@
   let backupData = null; // For undo functionality
 
   /**
-   * Initialize admin panel
+   * Initialize admin panel - create stub object early
    */
   function initialize() {
-    // Don't check admin status here - let checkAndShowAdminButton handle it
-    // Just set up the initialization checks
-    console.log('[AdminPanel] Initializing admin panel system');
+    // Create stub object immediately so onclick handlers don't fail
+    // Functions will be added when they're defined at the end of the file
+    if (!window.AdminPanel) {
+      window.AdminPanel = {};
+    }
   }
+  
+  // Initialize immediately to create stub
+  initialize();
 
   /**
    * Create admin panel HTML
@@ -389,37 +394,38 @@
    */
   function setupButtonHandlers() {
     if (!adminPanel) {
-      console.warn('[AdminPanel] setupButtonHandlers: adminPanel not found');
       return;
     }
 
-    // Map editor buttons - use both onclick and addEventListener for maximum compatibility
+    // Ensure window.AdminPanel functions exist
+    if (!window.AdminPanel) {
+      initialize(); // Re-initialize if needed
+    }
+
+    // Map editor buttons - add event listeners as backup (onclick should work too)
     const fillBtn = adminPanel.querySelector('button[onclick*="fillZoneWithTile"]');
-    if (fillBtn) {
-      // Keep onclick but also add event listener as backup
+    if (fillBtn && !fillBtn.dataset.handlerAttached) {
       fillBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[AdminPanel] Fill button clicked via addEventListener');
-        fillZoneWithTile();
+        // Only handle if onclick didn't work
+        if (!e.defaultPrevented) {
+          e.preventDefault();
+          e.stopPropagation();
+          fillZoneWithTile();
+        }
       });
-      // Don't remove onclick - let both work
-      console.log('[AdminPanel] Fill button handler attached');
-    } else {
-      console.warn('[AdminPanel] Fill button not found');
+      fillBtn.dataset.handlerAttached = 'true';
     }
 
     const clearBtn = adminPanel.querySelector('button[onclick*="clearZone"]');
-    if (clearBtn) {
+    if (clearBtn && !clearBtn.dataset.handlerAttached) {
       clearBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[AdminPanel] Clear button clicked via addEventListener');
-        clearZone();
+        if (!e.defaultPrevented) {
+          e.preventDefault();
+          e.stopPropagation();
+          clearZone();
+        }
       });
-      console.log('[AdminPanel] Clear button handler attached');
-    } else {
-      console.warn('[AdminPanel] Clear button not found');
+      clearBtn.dataset.handlerAttached = 'true';
     }
 
     const genMapBtn = adminPanel.querySelector('button[onclick*="generateMap"]');
@@ -914,30 +920,20 @@
         }
       }
 
-      console.log('[AdminPanel] Created', tileCount, 'tiles');
-      console.log('[AdminPanel] Total tiles after fill:', Object.keys(worldData.tiles).length);
-      
-      // Verify tiles were actually added
-      const zoneTiles = Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId + '_'));
-      console.log('[AdminPanel] Zone tiles count:', zoneTiles.length);
-      
       // Force update World system's internal reference
       if (global.World && typeof global.World.getWorldData === 'function') {
         const currentWorldData = global.World.getWorldData();
         if (currentWorldData) {
           currentWorldData.tiles = worldData.tiles;
-          console.log('[AdminPanel] Updated World system tiles reference');
         }
       }
-
-      console.log('[AdminPanel] Created', tileCount, 'tiles');
+      
       unsavedChanges = true;
       updateStatus(`Zone filled with ${tileCount} tiles`);
       
       // Force re-render
       setTimeout(() => {
         renderMapEditor();
-        console.log('[AdminPanel] Zone filled, total tiles in worldData:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
       }, 50);
       
       // Update live game map if in same zone
@@ -949,6 +945,11 @@
       console.error('[AdminPanel] Error in fillZoneWithTile:', error);
       alert('Error filling zone: ' + error.message);
     }
+  }
+  
+  // Export fillZoneWithTile immediately
+  if (window.AdminPanel) {
+    window.AdminPanel.fillZoneWithTile = fillZoneWithTile;
   }
 
   /**
@@ -992,8 +993,6 @@
         console.log('[AdminPanel] Created tiles object');
       }
 
-      console.log('[AdminPanel] Current tiles count before clear:', Object.keys(worldData.tiles).length);
-      
       let deletedCount = 0;
       for (let y = 0; y < zone.gridHeight; y++) {
         for (let x = 0; x < zone.gridWidth; x++) {
@@ -1004,27 +1003,20 @@
           }
         }
       }
-
-      console.log('[AdminPanel] Deleted', deletedCount, 'tiles');
-      console.log('[AdminPanel] Total tiles after clear:', Object.keys(worldData.tiles).length);
       
       // Force update World system's internal reference
       if (global.World && typeof global.World.getWorldData === 'function') {
         const currentWorldData = global.World.getWorldData();
         if (currentWorldData) {
           currentWorldData.tiles = worldData.tiles;
-          console.log('[AdminPanel] Updated World system tiles reference');
         }
       }
-
-      console.log('[AdminPanel] Deleted', deletedCount, 'tiles');
       unsavedChanges = true;
       updateStatus(`Zone cleared (${deletedCount} tiles removed)`);
       
       // Force re-render
       setTimeout(() => {
         renderMapEditor();
-        console.log('[AdminPanel] Zone cleared, remaining tiles:', Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId)).length);
       }, 50);
       
       // Update live game map if in same zone
@@ -1036,6 +1028,11 @@
       console.error('[AdminPanel] Error in clearZone:', error);
       alert('Error clearing zone: ' + error.message);
     }
+  }
+  
+  // Export clearZone immediately
+  if (window.AdminPanel) {
+    window.AdminPanel.clearZone = clearZone;
   }
 
   /**
@@ -1988,6 +1985,11 @@
       alert('Error saving changes: ' + error.message + '\n\nCheck console for details.');
     }
   }
+  
+  // Export saveAll after it's defined
+  if (window.AdminPanel) {
+    window.AdminPanel.saveAll = saveAll;
+  }
 
   /**
    * Apply changes live to the game without restart
@@ -2314,6 +2316,15 @@
       isOpen = false;
     }
   }
+  
+  // Export critical functions immediately after they're defined
+  // This ensures onclick handlers in HTML work
+  if (window.AdminPanel) {
+    window.AdminPanel.show = show;
+    window.AdminPanel.close = close;
+    window.AdminPanel.fillZoneWithTile = fillZoneWithTile;
+    window.AdminPanel.clearZone = clearZone;
+  }
 
   /**
    * Add admin button to UI
@@ -2322,8 +2333,7 @@
     // Check if button already exists
     const existingBtn = document.getElementById('adminPanelBtn');
     if (existingBtn) {
-      console.log('[AdminPanel] Admin button already exists');
-      return;
+      return; // Silently return if already exists
     }
 
     // Only add if user is admin
@@ -2372,40 +2382,51 @@
   /**
    * Check admin status and show button
    */
+  let lastAdminCheck = null;
+  let adminButtonChecked = false;
+  
   function checkAndShowAdminButton() {
     if (!global.AdminUtils) {
-      console.log('[AdminPanel] AdminUtils not available yet');
-      return;
+      return; // Silently return if not ready
     }
 
     const isAdmin = global.AdminUtils.isAdmin();
-    const status = global.AdminUtils.getAdminStatus();
-    console.log('[AdminPanel] Admin check:', isAdmin, status);
+    
+    // Only log if status changed
+    if (lastAdminCheck !== isAdmin) {
+      lastAdminCheck = isAdmin;
+      if (isAdmin) {
+        console.log('[AdminPanel] Admin access detected');
+      }
+    }
 
-    if (isAdmin) {
+    if (isAdmin && !adminButtonChecked) {
       addAdminButton();
-    } else {
+      adminButtonChecked = true;
+    } else if (!isAdmin && adminButtonChecked) {
       // Remove button if not admin
       const btn = document.getElementById('adminPanelBtn');
       if (btn) {
         btn.remove();
-        console.log('[AdminPanel] Removed admin button - not admin');
       }
+      adminButtonChecked = false;
     }
   }
 
-  // Initialize on load - check multiple times to catch when player state is ready
+  // Initialize on load - check once after a delay
   function delayedInit() {
-    console.log('[AdminPanel] delayedInit called');
     checkAndShowAdminButton();
     
-    // Also check when player state changes
-    if (global.State) {
+    // Also check when player state changes (only once)
+    if (global.State && !global.State._adminPanelHooked) {
       const originalUpdatePlayer = global.State.updatePlayer;
-      if (originalUpdatePlayer && !global.State._adminPanelHooked) {
+      if (originalUpdatePlayer) {
         global.State.updatePlayer = function(...args) {
           originalUpdatePlayer.apply(this, args);
-          setTimeout(checkAndShowAdminButton, 100);
+          // Only check once when player updates, not every time
+          if (!adminButtonChecked) {
+            setTimeout(checkAndShowAdminButton, 100);
+          }
         };
         global.State._adminPanelHooked = true;
       }
@@ -2426,31 +2447,30 @@
     }
   });
 
-  // Initialize immediately and check multiple times
+  // Initialize immediately
   initialize();
   
+  // Check once after DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(delayedInit, 500);
-      // Check again after game initialization
-      setTimeout(delayedInit, 2000);
-      setTimeout(delayedInit, 5000);
-      setTimeout(delayedInit, 10000); // Check again after 10 seconds
+      setTimeout(delayedInit, 1000);
     });
   } else {
-    setTimeout(delayedInit, 500);
-    setTimeout(delayedInit, 2000);
-    setTimeout(delayedInit, 5000);
-    setTimeout(delayedInit, 10000); // Check again after 10 seconds
+    setTimeout(delayedInit, 1000);
   }
-
-  // Also check periodically
-  setInterval(checkAndShowAdminButton, 5000);
   
-  // Force check when window loads
-  window.addEventListener('load', () => {
-    setTimeout(checkAndShowAdminButton, 1000);
-  });
+  // Check once more after a longer delay (in case game loads slowly)
+  setTimeout(delayedInit, 3000);
+  
+  // Only check periodically if button hasn't been added yet (much less frequent)
+  const adminCheckInterval = setInterval(() => {
+    if (!adminButtonChecked && global.AdminUtils?.isAdmin()) {
+      checkAndShowAdminButton();
+      if (adminButtonChecked) {
+        clearInterval(adminCheckInterval); // Stop checking once button is added
+      }
+    }
+  }, 10000); // Check every 10 seconds instead of 5
 
   /**
    * Get zone transition points (where zone lines are)
@@ -3515,13 +3535,12 @@
 
   // Set both global and window for maximum compatibility
   global.AdminPanel = AdminPanel;
-  window.AdminPanel = AdminPanel;
   
-  // Initialize admin button check after a short delay
-  setTimeout(() => {
-    checkAndShowAdminButton();
-  }, 1000);
-  
-  console.log('[AdminPanel] Admin panel module loaded, functions exported to window.AdminPanel');
+  // Update window.AdminPanel with all functions (merge with stub if it exists)
+  if (window.AdminPanel && typeof window.AdminPanel === 'object') {
+    Object.assign(window.AdminPanel, AdminPanel);
+  } else {
+    window.AdminPanel = AdminPanel;
+  }
 })(window);
 
