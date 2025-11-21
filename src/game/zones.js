@@ -23,7 +23,15 @@
     const player = global.State?.getPlayer();
     if (!player) return null;
 
-    const zoneId = player.currentZone || 'edgewood_clearing';
+    const zoneId = player.currentZone || 'thronehold';
+    
+    // Try new World system first
+    if (global.World) {
+      const zone = global.World.getZone(zoneId);
+      if (zone) return zone;
+    }
+    
+    // Fallback to old zones system
     
     // Check if it's a dungeon zone
     const dungeon = Object.values(global.REALM?.data?.dungeonsById || {}).find(d => {

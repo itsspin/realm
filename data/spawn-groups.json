@@ -1,0 +1,156 @@
+[
+  {
+    "id": "thronehold_guards_patrol",
+    "zoneId": "thronehold",
+    "spawnType": "static",
+    "maxConcurrent": 8,
+    "respawnSeconds": 300,
+    "mobTemplates": ["thronehold_guard"],
+    "spawnPoints": [
+      { "x": 5, "y": 5 },
+      { "x": 15, "y": 5 },
+      { "x": 25, "y": 5 },
+      { "x": 35, "y": 5 },
+      { "x": 5, "y": 15 },
+      { "x": 35, "y": 15 },
+      { "x": 5, "y": 25 },
+      { "x": 35, "y": 25 }
+    ],
+    "patrolRoutes": [
+      { "spawnPointIndex": 0, "route": [[5, 5], [10, 5], [15, 5], [10, 5]] },
+      { "spawnPointIndex": 1, "route": [[15, 5], [20, 5], [25, 5], [20, 5]] }
+    ]
+  },
+  {
+    "id": "thronehold_gates_wildlife",
+    "zoneId": "thronehold_gates",
+    "spawnType": "roaming",
+    "maxConcurrent": 12,
+    "respawnSeconds": 180,
+    "mobTemplates": ["wild_boar", "goblin_scout"],
+    "spawnPoints": [
+      { "x": 10, "y": 10 },
+      { "x": 20, "y": 15 },
+      { "x": 30, "y": 20 },
+      { "x": 15, "y": 25 },
+      { "x": 25, "y": 30 },
+      { "x": 35, "y": 35 },
+      { "x": 40, "y": 20 },
+      { "x": 45, "y": 10 }
+    ]
+  },
+  {
+    "id": "thronehold_gates_bandits",
+    "zoneId": "thronehold_gates",
+    "spawnType": "static",
+    "maxConcurrent": 4,
+    "respawnSeconds": 600,
+    "mobTemplates": ["bandit_scout"],
+    "spawnPoints": [
+      { "x": 45, "y": 45 },
+      { "x": 48, "y": 48 }
+    ]
+  },
+  {
+    "id": "thronehold_plains_wildlife",
+    "zoneId": "thronehold_plains",
+    "spawnType": "roaming",
+    "maxConcurrent": 15,
+    "respawnSeconds": 200,
+    "mobTemplates": ["wild_boar", "plains_wolf", "field_rat"],
+    "spawnPoints": []
+  },
+  {
+    "id": "thronehold_plains_bandits",
+    "zoneId": "thronehold_plains",
+    "spawnType": "static",
+    "maxConcurrent": 6,
+    "respawnSeconds": 600,
+    "mobTemplates": ["bandit_scout", "bandit_raider"],
+    "spawnPoints": [
+      { "x": 50, "y": 10 },
+      { "x": 55, "y": 15 },
+      { "x": 10, "y": 50 },
+      { "x": 15, "y": 55 }
+    ]
+  },
+  {
+    "id": "silverweave_wardens_patrol",
+    "zoneId": "silverweave",
+    "spawnType": "static",
+    "maxConcurrent": 6,
+    "respawnSeconds": 300,
+    "mobTemplates": ["silverweave_warden"],
+    "spawnPoints": [
+      { "x": 10, "y": 10 },
+      { "x": 20, "y": 10 },
+      { "x": 30, "y": 10 },
+      { "x": 10, "y": 30 },
+      { "x": 20, "y": 30 },
+      { "x": 30, "y": 30 }
+    ],
+    "patrolRoutes": [
+      { "spawnPointIndex": 0, "route": [[10, 10], [15, 10], [20, 10], [15, 10]] }
+    ]
+  },
+  {
+    "id": "weeping_woods_outskirts_wildlife",
+    "zoneId": "weeping_woods_outskirts",
+    "spawnType": "roaming",
+    "maxConcurrent": 10,
+    "respawnSeconds": 180,
+    "mobTemplates": ["forest_wolf", "wild_boar"],
+    "spawnPoints": []
+  },
+  {
+    "id": "weeping_woods_outskirts_corrupted",
+    "zoneId": "weeping_woods_outskirts",
+    "spawnType": "static",
+    "maxConcurrent": 3,
+    "respawnSeconds": 450,
+    "mobTemplates": ["corrupted_sprite"],
+    "spawnPoints": [
+      { "x": 40, "y": 40 },
+      { "x": 45, "y": 45 }
+    ]
+  },
+  {
+    "id": "weeping_woods_predators",
+    "zoneId": "weeping_woods",
+    "spawnType": "roaming",
+    "maxConcurrent": 12,
+    "respawnSeconds": 200,
+    "mobTemplates": ["forest_wolf", "blackwood_bear"],
+    "spawnPoints": []
+  },
+  {
+    "id": "weeping_woods_corrupted",
+    "zoneId": "weeping_woods",
+    "spawnType": "static",
+    "maxConcurrent": 8,
+    "respawnSeconds": 400,
+    "mobTemplates": ["corrupted_sprite", "corrupted_treant"],
+    "spawnPoints": [
+      { "x": 30, "y": 30 },
+      { "x": 35, "y": 35 },
+      { "x": 40, "y": 40 },
+      { "x": 25, "y": 45 }
+    ]
+  },
+  {
+    "id": "blackwood_forest_dangerous",
+    "zoneId": "blackwood_forest",
+    "spawnType": "static",
+    "maxConcurrent": 10,
+    "respawnSeconds": 300,
+    "mobTemplates": ["blackwood_bear", "shadow_stalker", "corrupted_treant"],
+    "spawnPoints": [
+      { "x": 20, "y": 20 },
+      { "x": 30, "y": 25 },
+      { "x": 40, "y": 30 },
+      { "x": 25, "y": 40 },
+      { "x": 35, "y": 45 }
+    ]
+  }
+]
+

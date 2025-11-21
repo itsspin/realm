@@ -46,8 +46,8 @@
       charm: null
     },
     skills: {},
-    currentZone: 'edgewood_clearing',
-    currentTile: null,
+    currentZone: 'thronehold',
+    currentTile: { x: 20, y: 20 },
     settlements: [],
     guild: null,
     faction: null,

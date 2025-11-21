@@ -109,6 +109,10 @@
       { key: 'structures', path: 'data/structures.json' },
       { key: 'tiles', path: 'data/tiles.json' },
       { key: 'monsters', path: 'data/monsters.json' },
+      { key: 'worldZones', path: 'data/world-zones.json' },
+      { key: 'spawnGroups', path: 'data/spawn-groups.json' },
+      { key: 'mobTemplates', path: 'data/mob-templates.json' },
+      { key: 'territoryRegions', path: 'data/territory-regions.json' },
       { key: 'dungeonMonsters', path: 'data/dungeon-monsters.json' },
       { key: 'namedMobs', path: 'data/named-mobs.json' },
       { key: 'dungeons', path: 'data/dungeons.json' },
@@ -258,13 +262,13 @@
         window.Settlement.initializeWorldMap();
       }
 
-      // Initialize map renderer
-      if (window.MapRender && typeof window.MapRender.renderMap === 'function') {
+      // Initialize world map renderer
+      if (window.WorldMapRender && typeof window.WorldMapRender.renderMap === 'function') {
         setTimeout(() => {
-          window.MapRender.renderMap();
+          window.WorldMapRender.renderMap();
           const player = window.State?.getPlayer();
           if (player && player.currentTile) {
-            window.MapRender.centerOnPlayer();
+            window.WorldMapRender.centerOnPlayer();
           }
         }, 200);
       }
@@ -340,6 +344,12 @@
       DIAG.ok('app:dom-ready');
       await loadGameData();
       DIAG.ok('app:data-loaded');
+
+      // Initialize world system
+      if (window.World && typeof window.World.initialize === 'function') {
+        await window.World.initialize();
+        DIAG.ok('world:initialized');
+      }
 
       await initializeGame();
       DIAG.ok('game:initialized');

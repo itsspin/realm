@@ -1,0 +1,94 @@
+[
+  {
+    "id": "thronehold_territory",
+    "name": "Thronehold Territory",
+    "controllingFactionId": "thronehold_citizens",
+    "controlScore": 100,
+    "tileBounds": {
+      "zoneId": "thronehold",
+      "minX": 0,
+      "maxX": 39,
+      "minY": 0,
+      "maxY": 39
+    }
+  },
+  {
+    "id": "thronehold_gates_territory",
+    "name": "Thronehold Gates Territory",
+    "controllingFactionId": "thronehold_citizens",
+    "controlScore": 75,
+    "tileBounds": {
+      "zoneId": "thronehold_gates",
+      "minX": 0,
+      "maxX": 49,
+      "minY": 0,
+      "maxY": 49
+    }
+  },
+  {
+    "id": "thronehold_plains_territory",
+    "name": "Thronehold Plains Territory",
+    "controllingFactionId": "thronehold_citizens",
+    "controlScore": 60,
+    "tileBounds": {
+      "zoneId": "thronehold_plains",
+      "minX": 0,
+      "maxX": 59,
+      "minY": 0,
+      "maxY": 59
+    }
+  },
+  {
+    "id": "silverweave_territory",
+    "name": "Silverweave Territory",
+    "controllingFactionId": "silverweave_citizens",
+    "controlScore": 100,
+    "tileBounds": {
+      "zoneId": "silverweave",
+      "minX": 0,
+      "maxX": 39,
+      "minY": 0,
+      "maxY": 39
+    }
+  },
+  {
+    "id": "weeping_woods_outskirts_territory",
+    "name": "Weeping Woods Outskirts Territory",
+    "controllingFactionId": "silverweave_citizens",
+    "controlScore": 70,
+    "tileBounds": {
+      "zoneId": "weeping_woods_outskirts",
+      "minX": 0,
+      "maxX": 49,
+      "minY": 0,
+      "maxY": 49
+    }
+  },
+  {
+    "id": "weeping_woods_territory",
+    "name": "Weeping Woods Territory",
+    "controllingFactionId": null,
+    "controlScore": 0,
+    "tileBounds": {
+      "zoneId": "weeping_woods",
+      "minX": 0,
+      "maxX": 59,
+      "minY": 0,
+      "maxY": 59
+    }
+  },
+  {
+    "id": "blackwood_forest_territory",
+    "name": "Blackwood Forest Territory",
+    "controllingFactionId": null,
+    "controlScore": 0,
+    "tileBounds": {
+      "zoneId": "blackwood_forest",
+      "minX": 0,
+      "maxX": 59,
+      "minY": 0,
+      "maxY": 59
+    }
+  }
+]
+

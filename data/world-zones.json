@@ -1,0 +1,94 @@
+[
+  {
+    "id": "thronehold",
+    "name": "Thronehold",
+    "type": "city",
+    "description": "The great human capital city, a bastion of order and civilization. Stone walls protect the city, and the sounds of commerce and life echo through the streets.",
+    "levelRange": { "min": 1, "max": 10 },
+    "controllingFaction": "thronehold_citizens",
+    "neighboringZones": ["thronehold_gates", "thronehold_plains"],
+    "isSafeHaven": true,
+    "gridWidth": 40,
+    "gridHeight": 40,
+    "spawnGroups": ["thronehold_guards_patrol"]
+  },
+  {
+    "id": "thronehold_gates",
+    "name": "Thronehold Gates",
+    "type": "outdoor",
+    "description": "The outer gates of Thronehold, where new adventurers begin their journey. The great stone walls loom overhead, and the sounds of the city echo from within.",
+    "levelRange": { "min": 1, "max": 5 },
+    "controllingFaction": "thronehold_citizens",
+    "neighboringZones": ["thronehold", "thronehold_plains"],
+    "isSafeHaven": false,
+    "gridWidth": 50,
+    "gridHeight": 50,
+    "spawnGroups": ["thronehold_gates_wildlife", "thronehold_gates_bandits"]
+  },
+  {
+    "id": "thronehold_plains",
+    "name": "Thronehold Plains",
+    "type": "outdoor",
+    "description": "Rolling grasslands surrounding the capital. Farmers work the fields, and travelers make their way along well-worn paths.",
+    "levelRange": { "min": 2, "max": 8 },
+    "controllingFaction": "thronehold_citizens",
+    "neighboringZones": ["thronehold_gates", "blackwood_forest"],
+    "isSafeHaven": false,
+    "gridWidth": 60,
+    "gridHeight": 60,
+    "spawnGroups": ["thronehold_plains_wildlife", "thronehold_plains_bandits"]
+  },
+  {
+    "id": "silverweave",
+    "name": "Silverweave",
+    "type": "city",
+    "description": "An ancient elven city built among the treetops of the Weeping Woods. Graceful bridges connect the platforms, and the city seems to grow from the forest itself.",
+    "levelRange": { "min": 1, "max": 10 },
+    "controllingFaction": "silverweave_citizens",
+    "neighboringZones": ["weeping_woods_outskirts", "weeping_woods"],
+    "isSafeHaven": true,
+    "gridWidth": 40,
+    "gridHeight": 40,
+    "spawnGroups": ["silverweave_wardens_patrol"]
+  },
+  {
+    "id": "weeping_woods_outskirts",
+    "name": "Weeping Woods Outskirts",
+    "type": "outdoor",
+    "description": "The edge of the ancient Weeping Woods, where the elven city of Silverweave can be glimpsed through the canopy. Strange whispers drift on the wind.",
+    "levelRange": { "min": 1, "max": 5 },
+    "controllingFaction": "silverweave_citizens",
+    "neighboringZones": ["silverweave", "weeping_woods"],
+    "isSafeHaven": false,
+    "gridWidth": 50,
+    "gridHeight": 50,
+    "spawnGroups": ["weeping_woods_outskirts_wildlife", "weeping_woods_outskirts_corrupted"]
+  },
+  {
+    "id": "weeping_woods",
+    "name": "Weeping Woods",
+    "type": "outdoor",
+    "description": "The deep heart of the ancient forest. The trees here are ancient and watchful, and dark things lurk in the shadows between the trunks.",
+    "levelRange": { "min": 3, "max": 10 },
+    "controllingFaction": null,
+    "neighboringZones": ["weeping_woods_outskirts", "blackwood_forest"],
+    "isSafeHaven": false,
+    "gridWidth": 60,
+    "gridHeight": 60,
+    "spawnGroups": ["weeping_woods_predators", "weeping_woods_corrupted"]
+  },
+  {
+    "id": "blackwood_forest",
+    "name": "Blackwood Forest",
+    "type": "outdoor",
+    "description": "A dark, foreboding forest where sunlight rarely penetrates. Twisted trees and shadowy creatures lurk within.",
+    "levelRange": { "min": 5, "max": 10 },
+    "controllingFaction": null,
+    "neighboringZones": ["thronehold_plains", "weeping_woods"],
+    "isSafeHaven": false,
+    "gridWidth": 60,
+    "gridHeight": 60,
+    "spawnGroups": ["blackwood_forest_dangerous"]
+  }
+]
+

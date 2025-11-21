@@ -1,0 +1,187 @@
+[
+  {
+    "id": "thronehold_guard",
+    "name": "Thronehold City Guard",
+    "levelRange": { "min": 10, "max": 15 },
+    "factionId": "thronehold_guards",
+    "baseStats": {
+      "hp": 150,
+      "maxHp": 150,
+      "atk": 25,
+      "def": 20
+    },
+    "lootTableId": "guard_loot",
+    "isGuard": true,
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "silverweave_warden",
+    "name": "Silverweave Warden",
+    "levelRange": { "min": 10, "max": 15 },
+    "factionId": "silverweave_guards",
+    "baseStats": {
+      "hp": 140,
+      "maxHp": 140,
+      "atk": 28,
+      "def": 18
+    },
+    "lootTableId": "guard_loot",
+    "isGuard": true,
+    "aggressiveTo": ["evil"]
+  },
+  {
+    "id": "wild_boar",
+    "name": "Wild Boar",
+    "levelRange": { "min": 1, "max": 2 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 20,
+      "maxHp": 20,
+      "atk": 4,
+      "def": 2
+    },
+    "lootTableId": "wildlife_loot",
+    "isGuard": false
+  },
+  {
+    "id": "goblin_scout",
+    "name": "Goblin Scout",
+    "levelRange": { "min": 1, "max": 3 },
+    "factionId": "gloomfang_tribes",
+    "baseStats": {
+      "hp": 15,
+      "maxHp": 15,
+      "atk": 3,
+      "def": 1
+    },
+    "lootTableId": "goblin_loot",
+    "isGuard": false
+  },
+  {
+    "id": "bandit_scout",
+    "name": "Bandit Scout",
+    "levelRange": { "min": 3, "max": 5 },
+    "factionId": "crimson_marauders",
+    "baseStats": {
+      "hp": 35,
+      "maxHp": 35,
+      "atk": 8,
+      "def": 4
+    },
+    "lootTableId": "bandit_loot",
+    "isGuard": false
+  },
+  {
+    "id": "bandit_raider",
+    "name": "Bandit Raider",
+    "levelRange": { "min": 5, "max": 7 },
+    "factionId": "crimson_marauders",
+    "baseStats": {
+      "hp": 50,
+      "maxHp": 50,
+      "atk": 12,
+      "def": 6
+    },
+    "lootTableId": "bandit_loot",
+    "isGuard": false
+  },
+  {
+    "id": "plains_wolf",
+    "name": "Plains Wolf",
+    "levelRange": { "min": 2, "max": 4 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 30,
+      "maxHp": 30,
+      "atk": 6,
+      "def": 3
+    },
+    "lootTableId": "wildlife_loot",
+    "isGuard": false
+  },
+  {
+    "id": "field_rat",
+    "name": "Field Rat",
+    "levelRange": { "min": 1, "max": 2 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 12,
+      "maxHp": 12,
+      "atk": 2,
+      "def": 1
+    },
+    "lootTableId": "wildlife_loot",
+    "isGuard": false
+  },
+  {
+    "id": "forest_wolf",
+    "name": "Forest Wolf",
+    "levelRange": { "min": 2, "max": 4 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 25,
+      "maxHp": 25,
+      "atk": 5,
+      "def": 2
+    },
+    "lootTableId": "wildlife_loot",
+    "isGuard": false
+  },
+  {
+    "id": "corrupted_sprite",
+    "name": "Corrupted Sprite",
+    "levelRange": { "min": 3, "max": 5 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 30,
+      "maxHp": 30,
+      "atk": 7,
+      "def": 3
+    },
+    "lootTableId": "corrupted_loot",
+    "isGuard": false
+  },
+  {
+    "id": "blackwood_bear",
+    "name": "Blackwood Bear",
+    "levelRange": { "min": 5, "max": 7 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 80,
+      "maxHp": 80,
+      "atk": 15,
+      "def": 8
+    },
+    "lootTableId": "wildlife_loot",
+    "isGuard": false
+  },
+  {
+    "id": "shadow_stalker",
+    "name": "Shadow Stalker",
+    "levelRange": { "min": 6, "max": 8 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 60,
+      "maxHp": 60,
+      "atk": 18,
+      "def": 5
+    },
+    "lootTableId": "shadow_loot",
+    "isGuard": false
+  },
+  {
+    "id": "corrupted_treant",
+    "name": "Corrupted Treant",
+    "levelRange": { "min": 7, "max": 10 },
+    "factionId": null,
+    "baseStats": {
+      "hp": 120,
+      "maxHp": 120,
+      "atk": 20,
+      "def": 12
+    },
+    "lootTableId": "corrupted_loot",
+    "isGuard": false
+  }
+]
+

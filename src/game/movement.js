@@ -67,10 +67,17 @@
       return moveToTile(nextX, nextY);
     }
 
-    // Check if tile is valid
-    const tile = global.Settlement?.getTile(targetX, targetY);
+    // Check if tile is valid using World system
+    const playerZone = player.currentZone || 'thronehold';
+    const tile = global.World?.getTile(playerZone, targetX, targetY);
     if (!tile) {
       global.ChatSystem?.addSystemMessage('Cannot move to that location.');
+      return false;
+    }
+
+    // Check if tile is walkable
+    if (!global.World?.isTileWalkable(playerZone, targetX, targetY)) {
+      global.ChatSystem?.addSystemMessage('You cannot walk there.');
       return false;
     }
 
@@ -86,7 +93,11 @@
     });
 
     // Update map
-    if (global.MapRender) {
+    if (global.WorldMapRender) {
+      global.WorldMapRender.renderMap();
+      global.WorldMapRender.centerOnPlayer();
+    } else if (global.MapRender) {
+      // Fallback to old renderer
       global.MapRender.renderMap();
       global.MapRender.centerOnPlayer();
     }
