@@ -344,6 +344,11 @@
         window.Quests.initializeQuests();
       }
 
+      // Initialize spawn system for starting zone
+      if (window.SpawnSystem && typeof window.SpawnSystem.initializeZone === 'function') {
+        window.SpawnSystem.initializeZone(startingZone);
+      }
+      
       // Update zone to starting zone
       if (window.Zones && typeof window.Zones.changeZone === 'function') {
         window.Zones.changeZone(startingZone);

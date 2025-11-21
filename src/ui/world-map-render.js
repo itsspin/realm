@@ -72,9 +72,15 @@
     if (container) {
       const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+          // Container not ready yet, try again
+          setTimeout(resizeCanvas, 100);
+          return;
+        }
         const dpr = window.devicePixelRatio || 1;
         mapCanvas.width = rect.width * dpr;
         mapCanvas.height = rect.height * dpr;
+        mapCtx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
         mapCtx.scale(dpr, dpr);
         mapCanvas.style.width = rect.width + 'px';
         mapCanvas.style.height = rect.height + 'px';
@@ -83,6 +89,12 @@
 
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
+      
+      // Also watch for container size changes (flexbox layout)
+      if (typeof ResizeObserver !== 'undefined') {
+        const resizeObserver = new ResizeObserver(resizeCanvas);
+        resizeObserver.observe(container);
+      }
     }
 
     // Pan controls (left-click drag, right-click, or middle-click)
@@ -308,6 +320,8 @@
 
       // Draw monsters
       mobs.forEach(mob => {
+        if (!mob || typeof mob.x !== 'number' || typeof mob.y !== 'number') return;
+        
         const screenX = mob.x * tileSize + panX;
         const screenY = mob.y * tileSize + panY;
         
@@ -341,9 +355,10 @@
     }
 
     // Draw other players
+    const players = global.MapEntities?.getNearbyPlayers() || [];
     players.forEach(p => {
       const pTile = p.currentTile || { x: p.x, y: p.y };
-      if (!pTile || p.id === player?.id) return;
+      if (!pTile || !pTile.x || !pTile.y || p.id === player?.id) return;
       const screenX = pTile.x * tileSize + panX;
       const screenY = pTile.y * tileSize + panY;
       mapCtx.fillStyle = '#44ff44';
@@ -353,7 +368,7 @@
     });
 
     // Draw player
-    if (player.currentTile) {
+    if (player && player.currentTile && typeof player.currentTile.x === 'number' && typeof player.currentTile.y === 'number') {
       const screenX = player.currentTile.x * tileSize + panX;
       const screenY = player.currentTile.y * tileSize + panY;
       mapCtx.fillStyle = '#ff4444';
@@ -363,6 +378,14 @@
       mapCtx.strokeStyle = '#fff';
       mapCtx.lineWidth = 3;
       mapCtx.stroke();
+      
+      // Draw player name
+      if (tileSize >= 20) {
+        mapCtx.fillStyle = '#fff';
+        mapCtx.font = `bold ${Math.max(10, tileSize / 3)}px ${getComputedStyle(document.documentElement).getPropertyValue('--font-body')}`;
+        mapCtx.textAlign = 'center';
+        mapCtx.fillText(player.name || 'You', screenX + tileSize / 2, screenY - tileSize * 0.3);
+      }
     }
 
     // Draw debug overlay (spawn points)
@@ -573,13 +596,14 @@
     if (!zone) return;
 
     const rect = mapCanvas.getBoundingClientRect();
-    const scale = mapCanvas.width / rect.width;
-    const clickX = (event.clientX - rect.left) * scale;
-    const clickY = (event.clientY - rect.top) * scale;
+    const dpr = window.devicePixelRatio || 1;
+    // Click coordinates are in CSS pixels, not canvas pixels
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
 
     const tileSize = 16 * zoomLevel;
-    const tileX = Math.floor((clickX / scale - panX) / tileSize);
-    const tileY = Math.floor((clickY / scale - panY) / tileSize);
+    const tileX = Math.floor((clickX - panX) / tileSize);
+    const tileY = Math.floor((clickY - panY) / tileSize);
 
     // Validate coordinates
     if (tileX < 0 || tileX >= zone.gridWidth || tileY < 0 || tileY >= zone.gridHeight) return;

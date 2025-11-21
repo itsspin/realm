@@ -356,12 +356,18 @@
         window.Settlement.initializeWorldMap();
       }
 
+      // Initialize spawn system for current zone
+      const currentPlayer = window.State?.getPlayer();
+      if (currentPlayer && currentPlayer.currentZone && window.SpawnSystem) {
+        window.SpawnSystem.initializeZone(currentPlayer.currentZone);
+      }
+
       // Initialize world map renderer
       if (window.WorldMapRender && typeof window.WorldMapRender.renderMap === 'function') {
         setTimeout(() => {
           window.WorldMapRender.renderMap();
-          const player = window.State?.getPlayer();
-          if (player && player.currentTile) {
+          const mapPlayer = window.State?.getPlayer();
+          if (mapPlayer && mapPlayer.currentTile) {
             window.WorldMapRender.centerOnPlayer();
           }
         }, 200);
