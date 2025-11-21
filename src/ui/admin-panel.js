@@ -26,12 +26,9 @@
    * Initialize admin panel
    */
   function initialize() {
-    if (!global.AdminUtils?.isAdmin()) {
-      return; // Not an admin, don't initialize
-    }
-
-    createAdminPanel();
-    addAdminButton();
+    // Don't check admin status here - let checkAndShowAdminButton handle it
+    // Just set up the initialization checks
+    console.log('[AdminPanel] Initializing admin panel system');
   }
 
   /**
@@ -1920,28 +1917,52 @@
    */
   function addAdminButton() {
     // Check if button already exists
-    if (document.getElementById('adminPanelBtn')) {
+    const existingBtn = document.getElementById('adminPanelBtn');
+    if (existingBtn) {
+      console.log('[AdminPanel] Admin button already exists');
       return;
     }
 
     // Only add if user is admin
-    if (!global.AdminUtils?.isAdmin()) {
+    if (!global.AdminUtils) {
+      console.log('[AdminPanel] AdminUtils not available');
       return;
     }
 
+    if (!global.AdminUtils.isAdmin()) {
+      console.log('[AdminPanel] User is not admin, not adding button');
+      return;
+    }
+
+    console.log('[AdminPanel] Creating admin button');
     const button = document.createElement('button');
     button.id = 'adminPanelBtn';
     button.className = 'admin-panel-btn';
     button.textContent = 'Admin';
-    button.onclick = () => show();
-    button.title = 'Open Admin Panel';
+    button.onclick = () => {
+      console.log('[AdminPanel] Admin button clicked');
+      show();
+    };
+    button.title = 'Open Admin Panel (Ctrl+Shift+A)';
+    button.style.position = 'fixed';
+    button.style.top = '10px';
+    button.style.right = '10px';
+    button.style.zIndex = '10000';
 
-    // Add to UI - place in header or body
+    // Try to add to header first, but always add to body as fallback
     const header = document.querySelector('.app-header');
     if (header) {
+      // Try to add to header, but position it properly
+      button.style.position = 'absolute';
+      button.style.top = '10px';
+      button.style.right = '10px';
+      header.style.position = 'relative'; // Make header a positioning context
       header.appendChild(button);
+      console.log('[AdminPanel] Admin button added to header');
     } else {
+      // Fallback: add to body with fixed positioning
       document.body.appendChild(button);
+      console.log('[AdminPanel] Admin button added to body (fixed position)');
     }
   }
 
@@ -1972,6 +1993,7 @@
 
   // Initialize on load - check multiple times to catch when player state is ready
   function delayedInit() {
+    console.log('[AdminPanel] delayedInit called');
     checkAndShowAdminButton();
     
     // Also check when player state changes
@@ -2001,21 +2023,31 @@
     }
   });
 
+  // Initialize immediately and check multiple times
+  initialize();
+  
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(delayedInit, 500);
       // Check again after game initialization
       setTimeout(delayedInit, 2000);
       setTimeout(delayedInit, 5000);
+      setTimeout(delayedInit, 10000); // Check again after 10 seconds
     });
   } else {
     setTimeout(delayedInit, 500);
     setTimeout(delayedInit, 2000);
     setTimeout(delayedInit, 5000);
+    setTimeout(delayedInit, 10000); // Check again after 10 seconds
   }
 
   // Also check periodically
   setInterval(checkAndShowAdminButton, 5000);
+  
+  // Force check when window loads
+  window.addEventListener('load', () => {
+    setTimeout(checkAndShowAdminButton, 1000);
+  });
 
   /**
    * Get zone transition points (where zone lines are)
