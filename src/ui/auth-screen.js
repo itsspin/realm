@@ -114,9 +114,14 @@
     }
 
     try {
-      const submitBtn = form.querySelector('.auth-submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = currentMode === 'login' ? 'Logging in...' : 'Registering...';
+      // Get form from event target or document
+      const form = e.target || document.getElementById('authForm');
+      const submitBtn = form ? form.querySelector('.auth-submit-btn') : document.querySelector('.auth-submit-btn');
+      
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = currentMode === 'login' ? 'Logging in...' : 'Registering...';
+      }
 
       if (currentMode === 'register') {
         await global.Auth?.register(email, username, password);
@@ -153,9 +158,11 @@
       }
     } catch (error) {
       showError(error.message || 'Authentication failed. Please try again.');
-      const submitBtn = form.querySelector('.auth-submit-btn');
-      submitBtn.disabled = false;
-      submitBtn.textContent = currentMode === 'login' ? 'Login' : 'Register';
+      const submitBtn = document.querySelector('.auth-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = currentMode === 'login' ? 'Login' : 'Register';
+      }
     }
   }
 
