@@ -108,6 +108,60 @@
     "bonuses": { "atk": 1, "def": 2, "hp": 4 },
     "canSolo": true,
     "soloDifficulty": "hard"
+  },
+  {
+    "id": "necromancer",
+    "name": "Necromancer",
+    "role": "dps",
+    "description": "Dark mages who command the dead and drain life from their enemies. They summon skeletal minions to fight alongside them.",
+    "primaryStats": {
+      "str": 45,
+      "sta": 65,
+      "agi": 60,
+      "dex": 70,
+      "wis": 85,
+      "int": 110,
+      "cha": 75
+    },
+    "armorTypes": ["cloth"],
+    "weaponTypes": ["staff", "wand", "orb"],
+    "resourceType": "mana",
+    "hasPets": true,
+    "skillIdsByLevel": {
+      "1": ["cavorting_bones", "lifetap", "disease_cloud"],
+      "4": ["leering_corpse", "siphon_strength", "clinging_darkness"],
+      "8": ["lesser_summon_skeleton", "ward_undead", "engulfing_darkness"]
+    },
+    "bonuses": { "atk": 4, "def": 0, "hp": 3 },
+    "canSolo": true,
+    "soloDifficulty": "easy"
+  },
+  {
+    "id": "magician",
+    "name": "Magician",
+    "role": "dps",
+    "description": "Masters of elemental magic who call upon elemental servants to aid them in battle. They summon powerful elementals and wield devastating arcane spells.",
+    "primaryStats": {
+      "str": 50,
+      "sta": 60,
+      "agi": 70,
+      "dex": 75,
+      "wis": 75,
+      "int": 110,
+      "cha": 80
+    },
+    "armorTypes": ["cloth"],
+    "weaponTypes": ["staff", "wand", "orb"],
+    "resourceType": "mana",
+    "hasPets": true,
+    "skillIdsByLevel": {
+      "1": ["burst_of_flame", "minor_shielding", "summon_dagger", "summon_food", "summon_drink"],
+      "2": ["elementalkin_water", "summon_bandages"],
+      "4": ["elementalkin_earth", "shielding", "summon_food"]
+    },
+    "bonuses": { "atk": 5, "def": 1, "hp": 2 },
+    "canSolo": true,
+    "soloDifficulty": "easy"
   }
 ]
 

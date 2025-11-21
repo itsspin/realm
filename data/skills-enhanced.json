@@ -356,6 +356,396 @@
     "range": 5,
     "castTime": 3,
     "requiresTarget": true
+  },
+  {
+    "id": "cavorting_bones",
+    "name": "Cavorting Bones",
+    "description": "Summons a level 1-2 skeleton pet to fight at your side.",
+    "classId": "necromancer",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 25
+    },
+    "effect": {
+      "type": "summon_pet",
+      "petType": "skeleton",
+      "petLevel": 1
+    },
+    "range": 0,
+    "castTime": 3
+  },
+  {
+    "id": "lifetap",
+    "name": "Lifetap",
+    "description": "Drains health from the target, transferring it to you.",
+    "classId": "necromancer",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 4,
+    "cost": {
+      "mana": 20
+    },
+    "effect": {
+      "type": "lifetap",
+      "formula": "int * 1.5",
+      "bonusDamage": 10
+    },
+    "range": 8,
+    "castTime": 2,
+    "requiresTarget": true
+  },
+  {
+    "id": "disease_cloud",
+    "name": "Disease Cloud",
+    "description": "Creates a cloud of disease that damages enemies over time and reduces their armor class.",
+    "classId": "necromancer",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 12,
+    "cost": {
+      "mana": 30
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.0",
+      "bonusDamage": 5,
+      "resistType": "disease",
+      "dot": {
+        "damage": 4,
+        "duration": 20,
+        "ticks": 4
+      },
+      "debuff": {
+        "def": -0.1,
+        "duration": 30
+      }
+    },
+    "range": 6,
+    "castTime": 2.5
+  },
+  {
+    "id": "leering_corpse",
+    "name": "Leering Corpse",
+    "description": "Summons a level 3-4 skeleton pet to fight at your side.",
+    "classId": "necromancer",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 40
+    },
+    "effect": {
+      "type": "summon_pet",
+      "petType": "skeleton",
+      "petLevel": 3
+    },
+    "range": 0,
+    "castTime": 3
+  },
+  {
+    "id": "siphon_strength",
+    "name": "Siphon Strength",
+    "description": "Decreases the target's strength and increases your own.",
+    "classId": "necromancer",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 8,
+    "cost": {
+      "mana": 25
+    },
+    "effect": {
+      "type": "debuff",
+      "statModifier": {
+        "str": -0.2
+      },
+      "duration": 30,
+      "selfBuff": {
+        "str": 0.15
+      }
+    },
+    "range": 6,
+    "castTime": 2,
+    "requiresTarget": true
+  },
+  {
+    "id": "clinging_darkness",
+    "name": "Clinging Darkness",
+    "description": "Envelops the target in darkness, reducing movement speed and dealing damage over time.",
+    "classId": "necromancer",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 35
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.2",
+      "bonusDamage": 8,
+      "resistType": "magic",
+      "snare": {
+        "movementSpeed": -0.4,
+        "duration": 25
+      },
+      "dot": {
+        "damage": 3,
+        "duration": 20,
+        "ticks": 4
+      }
+    },
+    "range": 8,
+    "castTime": 2.5,
+    "requiresTarget": true
+  },
+  {
+    "id": "lesser_summon_skeleton",
+    "name": "Lesser Summon Skeleton",
+    "description": "Summons a level 5-6 skeleton pet to fight at your side.",
+    "classId": "necromancer",
+    "requiredLevel": 8,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 60
+    },
+    "effect": {
+      "type": "summon_pet",
+      "petType": "skeleton",
+      "petLevel": 5
+    },
+    "range": 0,
+    "castTime": 3
+  },
+  {
+    "id": "ward_undead",
+    "name": "Ward Undead",
+    "description": "A powerful spell that deals extra damage to undead targets.",
+    "classId": "necromancer",
+    "requiredLevel": 8,
+    "type": "spell",
+    "cooldown": 6,
+    "cost": {
+      "mana": 40
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 2.5",
+      "bonusDamage": 20,
+      "resistType": "holy",
+      "bonusVsUndead": 2.0
+    },
+    "range": 8,
+    "castTime": 2.5,
+    "requiresTarget": true
+  },
+  {
+    "id": "engulfing_darkness",
+    "name": "Engulfing Darkness",
+    "description": "A stronger version of Clinging Darkness with increased damage and snare effect.",
+    "classId": "necromancer",
+    "requiredLevel": 8,
+    "type": "spell",
+    "cooldown": 12,
+    "cost": {
+      "mana": 45
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.8",
+      "bonusDamage": 12,
+      "resistType": "magic",
+      "snare": {
+        "movementSpeed": -0.6,
+        "duration": 30
+      },
+      "dot": {
+        "damage": 5,
+        "duration": 25,
+        "ticks": 5
+      }
+    },
+    "range": 10,
+    "castTime": 3,
+    "requiresTarget": true
+  },
+  {
+    "id": "burst_of_flame",
+    "name": "Burst of Flame",
+    "description": "A searing burst of fire that deals fire damage to a single target.",
+    "classId": "magician",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 3,
+    "cost": {
+      "mana": 18
+    },
+    "effect": {
+      "type": "damage",
+      "formula": "int * 1.8",
+      "bonusDamage": 10,
+      "resistType": "fire"
+    },
+    "range": 7,
+    "castTime": 2,
+    "requiresTarget": true
+  },
+  {
+    "id": "minor_shielding",
+    "name": "Minor Shielding",
+    "description": "Increases your hit points and armor class temporarily.",
+    "classId": "magician",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 20,
+    "cost": {
+      "mana": 25
+    },
+    "effect": {
+      "type": "buff",
+      "statModifier": {
+        "hp": 0.15,
+        "def": 0.2
+      },
+      "duration": 300
+    },
+    "range": 0,
+    "castTime": 2,
+    "canTargetSelf": true
+  },
+  {
+    "id": "summon_dagger",
+    "name": "Summon Dagger",
+    "description": "Summons a basic dagger for your use.",
+    "classId": "magician",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 60,
+    "cost": {
+      "mana": 10
+    },
+    "effect": {
+      "type": "summon_item",
+      "itemId": "summoned_dagger"
+    },
+    "range": 0,
+    "castTime": 1
+  },
+  {
+    "id": "summon_food",
+    "name": "Summon Food",
+    "description": "Summons food to restore your health and energy.",
+    "classId": "magician",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 30,
+    "cost": {
+      "mana": 15
+    },
+    "effect": {
+      "type": "summon_item",
+      "itemId": "summoned_food"
+    },
+    "range": 0,
+    "castTime": 1
+  },
+  {
+    "id": "summon_drink",
+    "name": "Summon Drink",
+    "description": "Summons a drink to restore your mana.",
+    "classId": "magician",
+    "requiredLevel": 1,
+    "type": "spell",
+    "cooldown": 30,
+    "cost": {
+      "mana": 15
+    },
+    "effect": {
+      "type": "summon_item",
+      "itemId": "summoned_drink"
+    },
+    "range": 0,
+    "castTime": 1
+  },
+  {
+    "id": "elementalkin_water",
+    "name": "Elementalkin: Water",
+    "description": "Summons a level 2-4 water elemental pet to fight at your side.",
+    "classId": "magician",
+    "requiredLevel": 2,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 35
+    },
+    "effect": {
+      "type": "summon_pet",
+      "petType": "water_elemental",
+      "petLevel": 2
+    },
+    "range": 0,
+    "castTime": 3
+  },
+  {
+    "id": "summon_bandages",
+    "name": "Summon Bandages",
+    "description": "Summons bandages for healing purposes.",
+    "classId": "magician",
+    "requiredLevel": 2,
+    "type": "spell",
+    "cooldown": 45,
+    "cost": {
+      "mana": 20
+    },
+    "effect": {
+      "type": "summon_item",
+      "itemId": "summoned_bandages"
+    },
+    "range": 0,
+    "castTime": 1
+  },
+  {
+    "id": "elementalkin_earth",
+    "name": "Elementalkin: Earth",
+    "description": "Summons a level 4-6 earth elemental pet to fight at your side.",
+    "classId": "magician",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 10,
+    "cost": {
+      "mana": 50
+    },
+    "effect": {
+      "type": "summon_pet",
+      "petType": "earth_elemental",
+      "petLevel": 4
+    },
+    "range": 0,
+    "castTime": 3
+  },
+  {
+    "id": "shielding",
+    "name": "Shielding",
+    "description": "Provides a stronger protective barrier than Minor Shielding, increasing hit points and armor class significantly.",
+    "classId": "magician",
+    "requiredLevel": 4,
+    "type": "spell",
+    "cooldown": 25,
+    "cost": {
+      "mana": 40
+    },
+    "effect": {
+      "type": "buff",
+      "statModifier": {
+        "hp": 0.25,
+        "def": 0.35
+      },
+      "duration": 600
+    },
+    "range": 0,
+    "castTime": 2.5,
+    "canTargetSelf": true
   }
 ]
 

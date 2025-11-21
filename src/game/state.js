@@ -35,7 +35,9 @@
       hp: 20,
       maxHp: 20,
       atk: 5,
-      def: 2
+      def: 2,
+      mana: 0,
+      maxMana: 0
     },
     playerStats: {}, // Separate stats for achievements/leaderboards
     gold: 25,
@@ -57,7 +59,8 @@
     completedQuests: [],
     discoveredLore: [],
     achievements: [],
-    shop: null
+    shop: null,
+    pet: null // Current pet (null if no pet)
   };
 
   const DEFAULT_RESOURCES = {
@@ -81,6 +84,14 @@
     state.player = state.player ? { ...DEFAULT_PLAYER, ...state.player } : { ...DEFAULT_PLAYER };
     if (!state.player.stats) {
       state.player.stats = { ...DEFAULT_PLAYER.stats };
+    } else {
+      // Ensure mana fields exist for backward compatibility
+      if (state.player.stats.mana === undefined) {
+        state.player.stats.mana = 0;
+      }
+      if (state.player.stats.maxMana === undefined) {
+        state.player.stats.maxMana = 0;
+      }
     }
     if (!state.player.equipment) {
       state.player.equipment = { ...DEFAULT_PLAYER.equipment };
@@ -90,6 +101,9 @@
     }
     if (!state.player.playerStats) {
       state.player.playerStats = {}; // Player statistics object (separate from combat stats)
+    }
+    if (!state.player.pet) {
+      state.player.pet = null; // Pet object
     }
     state.resources = state.resources
       ? { ...DEFAULT_RESOURCES, ...state.resources }
