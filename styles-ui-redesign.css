@@ -736,6 +736,7 @@
   margin-bottom: var(--spacing-sm);
   padding-bottom: var(--spacing-sm);
   border-bottom: var(--border-subtle);
+  /* Removed cursor: move and user-select: none - panel is now fixed in UI */
 }
 
 .target-name {

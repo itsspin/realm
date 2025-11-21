@@ -263,144 +263,25 @@
   }
 
   /**
-   * Load saved target panel position
-   */
-  function loadTargetPanelPosition() {
-    try {
-      const saved = localStorage.getItem('REALM_TARGET_PANEL_POSITION');
-      if (saved) {
-        const pos = JSON.parse(saved);
-        const panel = document.getElementById('targetPanel');
-        if (panel) {
-          panel.style.position = 'fixed';
-          panel.style.left = `${pos.x}px`;
-          panel.style.top = `${pos.y}px`;
-          panel.style.zIndex = '1000';
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to load target panel position:', e);
-    }
-  }
-  
-  /**
-   * Save target panel position
-   */
-  function saveTargetPanelPosition(x, y) {
-    try {
-      localStorage.setItem('REALM_TARGET_PANEL_POSITION', JSON.stringify({ x, y }));
-    } catch (e) {
-      console.warn('Failed to save target panel position:', e);
-    }
-  }
-  
-  /**
-   * Make target panel draggable
-   */
-  function makeTargetPanelDraggable() {
-    const panel = document.getElementById('targetPanel');
-    if (!panel) return;
-    
-    const header = panel.querySelector('.target-header');
-    if (!header) return;
-    
-    let isDragging = false;
-    let currentX;
-    let currentY;
-    let initialX;
-    let initialY;
-    let xOffset = 0;
-    let yOffset = 0;
-    
-    // Load saved position
-    loadTargetPanelPosition();
-    
-    // Get initial offset from saved position or current position
-    const saved = localStorage.getItem('REALM_TARGET_PANEL_POSITION');
-    if (saved) {
-      try {
-        const pos = JSON.parse(saved);
-        xOffset = pos.x;
-        yOffset = pos.y;
-      } catch (e) {
-        // Use current position
-        const rect = panel.getBoundingClientRect();
-        xOffset = rect.left;
-        yOffset = rect.top;
-      }
-    } else {
-      const rect = panel.getBoundingClientRect();
-      xOffset = rect.left;
-      yOffset = rect.top;
-    }
-    
-    header.style.cursor = 'move';
-    header.style.userSelect = 'none';
-    
-    header.addEventListener('mousedown', dragStart);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', dragEnd);
-    
-    function dragStart(e) {
-      if (e.target.id === 'targetClose') return; // Don't drag when clicking close button
-      
-      initialX = e.clientX - xOffset;
-      initialY = e.clientY - yOffset;
-      
-      if (e.button === 0) { // Left mouse button
-        isDragging = true;
-        panel.style.position = 'fixed';
-        panel.style.zIndex = '1000';
-      }
-    }
-    
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-        currentX = e.clientX - initialX;
-        currentY = e.clientY - initialY;
-        
-        xOffset = currentX;
-        yOffset = currentY;
-        
-        setTranslate(currentX, currentY, panel);
-      }
-    }
-    
-    function dragEnd(e) {
-      if (isDragging) {
-        initialX = currentX;
-        initialY = currentY;
-        isDragging = false;
-        
-        // Save position
-        saveTargetPanelPosition(currentX, currentY);
-      }
-    }
-    
-    function setTranslate(xPos, yPos, el) {
-      // Keep panel within viewport
-      const maxX = window.innerWidth - el.offsetWidth;
-      const maxY = window.innerHeight - el.offsetHeight;
-      
-      xPos = Math.max(0, Math.min(xPos, maxX));
-      yPos = Math.max(0, Math.min(yPos, maxY));
-      
-      el.style.left = `${xPos}px`;
-      el.style.top = `${yPos}px`;
-      
-      // Update offsets
-      xOffset = xPos;
-      yOffset = yPos;
-    }
-  }
-  
-  /**
    * Initialize targeting system
    */
   function initialize() {
-    // Make target panel draggable
-    makeTargetPanelDraggable();
+    // Target panel is now integrated into main UI (no longer draggable)
+    // Clear any saved draggable position data
+    try {
+      localStorage.removeItem('REALM_TARGET_PANEL_POSITION');
+    } catch (e) {
+      // Ignore errors
+    }
+    
+    // Ensure panel is in normal flow (not fixed position)
+    const panel = document.getElementById('targetPanel');
+    if (panel) {
+      panel.style.position = '';
+      panel.style.left = '';
+      panel.style.top = '';
+      panel.style.zIndex = '';
+    }
     
     // Target close button
     const closeBtn = document.getElementById('targetClose');
