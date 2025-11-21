@@ -1,0 +1,658 @@
+/* ============================================
+   REALM: Mobile Optimizations
+   ============================================ */
+
+/* Touch-friendly base styles */
+* {
+  -webkit-tap-highlight-color: rgba(201, 125, 61, 0.2);
+  -webkit-touch-callout: none; /* Disable long-press menu on iOS */
+  -webkit-user-select: none; /* Prevent text selection on touch */
+  user-select: none;
+}
+
+/* Allow text selection in input fields and chat */
+input, textarea, .chat-messages, .chat-input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Prevent double-tap zoom on buttons and interactive elements */
+button, .hotbar-slot, .inventory-slot, .skillbar-slot, .map-control-btn,
+.target-action-btn, .chat-tab, .chat-send-btn {
+  touch-action: manipulation;
+}
+
+/* Map canvas - prevent zoom on double tap */
+#worldMapCanvas {
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+/* ============================================
+   Mobile Menu Button (Hidden on Desktop)
+   ============================================ */
+
+.mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .app-header {
+    padding-left: calc(var(--spacing-xs) + 44px + var(--spacing-xs)); /* Space for menu button */
+  }
+
+  .app-header h1 {
+    text-align: left;
+    margin-left: var(--spacing-xs);
+  }
+
+  .resource-bar {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}
+
+/* ============================================
+   Mobile Layout (< 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* App Header - Smaller on mobile */
+  .app-header {
+    height: 48px;
+    padding: 0 var(--spacing-sm);
+    padding-left: calc(var(--spacing-xs) + 44px + var(--spacing-xs)); /* Space for menu button */
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem;
+    text-align: left;
+    margin-left: var(--spacing-xs);
+  }
+
+  .resource-bar {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  /* Game Container - Stack vertically on mobile */
+  .game-container {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr auto auto;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    padding-bottom: 360px; /* Space for chat and skillbar */
+    height: auto;
+    min-height: calc(100vh - 48px);
+  }
+
+  /* Map Container - Full width on mobile */
+  .map-container {
+    order: 1;
+    min-height: 300px;
+    height: 50vh;
+    border-radius: 0.5rem;
+  }
+
+  .map-wrapper {
+    height: 100%;
+  }
+
+  .zone-header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .zone-name {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .zone-description {
+    font-size: 0.85rem;
+  }
+
+  /* Map Controls - Larger buttons for mobile */
+  .map-controls {
+    position: absolute;
+    top: var(--spacing-xs);
+    right: var(--spacing-xs);
+    gap: var(--spacing-xs);
+  }
+
+  .map-control-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    min-width: 60px;
+    min-height: 44px; /* Touch-friendly size */
+  }
+
+  /* Left Panel - Collapsible menu on mobile */
+  .game-panel--left {
+    order: 3;
+    position: fixed;
+    left: -100%;
+    top: 48px;
+    bottom: 360px;
+    width: 280px;
+    max-width: 85vw;
+    background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(42, 37, 32, 0.98) 100%);
+    border: var(--border-medium);
+    border-left: none;
+    border-radius: 0 0.5rem 0.5rem 0;
+    padding: var(--spacing-md);
+    z-index: 300;
+    transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: var(--shadow-strong);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-panel--left.mobile-open {
+    left: 0;
+  }
+
+  /* Backdrop when menu is open */
+  .game-panel--left.mobile-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .player-panel {
+    padding: var(--spacing-sm);
+  }
+
+  .player-name {
+    font-size: 1.25rem;
+  }
+
+  /* Right Panel - Horizontal scroll on mobile */
+  .game-panel--right {
+    order: 2;
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xs);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: var(--spacing-xs);
+    max-height: 180px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .target-panel,
+  .hotbar-panel,
+  .minimap-panel {
+    min-width: 220px;
+    flex-shrink: 0;
+    max-height: 100%;
+  }
+
+  .target-panel {
+    padding: var(--spacing-sm);
+  }
+
+  .target-name {
+    font-size: 1rem;
+  }
+
+  .target-actions {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .target-action-btn {
+    min-height: 44px; /* Touch-friendly */
+    font-size: 0.85rem;
+  }
+
+  .hotbar-panel {
+    padding: var(--spacing-sm);
+  }
+
+  .hotbar {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-xs);
+  }
+
+  .hotbar-slot {
+    min-height: 60px;
+    font-size: 0.75rem;
+  }
+
+  .minimap-panel {
+    padding: var(--spacing-sm);
+  }
+
+  /* Stats Grid - Smaller on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xs);
+  }
+
+  .stat-item {
+    padding: var(--spacing-xs);
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .stat-value {
+    font-size: 0.9rem;
+  }
+
+  /* Inventory Grid - Smaller slots on mobile */
+  .inventory-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-xs);
+  }
+
+  .inventory-slot {
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  /* Resource Bars - Compact on mobile */
+  .resource-bar-fill {
+    height: 18px;
+  }
+
+  .resource-label {
+    font-size: 0.75rem;
+  }
+
+  .resource-value {
+    font-size: 0.85rem;
+  }
+
+  /* XP Bar - Smaller on mobile */
+  .xp-bar {
+    height: 14px;
+  }
+
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    position: fixed;
+    top: 48px;
+    left: var(--spacing-xs);
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, rgba(26, 31, 46, 0.95) 0%, rgba(42, 37, 32, 0.95) 100%);
+    border: var(--border-medium);
+    border-radius: 0.5rem;
+    display: none; /* Hidden by default, shown on mobile */
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--fg-primary);
+    cursor: pointer;
+    z-index: 350;
+    box-shadow: var(--shadow-medium);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .mobile-menu-btn:hover,
+  .mobile-menu-btn:active {
+    background: rgba(201, 125, 61, 0.3);
+    border-color: var(--ember-orange);
+    transform: scale(0.95);
+  }
+
+  /* Skillbar - Bottom center on mobile */
+  .skillbar-container {
+    bottom: 60px; /* Above collapsed chat header */
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - var(--spacing-md));
+    max-width: 600px;
+    padding: var(--spacing-xs);
+  }
+
+  .skillbar {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+  }
+
+  .skillbar-slot {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    min-height: 54px;
+    font-size: 0.7rem;
+  }
+
+  .skillbar-slot-icon {
+    font-size: 1.25rem;
+  }
+
+  .skillbar-slot-name {
+    font-size: 0.65rem;
+  }
+
+  /* Chat Window - Larger on mobile for better typing */
+  .chat-window {
+    height: 360px;
+    border-radius: 0.5rem 0.5rem 0 0;
+    transition: height 0.3s ease;
+  }
+
+  .chat-window.collapsed {
+    height: 60px;
+  }
+
+  /* Chat swipe gesture hint */
+  .chat-header {
+    touch-action: pan-y; /* Allow vertical scroll */
+  }
+
+  .chat-header {
+    min-height: 48px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .chat-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .chat-tabs {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .chat-tab {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    min-height: 36px;
+  }
+
+  .chat-toggle {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    min-width: 44px;
+    min-height: 36px;
+  }
+
+  .chat-messages {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.85rem;
+  }
+
+  .chat-input-container {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .chat-input {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .chat-send-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-width: 70px;
+    min-height: 44px; /* Touch-friendly */
+    font-size: 0.9rem;
+  }
+
+  /* Toast Notifications - Bottom on mobile */
+  .toast-container {
+    top: auto;
+    bottom: 420px; /* Above skillbar */
+    right: var(--spacing-xs);
+    left: var(--spacing-xs);
+    max-width: none;
+  }
+
+  .toast {
+    font-size: 0.85rem;
+    padding: var(--spacing-sm);
+  }
+
+  /* Tooltips - Larger on mobile */
+  .tooltip {
+    font-size: 0.85rem;
+    padding: var(--spacing-sm);
+    max-width: 90vw;
+  }
+
+  /* Target Panel - Better positioning on mobile */
+  .target-panel {
+    margin-bottom: 0;
+  }
+
+  /* Full Map Modal - Better on mobile */
+  .full-map-modal-content {
+    max-height: 90vh;
+    margin: var(--spacing-sm);
+  }
+
+  /* Tome Modal - Better on mobile */
+  .tome-modal-content {
+    max-height: 85vh;
+    margin: var(--spacing-sm);
+  }
+
+  .tome-skill-item {
+    padding: var(--spacing-sm);
+  }
+
+  /* Character Creation - Better on mobile */
+  .creation-panel {
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+  }
+
+  .creation-title {
+    font-size: 1.75rem;
+  }
+
+  .creation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .creation-option {
+    padding: var(--spacing-sm);
+  }
+
+  /* Equipment Panel - Scrollable on mobile */
+  .equipment-slots-container {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  /* Nearby List - Compact on mobile */
+  .nearby-list {
+    max-height: 200px;
+    font-size: 0.85rem;
+  }
+
+  /* Tile Detail Panel - Better on mobile */
+  .tile-detail-panel {
+    max-height: 300px;
+    padding: var(--spacing-sm);
+  }
+}
+
+/* ============================================
+   Small Mobile (< 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+  /* Even smaller spacing */
+  .game-container {
+    padding: 0.25rem;
+    padding-bottom: 380px;
+  }
+
+  .app-header {
+    height: 44px;
+    padding: 0 var(--spacing-xs);
+  }
+
+  .app-header h1 {
+    font-size: 1.1rem;
+  }
+
+  /* Map - Smaller header */
+  .zone-header {
+    padding: 0.5rem;
+  }
+
+  .zone-name {
+    font-size: 1.1rem;
+  }
+
+  .zone-description {
+    font-size: 0.8rem;
+  }
+
+  /* Panels - Smaller */
+  .game-panel--left {
+    width: 260px;
+    max-width: 90vw;
+  }
+
+  .player-panel {
+    padding: var(--spacing-xs);
+  }
+
+  .player-name {
+    font-size: 1.1rem;
+  }
+
+  /* Stats - 2 columns on very small screens */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Inventory - 5 columns */
+  .inventory-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  /* Hotbar - 3 columns */
+  .hotbar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Skillbar - Smaller slots */
+  .skillbar-slot {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Chat - Slightly smaller */
+  .chat-window {
+    height: 380px;
+  }
+
+  .chat-tabs {
+    gap: 0.2rem;
+  }
+
+  .chat-tab {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  /* Toast - Smaller */
+  .toast-container {
+    bottom: 440px;
+  }
+}
+
+/* ============================================
+   Landscape Mobile (h < w)
+   ============================================ */
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .game-container {
+    grid-template-rows: 1fr auto;
+    padding-bottom: 200px;
+  }
+
+  .map-container {
+    height: 60vh;
+    min-height: 400px;
+  }
+
+  .game-panel--right {
+    max-height: 140px;
+  }
+
+  .chat-window {
+    height: 180px;
+  }
+
+  .skillbar-container {
+    bottom: 200px;
+  }
+
+  .toast-container {
+    bottom: 240px;
+  }
+}
+
+/* ============================================
+   Touch-Specific Improvements
+   ============================================ */
+
+/* Larger tap targets for mobile */
+@media (pointer: coarse) {
+  button,
+  .hotbar-slot,
+  .inventory-slot,
+  .skillbar-slot,
+  .target-action-btn,
+  .chat-tab,
+  .map-control-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text selection on buttons */
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Smooth scrolling on mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

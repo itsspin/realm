@@ -144,11 +144,14 @@ h3 {
   backdrop-filter: blur(12px);
   border-bottom: var(--border-strong);
   box-shadow: var(--shadow-medium);
+  gap: var(--spacing-sm);
 }
 
 .app-header h1 {
   font-size: 1.75rem;
   margin: 0;
+  flex: 1;
+  text-align: center;
   background: linear-gradient(135deg, var(--ember-bright), var(--gold-bright));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -64,9 +64,21 @@
   function initializeMapCanvas() {
     mapCanvas = document.getElementById('worldMapCanvas');
     if (!mapCanvas) {
-      console.warn('[WorldMapRender] Canvas not found');
+      console.warn('[WorldMapRender] Canvas not found, retrying...');
+      // Retry after a short delay in case DOM isn't ready
+      setTimeout(() => {
+        mapCanvas = document.getElementById('worldMapCanvas');
+        if (mapCanvas) {
+          console.log('[WorldMapRender] Canvas found on retry');
+          initializeMapCanvas();
+        } else {
+          console.error('[WorldMapRender] Canvas still not found after retry');
+        }
+      }, 500);
       return;
     }
+    
+    console.log('[WorldMapRender] Canvas found, initializing...');
 
     mapCtx = mapCanvas.getContext('2d');
     if (!mapCtx) {
@@ -80,6 +92,7 @@
       const resizeCanvas = () => {
         const rect = container.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) {
+          console.log('[WorldMapRender] Container has zero size, retrying...');
           setTimeout(resizeCanvas, 100);
           return;
         }
@@ -90,7 +103,12 @@
         mapCtx.scale(dpr, dpr);
         mapCanvas.style.width = rect.width + 'px';
         mapCanvas.style.height = rect.height + 'px';
-        renderMap();
+        console.log('[WorldMapRender] Canvas resized to', rect.width, 'x', rect.height);
+        
+        // Render after resize
+        setTimeout(() => {
+          renderMap();
+        }, 50);
       };
 
       resizeCanvas();
@@ -100,6 +118,8 @@
         const resizeObserver = new ResizeObserver(resizeCanvas);
         resizeObserver.observe(container);
       }
+    } else {
+      console.warn('[WorldMapRender] Container not found for canvas');
     }
 
     // Mouse wheel disabled - fixed zoom level
@@ -107,7 +127,60 @@
     // Click to move/target
     mapCanvas.addEventListener('click', handleCanvasClick);
 
-    // Hover for tile detail panel
+    // Touch support for mobile
+    let touchStartTime = 0;
+    let touchStartPos = null;
+    let lastTap = 0;
+    
+    mapCanvas.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Prevent scrolling
+      const touch = e.touches[0];
+      touchStartTime = Date.now();
+      touchStartPos = { x: touch.clientX, y: touch.clientY };
+    }, { passive: false });
+    
+    mapCanvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const touch = e.changedTouches[0];
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
+      
+      // Prevent double-tap zoom
+      const currentTime = Date.now();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 300 && tapLength > 0) {
+        e.preventDefault();
+      }
+      lastTap = currentTime;
+      
+      if (!touchStartPos) return;
+      
+      const moveDistance = Math.sqrt(
+        Math.pow(touch.clientX - touchStartPos.x, 2) + 
+        Math.pow(touch.clientY - touchStartPos.y, 2)
+      );
+      
+      // Only treat as click if it was quick (< 300ms) and didn't move much (< 10px)
+      if (touchDuration < 300 && moveDistance < 10) {
+        // Create a synthetic click event
+        const clickEvent = new MouseEvent('click', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true,
+          cancelable: true
+        });
+        mapCanvas.dispatchEvent(clickEvent);
+      }
+      
+      touchStartPos = null;
+    }, { passive: false });
+    
+    // Touch move for hover (optional - show tile info on long touch)
+    mapCanvas.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // Prevent scrolling
+    }, { passive: false });
+
+    // Hover for tile detail panel (desktop only)
     mapCanvas.addEventListener('mousemove', handleCanvasHover);
     mapCanvas.addEventListener('mouseleave', () => {
       hoveredTile = null;
@@ -213,13 +286,37 @@
    * Render the map using 16×16 viewport centered on player
    */
   function renderMap() {
-    if (!mapCanvas || !mapCtx) return;
+    if (!mapCanvas || !mapCtx) {
+      console.warn('[WorldMapRender] renderMap called but canvas not initialized');
+      // Try to initialize if canvas exists in DOM
+      if (document.getElementById('worldMapCanvas') && !mapCanvas) {
+        console.log('[WorldMapRender] Canvas exists in DOM, initializing...');
+        initializeMapCanvas();
+      }
+      return;
+    }
 
     const player = global.State?.getPlayer();
-    if (!player || !player.currentZone || !player.currentTile) return;
+    if (!player) {
+      console.warn('[WorldMapRender] renderMap called but player not found');
+      return;
+    }
+    
+    if (!player.currentZone) {
+      console.warn('[WorldMapRender] renderMap called but player has no currentZone');
+      return;
+    }
+    
+    if (!player.currentTile) {
+      console.warn('[WorldMapRender] renderMap called but player has no currentTile');
+      return;
+    }
 
     const zone = global.World?.getZone(player.currentZone);
-    if (!zone) return;
+    if (!zone) {
+      console.warn('[WorldMapRender] renderMap called but zone not found:', player.currentZone);
+      return;
+    }
 
     // Get player tile position (for game logic)
     const playerX = player.currentTile?.x || player.x || 0;
@@ -1121,12 +1218,26 @@
     renderMap(); // Just re-render
   }
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeMapCanvas);
-  } else {
-    setTimeout(initializeMapCanvas, 100);
+  // Initialize when DOM is ready - try multiple times to ensure canvas is available
+  function tryInitialize() {
+    if (document.getElementById('worldMapCanvas')) {
+      initializeMapCanvas();
+    } else {
+      console.log('[WorldMapRender] Canvas not ready yet, retrying...');
+      setTimeout(tryInitialize, 200);
+    }
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(tryInitialize, 100);
+    });
+  } else {
+    setTimeout(tryInitialize, 100);
+  }
+  
+  // Also try after a longer delay in case of slow loading
+  setTimeout(tryInitialize, 1000);
 
   const WorldMapRender = {
     renderMap,

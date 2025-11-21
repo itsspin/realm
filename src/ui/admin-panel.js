@@ -388,18 +388,25 @@
    * This ensures buttons work even if onclick handlers fail
    */
   function setupButtonHandlers() {
-    if (!adminPanel) return;
+    if (!adminPanel) {
+      console.warn('[AdminPanel] setupButtonHandlers: adminPanel not found');
+      return;
+    }
 
-    // Map editor buttons
+    // Map editor buttons - use both onclick and addEventListener for maximum compatibility
     const fillBtn = adminPanel.querySelector('button[onclick*="fillZoneWithTile"]');
     if (fillBtn) {
+      // Keep onclick but also add event listener as backup
       fillBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('[AdminPanel] Fill button clicked');
+        console.log('[AdminPanel] Fill button clicked via addEventListener');
         fillZoneWithTile();
       });
-      fillBtn.onclick = null; // Remove onclick to use addEventListener instead
+      // Don't remove onclick - let both work
+      console.log('[AdminPanel] Fill button handler attached');
+    } else {
+      console.warn('[AdminPanel] Fill button not found');
     }
 
     const clearBtn = adminPanel.querySelector('button[onclick*="clearZone"]');
@@ -407,10 +414,12 @@
       clearBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('[AdminPanel] Clear button clicked');
+        console.log('[AdminPanel] Clear button clicked via addEventListener');
         clearZone();
       });
-      clearBtn.onclick = null;
+      console.log('[AdminPanel] Clear button handler attached');
+    } else {
+      console.warn('[AdminPanel] Clear button not found');
     }
 
     const genMapBtn = adminPanel.querySelector('button[onclick*="generateMap"]');
@@ -421,7 +430,6 @@
         console.log('[AdminPanel] Generate Map button clicked');
         generateMap();
       });
-      genMapBtn.onclick = null;
     }
 
     const genFantasyBtn = adminPanel.querySelector('button[onclick*="generateFantasyMap"]');
@@ -432,7 +440,6 @@
         console.log('[AdminPanel] Generate Fantasy Map button clicked');
         generateFantasyMap();
       });
-      genFantasyBtn.onclick = null;
     }
 
     const saveBtn = adminPanel.querySelector('button[onclick*="saveAll"]');
@@ -443,7 +450,6 @@
         console.log('[AdminPanel] Save All button clicked');
         await saveAll();
       });
-      saveBtn.onclick = null;
     }
 
     const reloadBtn = adminPanel.querySelector('button[onclick*="reloadData"]');
@@ -454,7 +460,6 @@
         console.log('[AdminPanel] Reload Data button clicked');
         reloadData();
       });
-      reloadBtn.onclick = null;
     }
 
     const undoBtn = adminPanel.querySelector('button[onclick*="undoChanges"]');
@@ -465,7 +470,6 @@
         console.log('[AdminPanel] Undo button clicked');
         undoChanges();
       });
-      undoBtn.onclick = null;
     }
 
     // Close button
@@ -477,7 +481,6 @@
         console.log('[AdminPanel] Close button clicked');
         close();
       });
-      closeBtn.onclick = null;
     }
 
     console.log('[AdminPanel] Button handlers set up');
@@ -881,18 +884,23 @@
       const walkableCheckbox = document.getElementById('tileWalkable');
       const walkable = walkableCheckbox ? walkableCheckbox.checked : true;
       
-      const worldData = global.World?.getWorldData();
+      let worldData = global.World?.getWorldData();
       if (!worldData) {
         alert('World data not available. Is the World system initialized?');
         console.error('[AdminPanel] World.getWorldData() returned:', worldData);
+        console.error('[AdminPanel] World object:', global.World);
         return;
       }
 
+      // Ensure tiles object exists
       if (!worldData.tiles) {
         worldData.tiles = {};
+        console.log('[AdminPanel] Created tiles object');
       }
 
       console.log('[AdminPanel] Filling zone', zoneId, 'with', zone.gridWidth, 'x', zone.gridHeight, 'tiles');
+      console.log('[AdminPanel] Current tiles count before fill:', Object.keys(worldData.tiles).length);
+      
       let tileCount = 0;
       for (let y = 0; y < zone.gridHeight; y++) {
         for (let x = 0; x < zone.gridWidth; x++) {
@@ -903,6 +911,22 @@
             walkable: walkable
           };
           tileCount++;
+        }
+      }
+
+      console.log('[AdminPanel] Created', tileCount, 'tiles');
+      console.log('[AdminPanel] Total tiles after fill:', Object.keys(worldData.tiles).length);
+      
+      // Verify tiles were actually added
+      const zoneTiles = Object.keys(worldData.tiles).filter(k => k.startsWith(zoneId + '_'));
+      console.log('[AdminPanel] Zone tiles count:', zoneTiles.length);
+      
+      // Force update World system's internal reference
+      if (global.World && typeof global.World.getWorldData === 'function') {
+        const currentWorldData = global.World.getWorldData();
+        if (currentWorldData) {
+          currentWorldData.tiles = worldData.tiles;
+          console.log('[AdminPanel] Updated World system tiles reference');
         }
       }
 
@@ -955,17 +979,21 @@
         return;
       }
 
-      const worldData = global.World?.getWorldData();
+      let worldData = global.World?.getWorldData();
       if (!worldData) {
         alert('World data not available. Is the World system initialized?');
         console.error('[AdminPanel] World.getWorldData() returned:', worldData);
+        console.error('[AdminPanel] World object:', global.World);
         return;
       }
 
       if (!worldData.tiles) {
         worldData.tiles = {};
+        console.log('[AdminPanel] Created tiles object');
       }
 
+      console.log('[AdminPanel] Current tiles count before clear:', Object.keys(worldData.tiles).length);
+      
       let deletedCount = 0;
       for (let y = 0; y < zone.gridHeight; y++) {
         for (let x = 0; x < zone.gridWidth; x++) {
@@ -974,6 +1002,18 @@
             delete worldData.tiles[key];
             deletedCount++;
           }
+        }
+      }
+
+      console.log('[AdminPanel] Deleted', deletedCount, 'tiles');
+      console.log('[AdminPanel] Total tiles after clear:', Object.keys(worldData.tiles).length);
+      
+      // Force update World system's internal reference
+      if (global.World && typeof global.World.getWorldData === 'function') {
+        const currentWorldData = global.World.getWorldData();
+        if (currentWorldData) {
+          currentWorldData.tiles = worldData.tiles;
+          console.log('[AdminPanel] Updated World system tiles reference');
         }
       }
 

@@ -2,17 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0e1a">
   <title>REALM — Dark-Fantasy Text RPG</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-chat.css">
   <link rel="stylesheet" href="styles-ui-redesign.css">
+  <link rel="stylesheet" href="styles-mobile.css">
   <link rel="stylesheet" href="styles-auth.css">
   <link rel="stylesheet" href="styles-admin.css">
 </head>
 <body>
   <!-- Header: Minimal, just title and resources -->
   <header class="app-header" role="banner">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu" title="Toggle menu">☰</button>
     <h1>REALM</h1>
     <div class="resource-bar" id="resourceBar" role="status" aria-live="polite"></div>
   </header>
@@ -315,6 +320,7 @@
   <script src="src/ui/equipment-ui.js"></script>
   <script src="src/ui/item-context-menu.js"></script>
   <script src="src/ui/ui-redesign.js"></script>
+  <script src="src/ui/mobile-menu.js"></script>
   <script src="src/ui/admin-panel.js"></script>
 </body>
 </html>
