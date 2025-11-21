@@ -669,6 +669,7 @@
   }, 2000); // Update every 2 seconds
 
   const Skillbar = {
+    initialize,
     update: updateSkillbar,
     useSkill,
     setSkill,

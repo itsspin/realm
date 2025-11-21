@@ -367,7 +367,7 @@
     drawZoneTransitions(zone, tileSize, playerX, playerY, offsetX, offsetY);
 
     // Draw entities (monsters, NPCs, players)
-    drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY);
+    drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY, playerPixelX, playerPixelY);
 
     // Draw player (always at center for smooth movement)
     // Calculate player screen position from pixel position
@@ -415,7 +415,7 @@
   /**
    * Draw entities (mobs, NPCs, other players, pets)
    */
-  function drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY) {
+  function drawEntities(allMobs, allPlayers, player, currentTarget, tileSize, playerX, playerY, offsetX, offsetY, playerPixelX, playerPixelY) {
     // Draw player's pet
     if (player && player.pet && player.pet.alive) {
       const pet = player.pet;

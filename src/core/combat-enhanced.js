@@ -174,8 +174,36 @@
     const resourceType = skill.cost ? Object.keys(skill.cost)[0] : null;
     const resourceCost = skill.cost ? skill.cost[resourceType] : 0;
     
-    // TODO: Check player resources (mana, rage, energy)
-    // For now, allow all skills
+    // Check player resources (mana, rage, energy)
+    if (resourceCost > 0 && resourceType) {
+      const playerStats = global.Combat?.getPlayerStats();
+      const currentResource = resourceType === 'mana' ? (playerStats?.mana || 0) :
+                             resourceType === 'rage' ? (playerStats?.rage || 0) :
+                             resourceType === 'energy' ? (playerStats?.energy || 0) : 0;
+      
+      if (currentResource < resourceCost) {
+        const resourceName = resourceType.charAt(0).toUpperCase() + resourceType.slice(1);
+        global.ChatSystem?.addSystemMessage(`Not enough ${resourceName}. You need ${resourceCost} but only have ${currentResource}.`);
+        return false;
+      }
+      
+      // Deduct resource cost
+      if (global.Combat && global.Combat.spendResource) {
+        global.Combat.spendResource(resourceType, resourceCost);
+      } else {
+        // Fallback: manually update stats
+        const updatedStats = { ...playerStats };
+        if (resourceType === 'mana') {
+          updatedStats.mana = Math.max(0, updatedStats.mana - resourceCost);
+          updatedStats.maxMana = updatedStats.maxMana || 0;
+        } else if (resourceType === 'rage') {
+          updatedStats.rage = Math.max(0, updatedStats.rage - resourceCost);
+        } else if (resourceType === 'energy') {
+          updatedStats.energy = Math.max(0, updatedStats.energy - resourceCost);
+        }
+        global.State?.updatePlayer({ stats: updatedStats });
+      }
+    }
 
     // Check if this is a ranged attack that should pull instead of engage
     const attackRange = skill.range || 1;
@@ -248,9 +276,7 @@
     if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
 
     const playerStats = global.Combat?.getPlayerStats();
-
-    // Other effects require target
-    if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
+    if (!playerStats) return; // Can't proceed without player stats
 
     if (effect.type === 'damage') {
       // Check if this is a ranged attack that should pull instead of engage
@@ -336,15 +362,38 @@
         // Target defeated
         global.Combat?.endCombat(true);
       }
-    } else if (effect.type === 'heal') {
-      // Healing
-      const healing = Math.floor((playerStats.wis || 50) * parseFloat(effect.formula.split('*')[1] || 1));
-      const bonusHealing = effect.bonusHealing || 0;
-      const totalHealing = healing + bonusHealing;
+    } else if (effect.type === 'lifetap') {
+      // Lifetap - drains health from target and transfers to caster
+      if (!target) {
+        global.ChatSystem?.addSystemMessage('You need a target for lifetap.');
+        return;
+      }
       
-      const newHp = Math.min(playerStats.maxHp, playerStats.hp + totalHealing);
+      // Calculate damage to target
+      const damage = Math.floor((playerStats.int || 50) * parseFloat(effect.formula.split('*')[1] || 1));
+      const bonusDamage = effect.bonusDamage || 0;
+      const totalDamage = damage + bonusDamage;
+      
+      // Check for resist
+      const resistType = effect.resistType || 'magic';
+      if (rollResist(player.level, target.level, resistType, target.magicResist || 0)) {
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: `${target.name} resists your ${skill.name}!`,
+          meta: 'Resist'
+        });
+        return;
+      }
+      
+      // Apply damage to target
+      target.stats.hp = Math.max(0, target.stats.hp - totalDamage);
+      
+      // Heal caster for damage dealt
+      const lifetapHealing = Math.floor(totalDamage * 0.8); // 80% of damage as healing (P99 mechanic)
+      const newHp = Math.min(playerStats.maxHp, playerStats.hp + lifetapHealing);
       const actualHealing = newHp - playerStats.hp;
       
+      // Update player HP
       global.State?.updatePlayer({
         stats: {
           ...playerStats,
@@ -352,13 +401,65 @@
         }
       });
       
+      // Sync with currentMonster if in combat
+      const currentMonster = global.Combat?.getCurrentMonster();
+      if (currentMonster && (currentMonster.mobEntity?.id === target.id || currentMonster.id === target.id)) {
+        currentMonster.hp = target.stats.hp;
+        if (currentMonster.mobEntity && currentMonster.mobEntity.stats) {
+          currentMonster.mobEntity.stats.hp = target.stats.hp;
+        }
+      }
+      
       global.Narrative?.addEntry({
         type: 'combat',
-        text: `You heal yourself for ${actualHealing} HP!`,
-        meta: `Your HP: ${newHp}/${playerStats.maxHp}`
+        text: `You drain ${totalDamage} health from ${target.name} and heal ${actualHealing} HP!`,
+        meta: `${target.name} HP: ${target.stats.hp}/${target.stats.maxHp} | Your HP: ${newHp}/${playerStats.maxHp}`
       });
       
       global.Rendering?.updateCharacterPanel();
+      
+      // Check if target is defeated
+      if (target.stats.hp <= 0) {
+        global.Combat?.endCombat(true);
+      }
+    } else if (effect.type === 'heal') {
+      // Healing - can target self or allies (for party support)
+      const healing = Math.floor((playerStats.wis || 50) * parseFloat(effect.formula.split('*')[1] || 1));
+      const bonusHealing = effect.bonusHealing || 0;
+      const totalHealing = healing + bonusHealing;
+      
+      // If no target or target is self, heal self
+      const isSelf = !target || target.id === player.id || target === player;
+      
+      if (isSelf) {
+        // Heal self
+        const newHp = Math.min(playerStats.maxHp, playerStats.hp + totalHealing);
+        const actualHealing = newHp - playerStats.hp;
+        
+        global.State?.updatePlayer({
+          stats: {
+            ...playerStats,
+            hp: newHp
+          }
+        });
+        
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: `You heal yourself for ${actualHealing} HP!`,
+          meta: `Your HP: ${newHp}/${playerStats.maxHp}`
+        });
+        
+        global.Rendering?.updateCharacterPanel();
+      } else {
+        // Heal target (party member or ally)
+        // In a real MMO, this would update target's HP on server
+        // For now, just show narrative message
+        global.Narrative?.addEntry({
+          type: 'combat',
+          text: `You heal ${target.name || 'your target'} for ${totalHealing} HP!`,
+          meta: `${target.name || 'Target'} HP: ${(target.stats?.hp || 0) + totalHealing}/${target.stats?.maxHp || 0}`
+        });
+      }
     } else if (effect.type === 'bind') {
       // Bind Soul spell - binds target's soul to caster's location
       const caster = global.State?.getPlayer();
@@ -408,6 +509,69 @@
         // 1. Verify caster and target are in the same party
         // 2. Update target's bindLocation on the server
         // 3. Notify target player of the bind via server message
+      }
+    } else if (effect.type === 'buff') {
+      // Buff - apply stat modifiers, stealth, dodge, etc.
+      // Buffs can target self or allies (for party support)
+      const isSelf = !target || target.id === player.id || target === player;
+      
+      if (isSelf) {
+        // Apply buff to self
+        const buffId = skill.id;
+        const buffEntry = {
+          id: buffId,
+          skillId: skill.id,
+          skillName: skill.name,
+          statModifier: effect.statModifier || {},
+          stealth: effect.stealth || false,
+          dodgeChance: effect.dodgeChance || 0,
+          duration: (effect.duration || 60) * 1000, // Convert seconds to ms
+          appliedAt: Date.now()
+        };
+        
+        // Remove existing buff from same skill (don't stack)
+        activeBuffs.delete(buffId);
+        activeBuffs.set(buffId, buffEntry);
+        
+        // Update player's activeBuffs (for UI display)
+        const currentBuffs = player.activeBuffs || {};
+        currentBuffs[buffId] = {
+          name: skill.name,
+          icon: skill.icon || '✨',
+          duration: buffEntry.duration,
+          appliedAt: buffEntry.appliedAt
+        };
+        global.State?.updatePlayer({ activeBuffs: currentBuffs });
+        
+        // Start buff timer
+        setTimeout(() => {
+          activeBuffs.delete(buffId);
+          const updatedBuffs = { ...(player.activeBuffs || {}) };
+          delete updatedBuffs[buffId];
+          global.State?.updatePlayer({ activeBuffs: updatedBuffs });
+          
+          global.Narrative?.addEntry({
+            type: 'spell',
+            text: `${skill.name} has worn off.`,
+            meta: 'Buff Expired'
+          });
+        }, buffEntry.duration);
+        
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You cast ${skill.name} on yourself!`,
+          meta: `Duration: ${effect.duration || 60}s`
+        });
+        
+        global.Rendering?.updateCharacterPanel();
+      } else {
+        // Buff target (party member or ally)
+        // In a real MMO, this would update target's buffs on server
+        global.Narrative?.addEntry({
+          type: 'spell',
+          text: `You cast ${skill.name} on ${target.name || 'your target'}!`,
+          meta: `Duration: ${effect.duration || 60}s`
+        });
       }
     }
   }
@@ -471,6 +635,13 @@
     resetThreat();
   }
 
+  /**
+   * Get active buffs
+   */
+  function getActiveBuffs() {
+    return Array.from(activeBuffs.values());
+  }
+
   const CombatEnhanced = {
     calculateHitChance,
     rollHit,
@@ -485,6 +656,7 @@
     stopAutoAttack,
     getThreat,
     resetThreat,
+    getActiveBuffs,
     clearCooldowns
   };
 

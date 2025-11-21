@@ -453,6 +453,14 @@
         window.DurabilitySystem.start();
       }
 
+      // Initialize pet system (restore AI for existing pets)
+      if (window.PetSystem && typeof window.PetSystem.startPetAI === 'function') {
+        const player = window.State?.getPlayer();
+        if (player && player.pet && player.pet.alive) {
+          window.PetSystem.startPetAI();
+        }
+      }
+
       // Initialize equipment UI
       if (window.EquipmentUI && typeof window.EquipmentUI.init === 'function') {
         window.EquipmentUI.init();

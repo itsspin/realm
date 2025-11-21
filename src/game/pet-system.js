@@ -599,10 +599,28 @@
     return player?.pet || null;
   }
 
-  // Initialize
-  const player = global.State?.getPlayer();
-  if (player && player.pet) {
-    startPetAI();
+  // Initialize pet AI if player already has a pet (on game load)
+  // Delay initialization to ensure State is ready
+  function initializePetSystem() {
+    // Wait for State to be ready
+    if (global.State && typeof global.State.getPlayer === 'function') {
+      const player = global.State.getPlayer();
+      if (player && player.pet && player.pet.alive) {
+        startPetAI();
+      }
+    } else {
+      // Retry after a short delay if State isn't ready yet
+      setTimeout(initializePetSystem, 100);
+    }
+  }
+
+  // Initialize after a short delay to ensure State is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(initializePetSystem, 200);
+    });
+  } else {
+    setTimeout(initializePetSystem, 200);
   }
 
   const PetSystem = {

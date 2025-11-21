@@ -54,6 +54,12 @@
     let def = player.stats.def || 2;
     let maxHp = player.stats.maxHp || 20;
     let hp = player.stats.hp || maxHp;
+    let mana = player.stats.mana || 0;
+    let maxMana = player.stats.maxMana || 0;
+    let energy = player.stats.energy || 0;
+    let maxEnergy = player.stats.maxEnergy || 0;
+    let rage = player.stats.rage || 0;
+    let maxRage = player.stats.maxRage || 0;
 
     // Apply equipment bonuses (only if items aren't broken)
     if (player.equipment) {
@@ -73,10 +79,8 @@
         if (item.stats.def) def += item.stats.def;
         if (item.stats.hp) maxHp += item.stats.hp;
         if (item.stats.mana) {
-          // Mana bonus (if player has mana)
-          if (player.stats.maxMana) {
-            // This would need to be applied separately
-          }
+          maxMana += item.stats.mana;
+          mana = Math.min(mana, maxMana);
         }
         if (item.stats.all) {
           atk += item.stats.all;
@@ -85,7 +89,64 @@
       });
     }
 
-    return { atk, def, hp, maxHp };
+    // Apply active buffs (stat modifiers)
+    if (global.CombatEnhanced && typeof global.CombatEnhanced.getActiveBuffs === 'function') {
+      const activeBuffs = global.CombatEnhanced.getActiveBuffs();
+      activeBuffs.forEach(buff => {
+        if (buff.statModifier) {
+          // Apply stat modifiers (percentages)
+          if (buff.statModifier.hp) {
+            maxHp = Math.floor(maxHp * (1 + buff.statModifier.hp));
+            hp = Math.floor(hp * (1 + buff.statModifier.hp));
+          }
+          if (buff.statModifier.atk) {
+            atk = Math.floor(atk * (1 + buff.statModifier.atk));
+          }
+          if (buff.statModifier.def) {
+            def = Math.floor(def * (1 + buff.statModifier.def));
+          }
+          if (buff.statModifier.mana && maxMana > 0) {
+            maxMana = Math.floor(maxMana * (1 + buff.statModifier.mana));
+            mana = Math.min(mana, maxMana);
+          }
+        }
+      });
+    }
+
+    return { atk, def, hp, maxHp, mana, maxMana, energy, maxEnergy, rage, maxRage };
+  }
+
+  /**
+   * Spend resource (mana, energy, rage)
+   */
+  function spendResource(resourceType, amount) {
+    const player = global.State?.getPlayer();
+    if (!player || !player.stats) return false;
+
+    const stats = { ...player.stats };
+    let updated = false;
+
+    if (resourceType === 'mana' && stats.mana !== undefined) {
+      stats.mana = Math.max(0, (stats.mana || 0) - amount);
+      updated = true;
+    } else if (resourceType === 'energy' && stats.energy !== undefined) {
+      stats.energy = Math.max(0, (stats.energy || 0) - amount);
+      updated = true;
+    } else if (resourceType === 'rage' && stats.rage !== undefined) {
+      stats.rage = Math.max(0, (stats.rage || 0) - amount);
+      updated = true;
+    }
+
+    if (updated) {
+      global.State?.updatePlayer({ stats });
+      // Update UI
+      if (global.Rendering && typeof global.Rendering.updateCharacterPanel === 'function') {
+        global.Rendering.updateCharacterPanel();
+      }
+      return true;
+    }
+
+    return false;
   }
 
   function calculateDamage(attackerAtk, defenderDef, isCrit = false) {
@@ -858,6 +919,7 @@
     isInCombat: () => currentMonster !== null && combatState !== null,
     getCombatState: () => combatState,
     getPlayerStats,
+    spendResource,
     calculateDamage,
     rollCritical,
     rollHit,
