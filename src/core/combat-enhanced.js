@@ -225,22 +225,6 @@
 
     const playerStats = global.Combat?.getPlayerStats();
 
-    // Handle item summoning (no target required)
-    if (effect.type === 'summon_item') {
-      if (global.State && effect.itemId) {
-        if (global.State.addItem(effect.itemId)) {
-          global.Narrative?.addEntry({
-            type: 'spell',
-            text: `You summon ${effect.itemId}.`,
-            meta: 'Summon Item'
-          });
-          // Update inventory UI
-          global.Rendering?.updateInventory();
-        }
-      }
-      return;
-    }
-
     // Other effects require target
     if (!target && effect.type !== 'buff' && effect.type !== 'heal') return;
 

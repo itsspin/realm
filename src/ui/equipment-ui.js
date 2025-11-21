@@ -19,14 +19,24 @@
   };
 
   function init() {
+    // Check if already initialized
+    if (equipmentPanel) {
+      console.log('[EquipmentUI] Already initialized');
+      return;
+    }
+
     // Create equipment panel
     const leftPanel = document.querySelector('.game-panel--left');
-    if (!leftPanel) return;
+    if (!leftPanel) {
+      console.error('[EquipmentUI] Left panel not found');
+      return;
+    }
 
     equipmentPanel = document.createElement('div');
     equipmentPanel.id = 'equipmentPanel';
     equipmentPanel.className = 'equipment-panel';
     equipmentPanel.hidden = true;
+    equipmentPanel.style.display = 'none';
 
     equipmentPanel.innerHTML = `
       <div class="equipment-panel-header">
@@ -85,6 +95,8 @@
       leftPanel.appendChild(equipmentPanel);
     }
 
+    console.log('[EquipmentUI] Panel created and inserted into DOM');
+
     // Event listeners
     const closeBtn = document.getElementById('equipmentCloseBtn');
     if (closeBtn) {
@@ -93,46 +105,36 @@
       });
     }
 
-    // Add click handlers to equipment slots
-    equipmentPanel.querySelectorAll('.equipment-slot').forEach(slot => {
-      slot.addEventListener('click', (e) => {
-        const slotName = slot.dataset.slot;
-        if (slotName) {
-          handleSlotClick(slotName, slot);
-        }
-      });
-
-      // Hover tooltip
-      slot.addEventListener('mouseenter', (e) => {
-        const slotName = slot.dataset.slot;
-        if (slotName) {
-          showSlotTooltip(e, slotName, slot);
-        }
-      });
-
-      slot.addEventListener('mouseleave', () => {
-        hideSlotTooltip();
-      });
-    });
+    // Initial setup for slot handlers
+    setupSlotHandlers();
   }
 
   function show() {
-    if (!equipmentPanel) init();
-    if (equipmentPanel) {
-      equipmentPanel.hidden = false;
-      isVisible = true;
-      update();
+    if (!equipmentPanel) {
+      init();
+      if (!equipmentPanel) {
+        console.error('[EquipmentUI] Failed to create equipment panel');
+        return;
+      }
     }
+    equipmentPanel.hidden = false;
+    equipmentPanel.style.display = 'block';
+    isVisible = true;
+    update();
+    console.log('[EquipmentUI] Panel shown');
   }
 
   function hide() {
     if (equipmentPanel) {
       equipmentPanel.hidden = true;
+      equipmentPanel.style.display = 'none';
       isVisible = false;
+      console.log('[EquipmentUI] Panel hidden');
     }
   }
 
   function toggle() {
+    console.log('[EquipmentUI] Toggle called, isVisible:', isVisible);
     if (isVisible) {
       hide();
     } else {
@@ -140,8 +142,40 @@
     }
   }
 
+  function setupSlotHandlers() {
+    if (!equipmentPanel) return;
+    
+    equipmentPanel.querySelectorAll('.equipment-slot').forEach(slot => {
+      const slotName = slot.dataset.slot;
+      if (!slotName) return;
+
+      // Remove old listeners by cloning
+      const newSlot = slot.cloneNode(true);
+      slot.parentNode.replaceChild(newSlot, slot);
+
+      // Click handler
+      newSlot.addEventListener('click', (e) => {
+        handleSlotClick(slotName, newSlot);
+      });
+
+      // Hover tooltip
+      newSlot.addEventListener('mouseenter', (e) => {
+        showSlotTooltip(e, slotName, newSlot);
+      });
+
+      newSlot.addEventListener('mouseleave', () => {
+        hideSlotTooltip();
+      });
+    });
+  }
+
   function update() {
-    if (!equipmentPanel || !isVisible) return;
+    if (!equipmentPanel) {
+      console.warn('[EquipmentUI] Panel not initialized, calling init');
+      init();
+      if (!equipmentPanel) return;
+    }
+    // Update even if not visible (for when it becomes visible)
 
     const player = global.State?.getPlayer();
     if (!player) return;
@@ -176,25 +210,42 @@
             ` : ''}
           `;
 
-          // Add click handler for unequip
-          slotEl.addEventListener('click', () => {
+          // Remove old click handlers and add new one for unequip
+          const newSlot = slotEl.cloneNode(true);
+          slotEl.parentNode.replaceChild(newSlot, slotEl);
+          newSlot.addEventListener('click', () => {
             handleUnequip(slotName);
           });
         } else {
           slotEl.classList.remove('equipment-slot--filled');
-          slotEl.innerHTML = `
+          const newSlot = slotEl.cloneNode(true);
+          slotEl.parentNode.replaceChild(newSlot, slotEl);
+          newSlot.innerHTML = `
             <div class="equipment-slot-icon">${EQUIPMENT_SLOTS[slotName].icon}</div>
             <div class="equipment-slot-label">${EQUIPMENT_SLOTS[slotName].label}</div>
           `;
+          // Re-add click handler
+          newSlot.addEventListener('click', () => {
+            handleSlotClick(slotName, newSlot);
+          });
         }
       } else {
         slotEl.classList.remove('equipment-slot--filled');
-        slotEl.innerHTML = `
+        const newSlot = slotEl.cloneNode(true);
+        slotEl.parentNode.replaceChild(newSlot, slotEl);
+        newSlot.innerHTML = `
           <div class="equipment-slot-icon">${EQUIPMENT_SLOTS[slotName].icon}</div>
           <div class="equipment-slot-label">${EQUIPMENT_SLOTS[slotName].label}</div>
         `;
+        // Re-add click handler
+        newSlot.addEventListener('click', () => {
+          handleSlotClick(slotName, newSlot);
+        });
       }
     });
+
+    // Re-setup slot handlers after updating
+    setupSlotHandlers();
 
     // Update stats summary
     updateStatsSummary();

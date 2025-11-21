@@ -164,23 +164,26 @@
       const itemId = slot.dataset.itemId;
       const itemData = global.REALM?.data?.itemsById?.[itemId];
       
-      // Click handler - try to equip if equippable
-      slot.addEventListener('click', () => {
-        const player = global.State?.getPlayer();
-        if (!player) return;
-        
-        const inventoryItem = player.inventory?.find(item => item.itemId === itemId);
-        if (!inventoryItem) return;
-        
-        // Try to equip the item
-        if (itemData.type === 'weapon' || itemData.type === 'armor' || itemData.slot) {
-          if (global.Inventory?.equipItem(itemId)) {
-            // Success - item will be removed from inventory and equipped
-            return;
-          }
+      // Click handler - show context menu
+      slot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (global.ItemContextMenu && typeof global.ItemContextMenu.show === 'function') {
+          global.ItemContextMenu.show(e, itemId);
         } else {
-          // Show context menu or use item
-          console.log('Item clicked:', itemId);
+          // Fallback: try to equip if equippable
+          const player = global.State?.getPlayer();
+          if (!player) return;
+          
+          const inventoryItem = player.inventory?.find(item => item.itemId === itemId);
+          if (!inventoryItem) return;
+          
+          // Try to equip the item
+          if (itemData.type === 'weapon' || itemData.type === 'armor' || itemData.slot) {
+            if (global.Inventory?.equipItem(itemId)) {
+              // Success - item will be removed from inventory and equipped
+              return;
+            }
+          }
         }
       });
       

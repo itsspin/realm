@@ -374,7 +374,8 @@
       "petLevel": 1
     },
     "range": 0,
-    "castTime": 3
+    "castTime": 3,
+    "requiresTarget": false
   },
   {
     "id": "lifetap",
@@ -442,7 +443,8 @@
       "petLevel": 3
     },
     "range": 0,
-    "castTime": 3
+    "castTime": 3,
+    "requiresTarget": false
   },
   {
     "id": "siphon_strength",
@@ -516,7 +518,8 @@
       "petLevel": 5
     },
     "range": 0,
-    "castTime": 3
+    "castTime": 3,
+    "requiresTarget": false
   },
   {
     "id": "ward_undead",
@@ -612,7 +615,8 @@
     },
     "range": 0,
     "castTime": 2,
-    "canTargetSelf": true
+    "canTargetSelf": true,
+    "requiresTarget": false
   },
   {
     "id": "summon_dagger",
@@ -630,7 +634,8 @@
       "itemId": "summoned_dagger"
     },
     "range": 0,
-    "castTime": 1
+    "castTime": 1,
+    "requiresTarget": false
   },
   {
     "id": "summon_food",
@@ -648,7 +653,8 @@
       "itemId": "summoned_food"
     },
     "range": 0,
-    "castTime": 1
+    "castTime": 1,
+    "requiresTarget": false
   },
   {
     "id": "summon_drink",
@@ -666,7 +672,8 @@
       "itemId": "summoned_drink"
     },
     "range": 0,
-    "castTime": 1
+    "castTime": 1,
+    "requiresTarget": false
   },
   {
     "id": "elementalkin_water",
@@ -703,7 +710,8 @@
       "itemId": "summoned_bandages"
     },
     "range": 0,
-    "castTime": 1
+    "castTime": 1,
+    "requiresTarget": false
   },
   {
     "id": "elementalkin_earth",
@@ -722,7 +730,8 @@
       "petLevel": 4
     },
     "range": 0,
-    "castTime": 3
+    "castTime": 3,
+    "requiresTarget": false
   },
   {
     "id": "shielding",
@@ -745,7 +754,8 @@
     },
     "range": 0,
     "castTime": 2.5,
-    "canTargetSelf": true
+    "canTargetSelf": true,
+    "requiresTarget": false
   }
 ]
 

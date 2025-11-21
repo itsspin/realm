@@ -1,34 +1,34 @@
 /**
  * Player Movement System
  * 
- * Handles grid-based movement on the world map with pathfinding.
+ * Handles grid-based movement on the world map.
+ * Players can only move one tile at a time (adjacent tiles only).
  * 
  * FLOW:
- * 1. Player clicks tile on map (any tile within viewport)
- * 2. Pathfinding calculates route to target
- * 3. Player moves along path one tile per second
+ * 1. Player clicks adjacent tile on map
+ * 2. Validate tile is walkable and adjacent
+ * 3. Move player one tile per second
  * 4. Check collision (walkable tiles only)
  * 5. Update player position (currentTile)
  * 6. Check for zone changes
  * 7. Check for nearby enemies/NPCs
  * 8. Update map rendering
  * 
- * PATHFINDING:
- * - Uses A* algorithm for optimal pathfinding
+ * MOVEMENT:
+ * - Single-tile movement only (adjacent tiles)
  * - Supports 8-directional movement (including diagonals)
- * - Non-walkable tiles (walls, water, etc.) block paths
- * - Maximum pathfinding distance limited to viewport radius (8 tiles)
+ * - Non-walkable tiles (walls, water, etc.) block movement
+ * - Movement speed: 1 tile per second
+ * 
+ * NOTE: Multi-tile pathfinding will be a premium feature in the future.
  * 
  * @module Movement
  */
 (function (global) {
   let isMoving = false;
-  let currentPath = []; // Array of {x, y} coordinates
-  let currentPathIndex = 0;
   let movementQueue = [];
   const BASE_MOVE_SPEED = 1000; // 1 second per tile
   let moveSpeed = BASE_MOVE_SPEED;
-  const VIEW_RADIUS = 8; // Maximum pathfinding distance (viewport radius)
 
   function getMoveSpeed() {
     const player = global.State?.getPlayer();
@@ -44,228 +44,7 @@
   }
 
   /**
-   * A* pathfinding algorithm
-   * Returns array of {x, y} coordinates from start to goal, or empty array if no path found
-   */
-  function findPath(startX, startY, goalX, goalY, zoneId) {
-    // Check if goal is within viewport radius
-    const distance = Math.abs(goalX - startX) + Math.abs(goalY - startY);
-    if (distance > VIEW_RADIUS) {
-      return []; // Too far away
-    }
-
-    // Check if goal tile is walkable
-    if (!global.World?.isTileWalkable(zoneId, goalX, goalY)) {
-      return []; // Goal is not walkable
-    }
-
-    // If already at goal, return empty path
-    if (startX === goalX && startY === goalY) {
-      return [];
-    }
-
-    // A* pathfinding
-    const openSet = [{ x: startX, y: startY, g: 0, h: heuristic(startX, startY, goalX, goalY), f: 0, parent: null }];
-    const closedSet = new Set();
-    const cameFrom = new Map();
-
-    // Helper to get key for position
-    const getKey = (x, y) => `${x},${y}`;
-
-    // 8-directional neighbors (including diagonals)
-    const neighbors = [
-      { dx: -1, dy: -1, cost: 1.414 }, // Diagonal
-      { dx: -1, dy: 0, cost: 1.0 },    // Left
-      { dx: -1, dy: 1, cost: 1.414 },  // Diagonal
-      { dx: 0, dy: -1, cost: 1.0 },    // Up
-      { dx: 0, dy: 1, cost: 1.0 },     // Down
-      { dx: 1, dy: -1, cost: 1.414 },  // Diagonal
-      { dx: 1, dy: 0, cost: 1.0 },     // Right
-      { dx: 1, dy: 1, cost: 1.414 }    // Diagonal
-    ];
-
-    openSet[0].f = openSet[0].g + openSet[0].h;
-
-    while (openSet.length > 0) {
-      // Get node with lowest f score
-      let currentIndex = 0;
-      for (let i = 1; i < openSet.length; i++) {
-        if (openSet[i].f < openSet[currentIndex].f) {
-          currentIndex = i;
-        }
-      }
-      const current = openSet.splice(currentIndex, 1)[0];
-      const currentKey = getKey(current.x, current.y);
-
-      // Check if we reached the goal
-      if (current.x === goalX && current.y === goalY) {
-        // Reconstruct path
-        const path = [];
-        let node = current;
-        while (node) {
-          path.unshift({ x: node.x, y: node.y });
-          node = node.parent;
-        }
-        // Remove start position (we're already there)
-        path.shift();
-        return path;
-      }
-
-      closedSet.add(currentKey);
-      cameFrom.set(currentKey, current);
-
-      // Check neighbors
-      for (const neighbor of neighbors) {
-        const neighborX = current.x + neighbor.dx;
-        const neighborY = current.y + neighbor.dy;
-        const neighborKey = getKey(neighborX, neighborY);
-
-        // Skip if already in closed set
-        if (closedSet.has(neighborKey)) continue;
-
-        // Check if neighbor is walkable
-        if (!global.World?.isTileWalkable(zoneId, neighborX, neighborY)) {
-          closedSet.add(neighborKey);
-          continue;
-        }
-
-        // Check if neighbor is within viewport radius
-        const neighborDistance = Math.abs(neighborX - startX) + Math.abs(neighborY - startY);
-        if (neighborDistance > VIEW_RADIUS) {
-          continue;
-        }
-
-        // Calculate g score (cost from start)
-        const tentativeG = current.g + neighbor.cost;
-
-        // Check if neighbor is in open set
-        let neighborInOpenSet = false;
-        let neighborNode = null;
-        for (let i = 0; i < openSet.length; i++) {
-          if (openSet[i].x === neighborX && openSet[i].y === neighborY) {
-            neighborInOpenSet = true;
-            neighborNode = openSet[i];
-            break;
-          }
-        }
-
-        if (!neighborInOpenSet) {
-          // New node, add to open set
-          const h = heuristic(neighborX, neighborY, goalX, goalY);
-          neighborNode = {
-            x: neighborX,
-            y: neighborY,
-            g: tentativeG,
-            h: h,
-            f: tentativeG + h,
-            parent: current
-          };
-          openSet.push(neighborNode);
-        } else if (tentativeG < neighborNode.g) {
-          // Better path found, update neighbor
-          neighborNode.g = tentativeG;
-          neighborNode.f = tentativeG + neighborNode.h;
-          neighborNode.parent = current;
-        }
-      }
-    }
-
-    // No path found
-    return [];
-  }
-
-  /**
-   * Heuristic function for A* (Manhattan distance)
-   */
-  function heuristic(x1, y1, x2, y2) {
-    return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-  }
-
-  /**
-   * Move player along current path
-   */
-  function moveAlongPath() {
-    if (currentPath.length === 0 || currentPathIndex >= currentPath.length) {
-      // Path complete
-      isMoving = false;
-      currentPath = [];
-      currentPathIndex = 0;
-
-      // Process queued movement
-      if (movementQueue.length > 0) {
-        const next = movementQueue.shift();
-        moveToTile(next.x, next.y);
-      }
-      return;
-    }
-
-    const player = global.State?.getPlayer();
-    if (!player) {
-      isMoving = false;
-      currentPath = [];
-      currentPathIndex = 0;
-      return;
-    }
-
-    // Get next tile in path
-    const nextTile = currentPath[currentPathIndex];
-    const playerZone = player.currentZone || 'thronehold';
-
-    // Verify next tile is still walkable (dynamic obstacles might have appeared)
-    if (!global.World?.isTileWalkable(playerZone, nextTile.x, nextTile.y)) {
-      // Path blocked, cancel movement
-      if (global.ChatSystem) {
-        global.ChatSystem.addSystemMessage('Path blocked.');
-      }
-      isMoving = false;
-      currentPath = [];
-      currentPathIndex = 0;
-      return;
-    }
-
-    // Cancel sitting when moving
-    if (player.isSitting && global.HealthRegen) {
-      global.HealthRegen.setSitting(false);
-    }
-
-    // Update player position
-    global.State?.updatePlayer({
-      currentTile: { x: nextTile.x, y: nextTile.y },
-      x: nextTile.x,
-      y: nextTile.y
-    });
-
-    // Update map rendering
-    if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
-      global.WorldMapRender.renderMap();
-    }
-
-    // Update nearby list
-    if (global.NearbyList && typeof global.NearbyList.update === 'function') {
-      global.NearbyList.update();
-    }
-
-    // Check for zone change
-    checkZoneChange(nextTile.x, nextTile.y);
-
-    // Check for nearby enemies
-    checkNearbyEnemies(nextTile.x, nextTile.y);
-
-    // Check for nearby players
-    checkNearbyPlayers(nextTile.x, nextTile.y);
-
-    // Move to next tile in path
-    currentPathIndex++;
-
-    // Continue movement after delay
-    moveSpeed = getMoveSpeed();
-    setTimeout(() => {
-      moveAlongPath();
-    }, moveSpeed);
-  }
-
-  /**
-   * Move to a target tile using pathfinding
+   * Move to a target tile (single-tile movement only)
    */
   function moveToTile(targetX, targetY) {
     const player = global.State?.getPlayer();
@@ -281,13 +60,32 @@
       return true;
     }
 
-    // Check if target is within viewport
+    // Calculate distance to target
     const distance = Math.abs(targetX - currentX) + Math.abs(targetY - currentY);
-    if (distance > VIEW_RADIUS) {
+
+    // Only allow movement to adjacent tiles (distance <= 1 for diagonal, distance === 1 for cardinal)
+    // For 8-directional: max distance is 1 tile away (including diagonals)
+    if (distance > 1) {
+      // Too far away - only allow adjacent movement
+      // Calculate direction toward target for feedback
+      const dx = targetX > currentX ? 1 : targetX < currentX ? -1 : 0;
+      const dy = targetY > currentY ? 1 : targetY < currentY ? -1 : 0;
+      
+      // Suggest moving one step toward the target
+      const suggestedX = currentX + dx;
+      const suggestedY = currentY + dy;
+      
       if (global.ChatSystem) {
-        global.ChatSystem.addSystemMessage('That location is too far away.');
+        global.ChatSystem.addSystemMessage('You can only move to adjacent tiles. Move closer first.');
       }
+      
+      // Optionally auto-move one step toward target (but let's not do this - user should click adjacent)
       return false;
+    }
+
+    // If already at target, do nothing
+    if (distance === 0) {
+      return true;
     }
 
     // Check if target tile is valid
@@ -307,26 +105,51 @@
       return false;
     }
 
-    // If already at target, do nothing
-    if (currentX === targetX && currentY === targetY) {
-      return true;
+    // Cancel sitting when moving
+    if (player.isSitting && global.HealthRegen) {
+      global.HealthRegen.setSitting(false);
     }
 
-    // Find path to target
-    const path = findPath(currentX, currentY, targetX, targetY, playerZone);
-
-    if (path.length === 0) {
-      if (global.ChatSystem) {
-        global.ChatSystem.addSystemMessage('No path found to that location.');
-      }
-      return false;
-    }
-
-    // Start following path
+    // Start single-tile movement
     isMoving = true;
-    currentPath = path;
-    currentPathIndex = 0;
-    moveAlongPath();
+
+    // Update player position
+    global.State?.updatePlayer({
+      currentTile: { x: targetX, y: targetY },
+      x: targetX,
+      y: targetY
+    });
+
+    // Update map rendering
+    if (global.WorldMapRender && typeof global.WorldMapRender.renderMap === 'function') {
+      global.WorldMapRender.renderMap();
+    }
+
+    // Update nearby list
+    if (global.NearbyList && typeof global.NearbyList.update === 'function') {
+      global.NearbyList.update();
+    }
+
+    // Check for zone change
+    checkZoneChange(targetX, targetY);
+
+    // Check for nearby enemies
+    checkNearbyEnemies(targetX, targetY);
+
+    // Check for nearby players
+    checkNearbyPlayers(targetX, targetY);
+
+    // Movement animation delay
+    moveSpeed = getMoveSpeed();
+    setTimeout(() => {
+      isMoving = false;
+
+      // Process queued movement
+      if (movementQueue.length > 0) {
+        const next = movementQueue.shift();
+        moveToTile(next.x, next.y);
+      }
+    }, moveSpeed);
 
     return true;
   }

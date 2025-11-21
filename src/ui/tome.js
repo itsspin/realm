@@ -400,6 +400,28 @@
       'smite_undead': '☀️',
       'cure_disease': '✨',
       
+      // Necromancer spells
+      'cavorting_bones': '💀',
+      'lifetap': '🩸',
+      'disease_cloud': '☁️',
+      'leering_corpse': '💀',
+      'siphon_strength': '💪',
+      'clinging_darkness': '🌑',
+      'lesser_summon_skeleton': '💀',
+      'ward_undead': '☀️',
+      'engulfing_darkness': '🌑',
+      
+      // Magician spells
+      'burst_of_flame': '🔥',
+      'minor_shielding': '🛡️',
+      'summon_dagger': '🗡️',
+      'summon_food': '🍞',
+      'summon_drink': '🍷',
+      'elementalkin_water': '💧',
+      'summon_bandages': '🩹',
+      'elementalkin_earth': '🗿',
+      'shielding': '🛡️',
+      
       // Generic by type
       'heal': '💚',
       'resurrection': '🌟',

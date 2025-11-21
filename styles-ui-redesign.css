@@ -617,6 +617,51 @@
   background: rgba(10, 14, 26, 0.4);
 }
 
+/* Item Context Menu */
+.item-context-menu {
+  position: fixed;
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98) 0%, rgba(42, 37, 32, 0.98) 100%);
+  border: var(--border-medium);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0;
+  min-width: 150px;
+  z-index: 10000;
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(8px);
+}
+
+.context-menu-item-name {
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  border-bottom: var(--border-subtle);
+  margin-bottom: 0.25rem;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.25rem 0;
+}
+
+.context-menu-option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: var(--fg-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.context-menu-option:hover {
+  background: rgba(201, 125, 61, 0.2);
+  color: var(--ember-orange);
+}
+
 /* ============================================
    Map Container (Center - Main Focus)
    ============================================ */

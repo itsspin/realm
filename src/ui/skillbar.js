@@ -384,6 +384,28 @@
       'smite_undead': '☀️',
       'cure_disease': '✨',
       
+      // Necromancer spells
+      'cavorting_bones': '💀',
+      'lifetap': '🩸',
+      'disease_cloud': '☁️',
+      'leering_corpse': '💀',
+      'siphon_strength': '💪',
+      'clinging_darkness': '🌑',
+      'lesser_summon_skeleton': '💀',
+      'ward_undead': '☀️',
+      'engulfing_darkness': '🌑',
+      
+      // Magician spells
+      'burst_of_flame': '🔥',
+      'minor_shielding': '🛡️',
+      'summon_dagger': '🗡️',
+      'summon_food': '🍞',
+      'summon_drink': '🍷',
+      'elementalkin_water': '💧',
+      'summon_bandages': '🩹',
+      'elementalkin_earth': '🗿',
+      'shielding': '🛡️',
+      
       // Generic by type
       'heal': '💚',
       'resurrection': '🌟',
@@ -450,7 +472,12 @@
     const target = global.Targeting?.getTarget();
     
     // Check if skill requires target
-    const requiresTarget = skill.requiresTarget !== false;
+    // Pet summoning and item summoning spells don't require targets
+    const effectType = skill.effect?.type;
+    const isNoTargetSpell = effectType === 'summon_pet' || effectType === 'summon_item' || 
+                            effectType === 'buff' || skill.canTargetSelf;
+    const requiresTarget = skill.requiresTarget !== false && !isNoTargetSpell;
+    
     if (requiresTarget && !target) {
       if (global.ChatSystem) {
         global.ChatSystem.addSystemMessage('You need a target to use this skill.');

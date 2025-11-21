@@ -457,6 +457,11 @@
       if (window.EquipmentUI && typeof window.EquipmentUI.init === 'function') {
         window.EquipmentUI.init();
       }
+
+      // Initialize item context menu
+      if (window.ItemContextMenu && typeof window.ItemContextMenu.init === 'function') {
+        window.ItemContextMenu.init();
+      }
       
       // Add button handler (separate from init to ensure it's always set up)
       setTimeout(() => {

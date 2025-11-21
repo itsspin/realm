@@ -1038,20 +1038,21 @@
       return;
     }
 
-    // Click on empty tile - try to pathfind to it
-    // Check if tile is within viewport distance
+    // Click on empty tile - move only if adjacent (single-tile movement)
     const playerX = player.currentTile?.x || 0;
     const playerY = player.currentTile?.y || 0;
     const distance = Math.abs(worldX - playerX) + Math.abs(worldY - playerY);
     
-    if (distance > VIEW_RADIUS) {
-      if (global.ChatSystem) {
-        global.ChatSystem.addSystemMessage('That location is too far away.');
+    // Only allow movement to adjacent tiles (distance <= 1)
+    if (distance > 1) {
+      // Not adjacent - don't move, just update tile detail panel
+      if (global.TileDetailPanel) {
+        global.TileDetailPanel.updateTile(player.currentZone, worldX, worldY);
       }
       return;
     }
 
-    // Try to move to tile (pathfinding will handle the rest)
+    // Try to move to tile (will validate if adjacent and walkable)
     if (global.Movement) {
       global.Movement.moveToTile(worldX, worldY);
     }
