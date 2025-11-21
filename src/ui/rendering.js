@@ -130,15 +130,94 @@
       return `<div class="inventory-slot inventory-slot--empty" data-slot-index="${index}"></div>`;
     }).join('');
 
-    // Add click handlers
+    // Add click handlers and hover tooltips
     gridEl.querySelectorAll('.inventory-slot[data-item-id]').forEach(slot => {
+      const itemId = slot.dataset.itemId;
+      const itemData = global.REALM?.data?.itemsById?.[itemId];
+      
+      // Click handler
       slot.addEventListener('click', () => {
-        const itemId = slot.dataset.itemId;
         // Show item tooltip or context menu
-        // For now, just log
         console.log('Item clicked:', itemId);
       });
+      
+      // Hover tooltip
+      slot.addEventListener('mouseenter', (e) => {
+        if (!itemData) return;
+        
+        const tooltip = document.getElementById('itemTooltip');
+        if (!tooltip) return;
+        
+        // Build tooltip content
+        let tooltipHTML = `<div class="tooltip-item-name">${itemData.name || itemId.replace(/_/g, ' ')}</div>`;
+        
+        if (itemData.description) {
+          tooltipHTML += `<div class="tooltip-item-description">${itemData.description}</div>`;
+        }
+        
+        if (itemData.stats) {
+          tooltipHTML += `<div class="tooltip-item-stats">`;
+          if (itemData.stats.atk) tooltipHTML += `<div>Attack: +${itemData.stats.atk}</div>`;
+          if (itemData.stats.def) tooltipHTML += `<div>Defense: +${itemData.stats.def}</div>`;
+          if (itemData.stats.all) tooltipHTML += `<div>All Stats: +${itemData.stats.all}</div>`;
+          if (itemData.stats.hp) tooltipHTML += `<div>Health: +${itemData.stats.hp}</div>`;
+          if (itemData.stats.mana) tooltipHTML += `<div>Mana: +${itemData.stats.mana}</div>`;
+          tooltipHTML += `</div>`;
+        }
+        
+        if (itemData.type) {
+          tooltipHTML += `<div class="tooltip-item-type">Type: ${itemData.type}</div>`;
+        }
+        
+        if (itemData.rarity) {
+          tooltipHTML += `<div class="tooltip-item-rarity">Rarity: ${itemData.rarity}</div>`;
+        }
+        
+        tooltip.innerHTML = tooltipHTML;
+        tooltip.classList.add('tooltip--item');
+        tooltip.classList.remove('hidden');
+        tooltip.hidden = false;
+        
+        // Position tooltip near cursor
+        updateTooltipPosition(e, tooltip);
+      });
+      
+      slot.addEventListener('mousemove', (e) => {
+        const tooltip = document.getElementById('itemTooltip');
+        if (tooltip && !tooltip.classList.contains('hidden')) {
+          updateTooltipPosition(e, tooltip);
+        }
+      });
+      
+      slot.addEventListener('mouseleave', () => {
+        const tooltip = document.getElementById('itemTooltip');
+        if (tooltip) {
+          tooltip.classList.add('hidden');
+          tooltip.hidden = true;
+        }
+      });
     });
+  }
+  
+  /**
+   * Update tooltip position to follow cursor
+   */
+  function updateTooltipPosition(event, tooltip) {
+    const offset = 15;
+    const x = event.clientX + offset;
+    const y = event.clientY + offset;
+    
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+    
+    // Keep tooltip within viewport
+    const rect = tooltip.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+      tooltip.style.left = `${event.clientX - rect.width - offset}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+      tooltip.style.top = `${event.clientY - rect.height - offset}px`;
+    }
   }
 
   function updateQuestLog() {

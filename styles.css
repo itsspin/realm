@@ -1355,3 +1355,97 @@ h3 {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 4px;
 }
+
+.target-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.target-action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 0.5rem;
+  background: rgba(10, 14, 26, 0.6);
+  border: 1px solid var(--gold-muted);
+  border-radius: 4px;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.target-action-btn:hover {
+  background: rgba(201, 125, 61, 0.3);
+  border-color: var(--ember-orange);
+}
+
+/* ============================================
+   Item Tooltip
+   ============================================ */
+
+.tooltip {
+  position: fixed;
+  background: rgba(10, 14, 26, 0.98);
+  border: 2px solid var(--gold-muted);
+  border-radius: 8px;
+  padding: 0.75rem;
+  min-width: 200px;
+  max-width: 300px;
+  box-shadow: var(--shadow-strong), 0 0 20px rgba(212, 184, 138, 0.3);
+  z-index: 10000;
+  pointer-events: none;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.tooltip.hidden {
+  display: none;
+}
+
+.tooltip--item .tooltip-item-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold-bright);
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--gold-muted);
+  padding-bottom: 0.25rem;
+}
+
+.tooltip--item .tooltip-item-description {
+  color: var(--fg-secondary);
+  font-style: italic;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.tooltip--item .tooltip-item-stats {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(212, 196, 168, 0.2);
+}
+
+.tooltip--item .tooltip-item-stats div {
+  color: var(--fg-primary);
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.tooltip--item .tooltip-item-type {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(212, 196, 168, 0.2);
+  color: var(--fg-secondary);
+  font-size: 0.85rem;
+}
+
+.tooltip--item .tooltip-item-rarity {
+  margin-top: 0.25rem;
+  color: var(--ember-bright);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

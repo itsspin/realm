@@ -44,6 +44,7 @@
 (function (global) {
   let currentMonster = null;
   let combatState = null;
+  let combatUpdateInterval = null;
 
   function getPlayerStats() {
     const player = global.State?.getPlayer();
@@ -160,6 +161,9 @@
     }
 
     global.Rendering?.updateCombatUI();
+    
+    // Start real-time combat updates
+    startCombatUpdates();
   }
 
   /**
@@ -229,6 +233,9 @@
     }
 
     global.Rendering?.updateCombatUI();
+    
+    // Start real-time combat updates
+    startCombatUpdates();
   }
 
   function playerAttack() {
@@ -257,6 +264,11 @@
     const damage = calculateDamage(playerStats.atk, currentMonster.def || 1, isCritical);
 
     currentMonster.hp = Math.max(0, currentMonster.hp - damage);
+    
+    // Update mob entity stats if it exists
+    if (currentMonster.mobEntity) {
+      currentMonster.mobEntity.stats.hp = currentMonster.hp;
+    }
 
         const critText = isCritical ? ' CRITICAL HIT!' : '';
         const combatMsg = `You strike the ${currentMonster.name} for ${damage} damage!${critText}`;
@@ -320,6 +332,9 @@
       global.CombatEnhanced.stopAutoAttack();
       global.CombatEnhanced.clearCooldowns();
     }
+    
+    // Stop combat updates
+    stopCombatUpdates();
 
     if (victory) {
       const player = global.State?.getPlayer();
@@ -407,6 +422,8 @@
                 title: 'Item Found!',
                 text: itemData.name
               });
+              // Update inventory UI
+              global.Rendering?.updateInventory();
             }
           }
         });
@@ -472,6 +489,9 @@
       global.CombatEnhanced.stopAutoAttack();
       global.CombatEnhanced.clearCooldowns();
     }
+    
+    // Stop combat updates
+    stopCombatUpdates();
 
     global.Narrative?.addEntry({
       type: 'combat',

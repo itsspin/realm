@@ -207,12 +207,15 @@
     // Handle item summoning (no target required)
     if (effect.type === 'summon_item') {
       if (global.State && effect.itemId) {
-        global.State.addItem(effect.itemId);
-        global.Narrative?.addEntry({
-          type: 'spell',
-          text: `You summon ${effect.itemId}.`,
-          meta: 'Summon Item'
-        });
+        if (global.State.addItem(effect.itemId)) {
+          global.Narrative?.addEntry({
+            type: 'spell',
+            text: `You summon ${effect.itemId}.`,
+            meta: 'Summon Item'
+          });
+          // Update inventory UI
+          global.Rendering?.updateInventory();
+        }
       }
       return;
     }
@@ -225,12 +228,15 @@
     // Handle item summoning (no target required)
     if (effect.type === 'summon_item') {
       if (global.State && effect.itemId) {
-        global.State.addItem(effect.itemId);
-        global.Narrative?.addEntry({
-          type: 'spell',
-          text: `You summon ${effect.itemId}.`,
-          meta: 'Summon Item'
-        });
+        if (global.State.addItem(effect.itemId)) {
+          global.Narrative?.addEntry({
+            type: 'spell',
+            text: `You summon ${effect.itemId}.`,
+            meta: 'Summon Item'
+          });
+          // Update inventory UI
+          global.Rendering?.updateInventory();
+        }
       }
       return;
     }
