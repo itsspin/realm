@@ -91,7 +91,9 @@
               </div>
               <div class="admin-zone-selector">
                 <label>Zone:</label>
-                <select id="adminZoneSelect"></select>
+                <select id="adminZoneSelect">
+                  <option value="">-- Select Zone --</option>
+                </select>
               </div>
               <button class="admin-btn" onclick="window.AdminPanel.fillZoneWithTile()">Fill Zone</button>
               <button class="admin-btn" onclick="window.AdminPanel.clearZone()">Clear Zone</button>
@@ -107,6 +109,12 @@
           <div class="admin-spawn-editor">
             <div class="admin-spawn-controls">
               <h3>Spawn Point Editor</h3>
+              <div class="admin-zone-selector">
+                <label>Zone:</label>
+                <select id="adminZoneSelectSpawn">
+                  <option value="">-- Select Zone --</option>
+                </select>
+              </div>
               <div class="spawn-group-selector">
                 <label>Spawn Group:</label>
                 <select id="spawnGroupSelect">
@@ -275,11 +283,36 @@
       });
     }
 
-    // Zone selector
+    // Zone selector (map editor)
     const zoneSelect = document.getElementById('adminZoneSelect');
     if (zoneSelect) {
       zoneSelect.addEventListener('change', () => {
         renderMapEditor();
+      });
+    }
+
+    // Zone selector (spawn editor)
+    const zoneSelectSpawn = document.getElementById('adminZoneSelectSpawn');
+    if (zoneSelectSpawn) {
+      zoneSelectSpawn.addEventListener('change', () => {
+        renderSpawnEditor();
+        // Update spawn groups list for selected zone
+        const zoneId = zoneSelectSpawn.value;
+        if (zoneId) {
+          const spawnGroups = Object.values(global.World?.getWorldData()?.spawnGroups || {})
+            .filter(sg => sg.zoneId === zoneId);
+          const spawnGroupSelect = document.getElementById('spawnGroupSelect');
+          if (spawnGroupSelect) {
+            const currentValue = spawnGroupSelect.value;
+            spawnGroupSelect.innerHTML = '<option value="">-- Create New --</option>' +
+              spawnGroups.map(sg => 
+                `<option value="${sg.id}">${sg.id}</option>`
+              ).join('');
+            if (currentValue && spawnGroups.find(sg => sg.id === currentValue)) {
+              spawnGroupSelect.value = currentValue;
+            }
+          }
+        }
       });
     }
 
@@ -357,15 +390,30 @@
   function loadZones() {
     const zones = Object.values(global.World?.getWorldData()?.zones || {});
     const zoneSelect = document.getElementById('adminZoneSelect');
+    const zoneSelectSpawn = document.getElementById('adminZoneSelectSpawn');
     const zoneLineFromZone = document.getElementById('zoneLineFromZone');
     const zoneLineToZone = document.getElementById('zoneLineToZone');
     const patrolZoneId = document.getElementById('patrolZoneId');
 
-    [zoneSelect, zoneLineFromZone, zoneLineToZone, patrolZoneId].forEach(select => {
+    const allSelects = [zoneSelect, zoneSelectSpawn, zoneLineFromZone, zoneLineToZone, patrolZoneId].filter(Boolean);
+    const player = global.State?.getPlayer();
+    const currentZoneId = player?.currentZone;
+
+    allSelects.forEach(select => {
       if (!select) return;
-      select.innerHTML = zones.map(zone => 
-        `<option value="${zone.id}">${zone.name} (${zone.id})</option>`
-      ).join('');
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">-- Select Zone --</option>' + 
+        zones.map(zone => 
+          `<option value="${zone.id}">${zone.name} (${zone.id})</option>`
+        ).join('');
+      
+      // Restore current selection if it still exists
+      if (currentValue && zones.find(z => z.id === currentValue)) {
+        select.value = currentValue;
+      } else if (currentZoneId && zones.find(z => z.id === currentZoneId)) {
+        // Default to player's current zone
+        select.value = currentZoneId;
+      }
     });
   }
 
@@ -590,9 +638,18 @@
     const canvas = document.getElementById('adminSpawnCanvas');
     if (!canvas) return;
 
-    const zoneSelect = document.getElementById('adminZoneSelect');
+    // Use spawn-specific zone selector or fall back to main one
+    const zoneSelect = document.getElementById('adminZoneSelectSpawn') || document.getElementById('adminZoneSelect');
     const zoneId = zoneSelect?.value;
-    if (!zoneId) return;
+    if (!zoneId) {
+      // Try to get current zone from player
+      const player = global.State?.getPlayer();
+      if (player && player.currentZone) {
+        if (zoneSelect) zoneSelect.value = player.currentZone;
+        return renderSpawnEditor(); // Retry with current zone
+      }
+      return;
+    }
 
     const zone = global.World?.getZone(zoneId);
     if (!zone) return;
@@ -751,7 +808,7 @@
    * Create spawn group
    */
   function createSpawnGroup() {
-    const zoneSelect = document.getElementById('adminZoneSelect');
+    const zoneSelect = document.getElementById('adminZoneSelectSpawn') || document.getElementById('adminZoneSelect');
     const zoneId = zoneSelect?.value;
     if (!zoneId) {
       alert('Please select a zone first');
@@ -1329,17 +1386,23 @@
         await saveJSONFile('data/guard-patrols.json', global.REALM.data.guardPatrols);
       }
 
-      // Save tiles (would need to convert back to zone-specific format)
-      // For now, tiles are generated from zones, so we'd need to save them separately
-      // or regenerate them on load
+      // Note: Tiles are generated from zones, so they will be regenerated on load
+      // If you need to save custom tiles, you'd need to extend the zone data structure
+      // to include tile overrides or save tiles separately
 
       unsavedChanges = false;
-      updateStatus('All changes saved successfully!');
+      updateStatus('All changes saved! Files downloaded - upload to server to apply.');
       
-      // Reload game data
-      setTimeout(() => {
-        location.reload();
-      }, 2000);
+      // Show alert with instructions
+      const API_BASE_URL = window.REALM_API_URL || '';
+      if (API_BASE_URL) {
+        alert('Files have been saved via API. Reloading game...');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
+        alert('Files have been downloaded. Please:\n1. Upload the JSON files to your server\n2. Replace the existing files in the data/ directory\n3. Reload the game to see changes');
+      }
     } catch (error) {
       console.error('Save error:', error);
       updateStatus('Error saving: ' + error.message);
@@ -1348,10 +1411,37 @@
   }
 
   /**
-   * Save JSON file (client-side download)
+   * Save JSON file (client-side download or backend API)
    */
   async function saveJSONFile(filename, data) {
     const json = JSON.stringify(data, null, 2);
+    
+    // Try to save via backend API if available
+    const API_BASE_URL = window.REALM_API_URL || '';
+    if (API_BASE_URL) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/save-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...global.Auth?.getAuthHeaders()
+          },
+          body: JSON.stringify({
+            filename: filename,
+            data: data
+          })
+        });
+
+        if (response.ok) {
+          console.log(`Saved ${filename} via API`);
+          return;
+        }
+      } catch (error) {
+        console.warn('API save failed, falling back to download:', error);
+      }
+    }
+
+    // Fallback: Download file for manual upload
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1362,9 +1452,8 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    // Note: In a real implementation, this would POST to a backend API
-    // For now, we're downloading the file for manual upload
-    console.log(`Downloaded ${filename} - please upload to server`);
+    console.log(`Downloaded ${filename} - please upload to server manually`);
+    updateStatus(`Downloaded ${filename} - upload to server to apply changes`);
   }
 
   /**
